@@ -3,6 +3,40 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>
+(function () {
+  function init() {
+    var app = document.getElementById('app');
+    if (!app) return;
+    function nykyinenNakyma() {
+      var laskuri = app.querySelector('.q-counter');
+      if (laskuri) return laskuri.textContent.replace(/\s+/g, '');
+      if (app.querySelector('.results')) return 'tulokset';
+      return 'alku';
+    }
+    function hyppaaAlkuun() {
+      try {
+        app.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      } catch (e) {
+        app.scrollIntoView(true);
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    var edellinen = nykyinenNakyma();
+    new MutationObserver(function () {
+      var uusi = nykyinenNakyma();
+      if (uusi === edellinen) return;
+      edellinen = uusi;
+      hyppaaAlkuun();
+    }).observe(app, { childList: true, subtree: true });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
 <title>Muutosvalmiuskartoitus · 3K</title>
 <meta name="description" content="Muutosvalmiuden itsearviointityökalu" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
