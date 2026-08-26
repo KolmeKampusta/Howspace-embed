@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fyysisen suorituskyvyn kartoitus · 3K</title>
+<meta name="description" content="Fyysisen suorituskyvyn itsearviointityökalu" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..600&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  /* ============ Design tokens ============ */
+  :root {
+    --bg: #0c2543;                                   /* page background (dark blue) */
+    --container-bg: #ffffff;                          /* main content wrapper */
+    --card-bg: #faf8f4;                               /* cards (subtle cream) */
+    --navy: #0c2543;                                  /* primary text, always full opacity */
+    --green: #a3d9c5;
+    --green-soft: #d8eee3;
+    --blue: #b8d0e3;
+    --blue-soft: #dde9f0;
+    --blue-strong: #5aaee2;
+    --border: rgba(12, 37, 67, 0.14);
+    --border-strong: rgba(12, 37, 67, 0.22);
+    --shadow-sm: 0 1px 2px rgba(12, 37, 67, 0.05);
+    --shadow: 0 2px 8px rgba(12, 37, 67, 0.08);
+    --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.25);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-lg: 20px;
+    --transition: 280ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--navy);
+    font-family: 'Geist', system-ui, -apple-system, sans-serif;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    padding: 20px 16px 32px;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    background: var(--container-bg);
+    border-radius: var(--radius-lg);
+    padding: 28px 28px 32px;
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* ============ Buttons ============ */
+  .btn-primary {
+    display: inline-block;
+    background: var(--navy);
+    color: #fff;
+    border: none;
+    padding: 13px 32px;
+    font-family: 'Geist', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+  .btn-primary:hover {
+    background: #1a3a5c;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+  }
+  .btn-primary:disabled {
+    background: var(--border-strong);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  .btn-secondary {
+    display: inline-block;
+    background: transparent;
+    color: var(--navy);
+    border: 1px solid var(--border);
+    padding: 13px 26px;
+    font-family: 'Geist', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+  .btn-secondary:hover {
+    border-color: var(--navy);
+    background: var(--card-bg);
+  }
+
+  /* ============ Welcome ============ */
+  .welcome { text-align: center; padding: 16px 8px 8px; position: relative; }
+  .welcome-bg {
+    position: absolute;
+    top: -8px;
+    right: -12px;
+    width: 180px;
+    height: 180px;
+    opacity: 0.07;
+    pointer-events: none;
+  }
+  .welcome-eyebrow {
+    font-family: 'Geist', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--navy);
+    margin-bottom: 10px;
+  }
+  .welcome h1 {
+    font-family: 'Geist', sans-serif;
+    font-weight: 400;
+    font-size: clamp(30px, 5.4vw, 46px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+    color: var(--navy);
+  }
+  .welcome h1 em {
+    font-style: normal;
+    font-weight: 400;
+    color: var(--navy);
+  }
+  .welcome p {
+    color: var(--navy);
+    font-size: 15px;
+    max-width: 520px;
+    margin: 0 auto 20px;
+  }
+  .welcome-meta {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: var(--navy);
+  }
+  .welcome-meta strong {
+    font-family: 'Geist', sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+  }
+  .welcome-meta-sep {
+    color: var(--navy);
+    opacity: 0.4;
+    margin: 0 4px;
+  }
+
+  /* ============ Info cards (welcome) ============ */
+  .info-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    text-align: left;
+  }
+  .info-card.safety {
+    background: var(--blue-soft);
+    border-color: var(--blue-strong);
+  }
+  .info-title {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--navy);
+    margin-bottom: 10px;
+  }
+  .info-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .info-list li {
+    font-size: 14px;
+    color: var(--navy);
+    padding-left: 18px;
+    position: relative;
+    margin-bottom: 7px;
+    line-height: 1.45;
+  }
+  .info-list li:last-child { margin-bottom: 0; }
+  .info-list li::before {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 8px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--navy);
+  }
+  .info-list.numbered { counter-reset: infonum; }
+  .info-list.numbered li { padding-left: 26px; }
+  .info-list.numbered li::before {
+    counter-increment: infonum;
+    content: counter(infonum);
+    left: 0;
+    top: 0;
+    width: 19px;
+    height: 19px;
+    border-radius: 50%;
+    background: var(--navy);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .info-list li b { font-weight: 600; }
+  .info-note {
+    font-size: 13px;
+    color: var(--navy);
+    margin-top: 10px;
+    line-height: 1.45;
+  }
+
+  /* ============ Test header ============ */
+  .q-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .q-counter {
+    font-family: 'Geist', sans-serif;
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    color: var(--navy);
+  }
+  .q-counter span {
+    color: var(--navy);
+    font-weight: 300;
+    font-size: 17px;
+  }
+  .q-progress { display: flex; gap: 6px; align-items: center; }
+  .q-progress-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border-strong);
+    transition: all var(--transition);
+  }
+  .q-progress-dot.done { background: var(--green); }
+  .q-progress-dot.current {
+    background: var(--navy);
+    transform: scale(1.4);
+  }
+
+  /* ============ Test body ============ */
+  .test {
+    opacity: 0;
+    animation: fadeIn 420ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .test-title {
+    font-family: 'Geist', sans-serif;
+    font-weight: 400;
+    font-size: clamp(24px, 4.4vw, 34px);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+    color: var(--navy);
+  }
+  .test-sub {
+    color: var(--navy);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 16px;
+  }
+  .block {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 12px;
+  }
+  .block-title {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--navy);
+    margin-bottom: 10px;
+  }
+
+  /* ============ Level picker (punnerrus) ============ */
+  .level-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .level-opt {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-family: 'Geist', sans-serif;
+    font-size: 14px;
+    color: var(--navy);
+    text-align: left;
+    cursor: pointer;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    width: 100%;
+  }
+  .level-opt:hover {
+    border-color: var(--navy);
+    background: var(--blue-soft);
+  }
+  .level-opt.selected {
+    border-color: var(--blue-strong);
+    background: #e0eff9;
+    box-shadow: 0 2px 12px rgba(90, 174, 226, 0.2);
+  }
+  .level-num {
+    flex: 0 0 auto;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--navy);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ============ Timer ============ */
+  .timer-box {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 12px;
+    text-align: center;
+    transition: all var(--transition);
+  }
+  .timer-box.running {
+    border-color: var(--blue-strong);
+    background: #e0eff9;
+  }
+  .timer-box.finished {
+    border-color: var(--green);
+    background: var(--green-soft);
+  }
+  .timer-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--navy);
+    margin-bottom: 6px;
+  }
+  .timer-display {
+    font-family: 'Geist', sans-serif;
+    font-size: clamp(44px, 11vw, 62px);
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    color: var(--navy);
+    margin-bottom: 12px;
+  }
+  .timer-btns {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .btn-timer {
+    background: var(--navy);
+    color: #fff;
+    border: none;
+    padding: 10px 22px;
+    font-family: 'Geist', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+  .btn-timer:hover { background: #1a3a5c; }
+  .btn-timer.ghost {
+    background: transparent;
+    color: var(--navy);
+    border: 1px solid var(--border-strong);
+  }
+  .btn-timer.ghost:hover { background: #fff; border-color: var(--navy); }
+
+  /* ============ Result input ============ */
+  .input-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .input-label {
+    font-size: 14px;
+    color: var(--navy);
+    font-weight: 500;
+    flex: 1 1 180px;
+  }
+  .num-input {
+    flex: 0 0 auto;
+    width: 96px;
+    padding: 10px 12px;
+    font-family: 'Geist', sans-serif;
+    font-size: 20px;
+    font-weight: 500;
+    text-align: center;
+    color: var(--navy);
+    background: #fff;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    transition: all 200ms ease;
+    font-variant-numeric: tabular-nums;
+  }
+  .num-input:focus {
+    outline: none;
+    border-color: var(--blue-strong);
+    box-shadow: 0 0 0 3px rgba(90, 174, 226, 0.2);
+  }
+  .check-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .check-row input {
+    flex: 0 0 auto;
+    width: 17px;
+    height: 17px;
+    margin-top: 1px;
+    accent-color: var(--navy);
+    cursor: pointer;
+  }
+  .check-row span {
+    font-size: 13.5px;
+    color: var(--navy);
+    line-height: 1.4;
+  }
+  .level-badge {
+    margin-top: 12px;
+    padding: 11px 14px;
+    background: #e0eff9;
+    border: 1px solid var(--blue-strong);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    color: var(--navy);
+    text-align: center;
+  }
+  .level-badge strong {
+    font-weight: 600;
+    font-size: 16px;
+  }
+
+  /* ============ Reference table ============ */
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    color: var(--navy);
+  }
+  .ref-table th {
+    text-align: left;
+    font-weight: 600;
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0 8px 7px 0;
+    border-bottom: 1px solid var(--border-strong);
+  }
+  .ref-table td {
+    padding: 7px 8px 7px 0;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .ref-table tr:last-child td { border-bottom: none; }
+  .ref-table .lvl {
+    font-weight: 600;
+    white-space: nowrap;
+    width: 34px;
+  }
+  .ref-table .val { white-space: nowrap; width: 96px; }
+  .ref-table th.mid, .ref-table td.mid { text-align: center; }
+  .ref-table td.mid { font-weight: 600; }
+  .ref-table td.name { width: auto; }
+
+  /* ============ Navigation ============ */
+  .nav-row {
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 18px;
+    flex-wrap: wrap;
+  }
+
+  /* ============ Results ============ */
+  .results { text-align: center; }
+  .results-eyebrow {
+    font-family: 'Geist', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--navy);
+    margin-bottom: 8px;
+    animation: fadeIn 420ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .results h2 {
+    font-family: 'Geist', sans-serif;
+    font-weight: 400;
+    font-size: clamp(24px, 4.6vw, 38px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+    color: var(--navy);
+    opacity: 0;
+    animation: fadeIn 420ms 80ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .results h2 em {
+    font-style: normal;
+    font-weight: 400;
+    color: var(--navy);
+  }
+  .results-sub {
+    color: var(--navy);
+    font-size: 14px;
+    max-width: 520px;
+    margin: 0 auto 18px;
+    opacity: 0;
+    animation: fadeIn 420ms 160ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .chart-container {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px 12px;
+    margin-bottom: 18px;
+    opacity: 0;
+    animation: fadeIn 540ms 240ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .chart-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 440px;
+    margin: 0 auto;
+    aspect-ratio: 1;
+  }
+  .scores {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 8px;
+    margin-bottom: 16px;
+    opacity: 0;
+    animation: fadeIn 420ms 360ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .score-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .score-label {
+    font-size: 13px;
+    color: var(--navy);
+    font-weight: 500;
+  }
+  .score-raw {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 400;
+    opacity: 0.75;
+    margin-top: 1px;
+  }
+  .score-value {
+    font-family: 'Geist', sans-serif;
+    font-size: 21px;
+    font-weight: 400;
+    color: var(--navy);
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .score-value .small {
+    font-size: 12px;
+    color: var(--navy);
+    font-family: 'Geist', sans-serif;
+    font-weight: 400;
+  }
+  .results-note {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    text-align: left;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--navy);
+    margin-bottom: 16px;
+    opacity: 0;
+    animation: fadeIn 420ms 380ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .save-note {
+    font-size: 12.5px;
+    color: var(--navy);
+    opacity: 0;
+    max-width: 400px;
+    margin: 0 auto 14px;
+    line-height: 1.4;
+    animation: fadeIn 420ms 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    opacity: 0;
+    animation: fadeIn 420ms 440ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ============ Responsive ============ */
+  @media (max-width: 540px) {
+    body { padding: 14px 10px 24px; }
+    .container { padding: 22px 18px 24px; }
+    .welcome { padding: 8px 4px; }
+    .welcome-bg { width: 140px; height: 140px; top: -6px; right: -8px; }
+    .block, .info-card { padding: 14px; }
+    .chart-container { padding: 12px 8px; }
+    .scores { grid-template-columns: 1fr; }
+    .nav-row .btn-primary, .nav-row .btn-secondary { flex: 1 1 auto; text-align: center; }
+  }
+  @media (max-width: 380px) {
+    body { padding: 10px 8px 20px; }
+    .container { padding: 18px 14px 22px; }
+    .block, .info-card { padding: 12px; }
+    .num-input { width: 84px; font-size: 18px; }
+    .ref-table { font-size: 12.5px; }
+  }
+</style>
+</head>
+<body>
+<div class="container" id="app"></div>
+
+<script>
+  // ============ Data ============
+  // Jokainen testi on oma sivunsa. levelFn laskee itsearviointitason 1-5.
+  const TESTS = [
+    {
+      id: 'kestavyys',
+      title: 'Kestävyyskunto',
+      sub: 'Paikallaanmarssi 2 minuuttia',
+      duration: 120,
+      steps: [
+        'Seiso ryhdikkäästi, jalat lantion leveydellä.',
+        'Marssi paikallaan niin reippaasti kuin jaksat kahden minuutin ajan. Nosta polvi suunnilleen lantion korkeudelle.',
+        'Voit heilauttaa käsiä mukana tai pitää tukea seinästä tai tuolinselästä.',
+        'Laske vain oikean polven nostot.'
+      ],
+      tip: '',
+      inputLabel: 'Oikean polven nostot',
+      easing: 'Tein marssin istuen tai matalalla polvennostolla',
+      easingNote: 'Kevennetyllä suorituksella taso on enintään 3.',
+      table: [
+        ['1', 'alle 50', 'Hengästyn arjen rasituksessa nopeasti'],
+        ['2', '50–69', 'Portaat ja reipas kävely tuntuvat'],
+        ['3', '70–89', 'Selviydyn arjesta hyvin'],
+        ['4', '90–109', 'Jaksan pidempiäkin rasituksia'],
+        ['5', '110 tai yli', 'Hyvä kestävyyskunto']
+      ],
+      levelFn: function (raw, opt) {
+        let lvl = 5;
+        if (raw < 50) lvl = 1;
+        else if (raw < 70) lvl = 2;
+        else if (raw < 90) lvl = 3;
+        else if (raw < 110) lvl = 4;
+        if (opt.easing === true) return Math.min(lvl, 3);
+        return lvl;
+      }
+    },
+    {
+      id: 'vatsa',
+      title: 'Vatsalihakset',
+      sub: 'Osittainen rutistus 30 sekuntia',
+      duration: 30,
+      steps: [
+        'Asetu selinmakuulle, polvet koukussa ja jalkapohjat lattiassa. Älä tue jalkoja mihinkään.',
+        'Kädet ovat suorina lattialla reisiä pitkin, sormet kohti kantapäitä.',
+        'Nosta hartiat irti lattiasta niin, että sormesi liukuvat noin 8 senttimetriä eteenpäin.',
+        'Laske hartiat takaisin alas. Pidä leuka irti rinnasta koko liikkeen ajan.'
+      ],
+      tip: 'Tee 30 sekunnissa niin monta puhdasta suoritusta kuin kykenet.',
+      inputLabel: 'Puhtaat toistot',
+      table: [
+        ['1', 'alle 8', 'Keskivartalo väsyy heti'],
+        ['2', '8–13', 'Perusvoima on olemassa'],
+        ['3', '14–19', 'Riittää arjen tarpeisiin'],
+        ['4', '20–25', 'Hyvä keskivartalon kestävyys'],
+        ['5', '26 tai yli', 'Vahva keskivartalo']
+      ],
+      levelFn: function (raw) {
+        if (raw < 8) return 1;
+        if (raw < 14) return 2;
+        if (raw < 20) return 3;
+        if (raw < 26) return 4;
+        return 5;
+      }
+    },
+    {
+      id: 'ylavartalo',
+      title: 'Ylävartalo',
+      sub: 'Punnerrus 30 sekuntia',
+      duration: 30,
+      levels: [
+        'Kädet seinää vasten',
+        'Kädet keittiön työtasolla',
+        'Kädet tuolin tai sohvan reunalla',
+        'Polvet lattiassa',
+        'Varpaat lattiassa'
+      ],
+      levelPrompt: 'Valitse taso, jolla saat tehtyä vähintään 5 mutta korkeintaan 20 puhdasta toistoa.',
+      steps: [
+        'Aseta kädet hieman hartioita leveämmälle, sormet osoittavat eteenpäin.',
+        'Pidä keskivartalo suorana ja vakaana koko liikkeen ajan.',
+        'Ala-asennossa rintakehä lähestyy alustaa, yläasennossa kyynärpäät ojentuvat suoriksi.'
+      ],
+      tip: 'Kun toistot alkavat sujua helposti, siirry seuraavalle tasolle. Silloinkin kun toistomäärä putoaa, kuntosi on parantunut.',
+      inputLabel: 'Puhtaat toistot',
+      table: [
+        ['Taso 1–2 (seinä tai työtaso)', '1', '2'],
+        ['Taso 3 (tuoli tai sohva)', '2', '3'],
+        ['Taso 4 (polvet lattiassa)', '3', '4'],
+        ['Taso 5 (varpaat lattiassa)', '4', '5']
+      ],
+      tableHead: ['Punnerrustaso', 'Alle 15 toistoa', '15 toistoa tai yli'],
+      tableMatrix: true,
+      tableNote: 'Taulukon luvut ovat kuntotestin tasoja asteikolla 1–5.',
+      levelFn: function (raw, opt) {
+        const t = opt.level;
+        const high = raw >= 15;
+        if (t <= 2) return high ? 2 : 1;
+        if (t === 3) return high ? 3 : 2;
+        if (t === 4) return high ? 4 : 3;
+        return high ? 5 : 4;
+      }
+    },
+    {
+      id: 'alavartalo',
+      title: 'Alavartalo',
+      sub: 'Tuolilta ylösnousu 30 sekuntia',
+      duration: 30,
+      steps: [
+        'Istu tuolin etureunalla, jalkapohjat tukevasti lattiassa.',
+        'Kädet ovat ristissä rinnan päällä.',
+        'Nouse seisomaan täysin suoraksi ja istu hallitusti takaisin.'
+      ],
+      tip: 'Tee 30 sekunnissa niin monta suoritusta kuin kykenet.',
+      inputLabel: 'Ylösnousut',
+      easing: 'Käytin käsiä apuna (työnsin reisistä tai käsinojista)',
+      easingNote: 'Jos käytit käsiä apuna, taso on 1 riippumatta toistomäärästä. Merkitse tämä muistiin, jotta seuraava kerta on vertailukelpoinen.',
+      table: [
+        ['1', 'alle 10', 'Ylösnousu vaatii ponnistelua'],
+        ['2', '10–13', 'Onnistuu, mutta reisissä tuntuu'],
+        ['3', '14–17', 'Riittävä alavartalon voima'],
+        ['4', '18–21', 'Hyvä alavartalon kestävyys'],
+        ['5', '22 tai yli', 'Vahva alavartalo']
+      ],
+      levelFn: function (raw, opt) {
+        if (opt.easing === true) return 1;
+        if (raw < 10) return 1;
+        if (raw < 14) return 2;
+        if (raw < 18) return 3;
+        if (raw < 22) return 4;
+        return 5;
+      }
+    }
+  ];
+
+  // ============ State ============
+  const state = {
+    screen: 'welcome',      // 'welcome' | 'test' | 'results'
+    currentTest: 0,
+    results: {},            // id -> { raw, level, opt }
+    draft: {},              // id -> { raw, level, easing }
+    chartInstance: null
+  };
+
+  const timer = {
+    intervalId: null,
+    phase: 'idle',          // 'idle' | 'lead' | 'run' | 'done'
+    remaining: 0,
+    leadRemaining: 0
+  };
+
+  let audioCtx = null;
+
+  // ============ Helpers ============
+  const $ = (id) => document.getElementById(id);
+
+  function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function beep(freq, dur) {
+    try {
+      if (audioCtx === null) {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return;
+        audioCtx = new Ctx();
+      }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+      osc.start();
+      osc.stop(audioCtx.currentTime + dur);
+    } catch (e) {
+      // Ääni ei ole kriittinen, jatketaan hiljaisuudessa
+    }
+  }
+
+  function formatTime(sec) {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return m + ':' + String(s).padStart(2, '0');
+  }
+
+  function getDraft(id) {
+    if (!state.draft[id]) state.draft[id] = { raw: '', level: null, easing: false };
+    return state.draft[id];
+  }
+
+  // ============ Welcome ============
+  function renderWelcome() {
+    $('app').innerHTML = `
+      <div class="welcome">
+        <svg class="welcome-bg" viewBox="0 0 200 200" aria-hidden="true">
+          <g fill="none" stroke="#0c2543" stroke-width="0.6">
+            <polygon points="100,20 169,60 169,140 100,180 31,140 31,60" />
+            <polygon points="100,50 142,75 142,125 100,150 58,125 58,75" />
+            <polygon points="100,80 115,90 115,110 100,120 85,110 85,90" />
+            <line x1="100" y1="20" x2="100" y2="180" />
+            <line x1="31" y1="60" x2="169" y2="140" />
+            <line x1="31" y1="140" x2="169" y2="60" />
+          </g>
+        </svg>
+        <div class="welcome-eyebrow">Fyysinen suorituskyky</div>
+        <h1>Kartoitus: <em>Kuntotesti</em></h1>
+        <p>Voit halutessasi tehdä itsellesi kuntokartoituksen. Testi on suunniteltu tehtäväksi kotona ilman erillisiä välineitä ja sopii kaikille kuntotasoille.</p>
+        <div class="welcome-meta">
+          <span><strong>4</strong> testiä</span>
+          <span class="welcome-meta-sep">·</span>
+          <span><strong>15</strong> minuuttia</span>
+          <span class="welcome-meta-sep">·</span>
+          <span><strong>0</strong> välineitä</span>
+        </div>
+
+        <div class="info-card">
+          <div class="info-title">Testin sisältö</div>
+          <ul class="info-list numbered">
+            <li><b>Kestävyyskunto.</b> Paikallaanmarssi 2 minuuttia.</li>
+            <li><b>Vatsalihakset.</b> Osittainen rutistus 30 sekuntia.</li>
+            <li><b>Ylävartalo.</b> Punnerrus 30 sekuntia omalla tasollasi.</li>
+            <li><b>Alavartalo.</b> Tuolilta ylösnousu 30 sekuntia.</li>
+          </ul>
+          <p class="info-note">Jokaisesta testistä kirjataan toistomäärä, ja sovellus laskee siitä tasosi asteikolla 1–5. Lopuksi näet tuloksesi kaaviona.</p>
+        </div>
+
+        <div class="info-card">
+          <div class="info-title">Mitä tarvitset</div>
+          <ul class="info-list">
+            <li>Tukevan tuolin</li>
+            <li>Noin kahden neliömetrin vapaan tilan</li>
+            <li>Seinän tai keittiön työtason punnerrusta varten</li>
+            <li>Ajastin löytyy tästä sovelluksesta, erillistä kelloa ei tarvita</li>
+          </ul>
+          <p class="info-note">Sykemittaria tai muita laitteita ei tarvita.</p>
+        </div>
+
+        <div class="info-card safety">
+          <div class="info-title">Turvallisuus</div>
+          <ul class="info-list">
+            <li>Keskeytä testi heti, jos tunnet rintakipua, huimausta tai voimakasta pahoinvointia.</li>
+            <li>Älä tee testiä kuumeisena tai akuutin vamman kanssa.</li>
+            <li>Jos sinulla on tiedossa oleva sydänsairaus, keskustele ensin hoitavan tahon kanssa.</li>
+            <li>Lämmittele muutama minuutti ennen aloitusta, esimerkiksi kävelemällä paikallaan ja pyörittelemällä olkapäitä.</li>
+            <li>Pidä testien välissä tauko, kunnes hengitys tasaantuu.</li>
+          </ul>
+        </div>
+
+        <div style="margin-top:20px">
+          <button class="btn-primary" onclick="startTests()">Aloita kartoitus →</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function startTests() {
+    state.screen = 'test';
+    state.currentTest = 0;
+    state.results = {};
+    state.draft = {};
+    render();
+    scrollToTop();
+  }
+
+  // ============ Test screen ============
+  function renderTest() {
+    const t = TESTS[state.currentTest];
+    const d = getDraft(t.id);
+
+    const dots = TESTS.map((_, i) => {
+      let cls = 'q-progress-dot';
+      if (i < state.currentTest) cls += ' done';
+      else if (i === state.currentTest) cls += ' current';
+      return `<span class="${cls}"></span>`;
+    }).join('');
+
+    // Tasovalitsin, vain punnerruksessa
+    let levelBlock = '';
+    if (t.levels) {
+      const opts = t.levels.map((label, i) => {
+        const n = i + 1;
+        const sel = d.levelChoice === n ? ' selected' : '';
+        return `<button class="level-opt${sel}" onclick="selectLevel(${n})">
+                  <span class="level-num">${n}</span>
+                  <span>${label}</span>
+                </button>`;
+      }).join('');
+      levelBlock = `
+        <div class="block">
+          <div class="block-title">1. Valitse oma tasosi</div>
+          <p style="font-size:14px;margin-bottom:12px">${t.levelPrompt}</p>
+          <div class="level-grid">${opts}</div>
+        </div>
+      `;
+    }
+
+    const stepNum = t.levels ? 2 : 1;
+    const steps = t.steps.map(s => `<li>${s}</li>`).join('');
+
+    // Kevennysvalinta, jos testissä sellainen on
+    let easingRow = '';
+    if (t.easing) {
+      const chk = d.easing === true ? ' checked' : '';
+      easingRow = `
+        <label class="check-row">
+          <input type="checkbox" id="easing" onchange="toggleEasing(this.checked)"${chk} />
+          <span>${t.easing}</span>
+        </label>
+      `;
+    }
+
+    // Viitetaulukko
+    const headCells = t.tableHead
+      ? t.tableHead.map((h, i) => {
+          if (t.tableMatrix) {
+            return i === 0 ? `<th>${h}</th>` : `<th class="mid">${h}</th>`;
+          }
+          return `<th>${h}</th>`;
+        }).join('')
+      : '<th>Taso</th><th>Toistot</th><th>Kuvaus</th>';
+    const rows = t.table.map(r => {
+      if (t.tableMatrix) {
+        return `
+      <tr>
+        <td class="name">${r[0]}</td>
+        <td class="mid">${r[1]}</td>
+        <td class="mid">${r[2]}</td>
+      </tr>
+    `;
+      }
+      return `
+      <tr>
+        <td class="lvl">${r[0]}</td>
+        <td class="val">${r[1]}</td>
+        <td>${r[2]}</td>
+      </tr>
+    `;
+    }).join('');
+
+    $('app').innerHTML = `
+      <div class="q-header">
+        <div class="q-counter">
+          ${String(state.currentTest + 1).padStart(2, '0')}
+          <span>/ ${String(TESTS.length).padStart(2, '0')}</span>
+        </div>
+        <div class="q-progress">${dots}</div>
+      </div>
+      <div class="test">
+        <h2 class="test-title">${t.title}</h2>
+        <p class="test-sub">${t.sub}</p>
+
+        ${levelBlock}
+
+        <div class="block">
+          <div class="block-title">${stepNum}. Suoritusohje</div>
+          <ul class="info-list numbered">${steps}</ul>
+          ${t.tip ? `<p class="info-note">${t.tip}</p>` : ''}
+        </div>
+
+        <div class="timer-box" id="timer-box">
+          <div class="timer-label" id="timer-label">Ajastin</div>
+          <div class="timer-display" id="timer-display">${formatTime(t.duration)}</div>
+          <div class="timer-btns" id="timer-btns">
+            <button class="btn-timer" onclick="startTimer()">Käynnistä ajastin</button>
+          </div>
+        </div>
+
+        <div class="block">
+          <div class="block-title">${stepNum + 1}. Kirjaa tuloksesi</div>
+          <div class="input-row">
+            <span class="input-label">${t.inputLabel}</span>
+            <input class="num-input" type="number" inputmode="numeric" min="0" max="999"
+                   id="raw-input" value="${d.raw}" placeholder="0"
+                   oninput="setRaw(this.value)" />
+          </div>
+          ${easingRow}
+          <div id="level-out">${renderLevelBadge(t, d)}</div>
+        </div>
+
+        <div class="block">
+          <div class="block-title">Viitearvot</div>
+          <table class="ref-table">
+            <thead><tr>${headCells}</tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+          ${t.tableNote ? `<p class="info-note">${t.tableNote}</p>` : ''}
+          ${t.easingNote ? `<p class="info-note">${t.easingNote}</p>` : ''}
+        </div>
+
+        <div class="nav-row">
+          ${state.currentTest > 0
+            ? '<button class="btn-secondary" onclick="prevTest()">← Edellinen</button>'
+            : '<span></span>'}
+          <button class="btn-primary" id="next-btn" onclick="nextTest()" ${canProceedNow() ? '' : 'disabled'}>
+            ${state.currentTest === TESTS.length - 1 ? 'Näytä tulokset →' : 'Seuraava testi →'}
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderLevelBadge(t, d) {
+    if (d.level === null) return '';
+    return `<div class="level-badge">Kuntotestin tasosi: <strong>${d.level} / 5</strong></div>`;
+  }
+
+  function recalcLevel() {
+    const t = TESTS[state.currentTest];
+    const d = getDraft(t.id);
+
+    let ready = true;
+    if (d.raw === '') ready = false;
+    if (isNaN(Number(d.raw))) ready = false;
+    if (t.levels) {
+      if (!d.levelChoice) ready = false;
+    }
+
+    if (ready) {
+      d.level = t.levelFn(Number(d.raw), { easing: d.easing, level: d.levelChoice });
+    } else {
+      d.level = null;
+    }
+
+    const out = $('level-out');
+    if (out) out.innerHTML = renderLevelBadge(t, d);
+
+    const btn = $('next-btn');
+    if (btn) btn.disabled = !canProceedNow();
+  }
+
+  function canProceedNow() {
+    const t = TESTS[state.currentTest];
+    const d = getDraft(t.id);
+    if (d.raw === '') return false;
+    if (isNaN(Number(d.raw))) return false;
+    if (Number(d.raw) < 0) return false;
+    if (t.levels) {
+      if (!d.levelChoice) return false;
+    }
+    return true;
+  }
+
+  function setRaw(val) {
+    const t = TESTS[state.currentTest];
+    const d = getDraft(t.id);
+    d.raw = val;
+    recalcLevel();
+  }
+
+  function toggleEasing(checked) {
+    const t = TESTS[state.currentTest];
+    const d = getDraft(t.id);
+    d.easing = checked;
+    recalcLevel();
+  }
+
+  function selectLevel(n) {
+    const t = TESTS[state.currentTest];
+    const d = getDraft(t.id);
+    d.levelChoice = n;
+    d.level = null;
+    // Päivitä valinnan korostus ilman koko sivun uudelleenpiirtoa
+    const btns = document.querySelectorAll('.level-opt');
+    btns.forEach((b, i) => {
+      if (i + 1 === n) b.classList.add('selected');
+      else b.classList.remove('selected');
+    });
+    recalcLevel();
+  }
+
+  // ============ Timer ============
+  function stopTimerInterval() {
+    if (timer.intervalId !== null) {
+      clearInterval(timer.intervalId);
+      timer.intervalId = null;
+    }
+  }
+
+  function updateTimerUI() {
+    const box = $('timer-box');
+    const label = $('timer-label');
+    const display = $('timer-display');
+    const btns = $('timer-btns');
+    if (!box) return;
+
+    box.classList.remove('running', 'finished');
+
+    if (timer.phase === 'lead') {
+      box.classList.add('running');
+      label.textContent = 'Valmistaudu';
+      display.textContent = timer.leadRemaining;
+      btns.innerHTML = '<button class="btn-timer ghost" onclick="resetTimer()">Peruuta</button>';
+      return;
+    }
+    if (timer.phase === 'run') {
+      box.classList.add('running');
+      label.textContent = 'Suorita nyt';
+      display.textContent = formatTime(timer.remaining);
+      btns.innerHTML = '<button class="btn-timer ghost" onclick="resetTimer()">Pysäytä</button>';
+      return;
+    }
+    if (timer.phase === 'done') {
+      box.classList.add('finished');
+      label.textContent = 'Valmis';
+      display.textContent = 'Aika!';
+      btns.innerHTML = '<button class="btn-timer ghost" onclick="resetTimer()">Nollaa ajastin</button>';
+      return;
+    }
+    // idle
+    const t = TESTS[state.currentTest];
+    label.textContent = 'Ajastin';
+    display.textContent = formatTime(t.duration);
+    btns.innerHTML = '<button class="btn-timer" onclick="startTimer()">Käynnistä ajastin</button>';
+  }
+
+  function startTimer() {
+    const t = TESTS[state.currentTest];
+    stopTimerInterval();
+    timer.phase = 'lead';
+    timer.leadRemaining = 3;
+    timer.remaining = t.duration;
+    updateTimerUI();
+    beep(660, 0.12);
+
+    timer.intervalId = setInterval(() => {
+      if (timer.phase === 'lead') {
+        timer.leadRemaining -= 1;
+        if (timer.leadRemaining > 0) {
+          beep(660, 0.12);
+          updateTimerUI();
+          return;
+        }
+        timer.phase = 'run';
+        beep(990, 0.3);
+        updateTimerUI();
+        return;
+      }
+
+      if (timer.phase === 'run') {
+        timer.remaining -= 1;
+        if (timer.remaining <= 0) {
+          timer.phase = 'done';
+          stopTimerInterval();
+          beep(520, 0.6);
+          updateTimerUI();
+          const input = $('raw-input');
+          if (input) input.focus();
+          return;
+        }
+        if (timer.remaining <= 3) beep(660, 0.1);
+        updateTimerUI();
+      }
+    }, 1000);
+  }
+
+  function resetTimer() {
+    stopTimerInterval();
+    timer.phase = 'idle';
+    timer.remaining = 0;
+    timer.leadRemaining = 0;
+    updateTimerUI();
+  }
+
+  // ============ Navigation ============
+  function nextTest() {
+    const t = TESTS[state.currentTest];
+    const d = getDraft(t.id);
+    if (!canProceedNow()) return;
+
+    state.results[t.id] = {
+      raw: Number(d.raw),
+      level: d.level,
+      easing: d.easing,
+      levelChoice: d.levelChoice
+    };
+
+    resetTimer();
+
+    if (state.currentTest + 1 < TESTS.length) {
+      state.currentTest += 1;
+      render();
+      scrollToTop();
+    } else {
+      state.screen = 'results';
+      render();
+      scrollToTop();
+    }
+  }
+
+  function prevTest() {
+    resetTimer();
+    if (state.currentTest > 0) {
+      state.currentTest -= 1;
+      render();
+      scrollToTop();
+    }
+  }
+
+  // ============ Results ============
+  function renderResults() {
+    const cards = TESTS.map(t => {
+      const r = state.results[t.id];
+      let rawText = r.raw + ' toistoa';
+      if (t.levels) rawText = 'taso ' + r.levelChoice + ', ' + r.raw + ' toistoa';
+      if (r.easing === true) rawText += ', kevennetty';
+      return `
+        <div class="score-card">
+          <span class="score-label">
+            ${t.title}
+            <span class="score-raw">${rawText}</span>
+          </span>
+          <span class="score-value">${r.level}<span class="small"> / 5</span></span>
+        </div>
+      `;
+    }).join('');
+
+    $('app').innerHTML = `
+      <div class="results">
+        <div class="results-eyebrow">Tuloksesi</div>
+        <h2>Fyysisen suorituskykysi <em>profiili</em></h2>
+        <p class="results-sub">Jokainen akseli kuvaa yhden osa-alueen tasoa asteikolla 1–5. Korkea arvo tarkoittaa, että osa-alue palvelee sinua arjessa hyvin.</p>
+        <div class="chart-container">
+          <div class="chart-wrap">
+            <canvas id="radarChart"></canvas>
+          </div>
+        </div>
+        <div class="scores">${cards}</div>
+
+        <div class="results-note">
+          <strong>Näin luet tuloksesi.</strong> Viitearvot ovat suuntaa antavia, eivät lääketieteellisiä. Ne on tehty koko aikuisväestölle, joten ne eivät huomioi ikääsi tai taustaasi. Käytä niitä karkeana lähtöpisteenä, älä arvosanana.
+          <br /><br />
+          Kotona tehdyn testin todellinen arvo on oma muutoksesi. Tee testi uudelleen 8–12 viikon kuluttua samoilla ohjeilla ja vertaa ensisijaisesti toistomääriä edelliseen kertaan.
+        </div>
+
+        <p class="save-note">Emme tallenna vastauksiasi, suosittelen että lataat tästä kuvan omalle laitteellesi.</p>
+        <div class="actions">
+          <button class="btn-primary" onclick="downloadChart()">Tallenna kuva ↓</button>
+          <button class="btn-secondary" onclick="restart()">Aloita alusta</button>
+        </div>
+      </div>
+    `;
+
+    requestAnimationFrame(() => drawChart());
+  }
+
+  function drawChart() {
+    const canvas = $('radarChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const labels = TESTS.map(t => t.title);
+    const data = TESTS.map(t => state.results[t.id].level);
+
+    state.chartInstance = new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Tuloksesi',
+          data,
+          backgroundColor: 'rgba(163, 217, 197, 0.42)',
+          borderColor: '#0c2543',
+          borderWidth: 2,
+          pointBackgroundColor: '#0c2543',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 5,
+          pointHoverRadius: 7
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        animation: { duration: 900, easing: 'easeOutCubic' },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#0c2543',
+            padding: 12,
+            titleFont: { family: 'Geist', size: 13, weight: '500' },
+            bodyFont: { family: 'Geist', size: 13 },
+            displayColors: false,
+            callbacks: {
+              label: (item) => `Taso ${item.formattedValue} / 5`
+            }
+          }
+        },
+        scales: {
+          r: {
+            min: 0,
+            max: 5,
+            ticks: {
+              stepSize: 1,
+              font: { family: 'Geist', size: 11, weight: '600' },
+              color: '#000000',
+              backdropColor: 'transparent'
+            },
+            pointLabels: {
+              font: { family: 'Geist', size: 13, weight: '400' },
+              color: '#000000',
+              padding: 8
+            },
+            grid: { color: 'rgba(184, 208, 227, 0.55)' },
+            angleLines: { color: 'rgba(184, 208, 227, 0.55)' }
+          }
+        }
+      }
+    });
+  }
+
+  function downloadChart() {
+    if (!state.chartInstance) return;
+    const sourceCanvas = state.chartInstance.canvas;
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = sourceCanvas.width;
+    tempCanvas.height = sourceCanvas.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCtx.fillStyle = '#ffffff';
+    tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+    tempCtx.drawImage(sourceCanvas, 0, 0);
+
+    const link = document.createElement('a');
+    link.href = tempCanvas.toDataURL('image/png', 1);
+    link.download = 'fyysinen-suorituskyky-profiili.png';
+    link.click();
+  }
+
+  function restart() {
+    resetTimer();
+    state.screen = 'welcome';
+    state.currentTest = 0;
+    state.results = {};
+    state.draft = {};
+    if (state.chartInstance) {
+      state.chartInstance.destroy();
+      state.chartInstance = null;
+    }
+    render();
+    scrollToTop();
+  }
+
+  // ============ Router ============
+  function render() {
+    if (state.chartInstance) {
+      if (state.screen !== 'results') {
+        state.chartInstance.destroy();
+        state.chartInstance = null;
+      }
+    }
+    if (state.screen === 'welcome') renderWelcome();
+    else if (state.screen === 'test') renderTest();
+    else if (state.screen === 'results') renderResults();
+  }
+
+  // Expose for inline handlers
+  window.startTests = startTests;
+  window.startTimer = startTimer;
+  window.resetTimer = resetTimer;
+  window.setRaw = setRaw;
+  window.toggleEasing = toggleEasing;
+  window.selectLevel = selectLevel;
+  window.nextTest = nextTest;
+  window.prevTest = prevTest;
+  window.downloadChart = downloadChart;
+  window.restart = restart;
+
+  render();
+</script>
+</body>
+</html>
