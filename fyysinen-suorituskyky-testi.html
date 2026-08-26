@@ -3,6 +3,35 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>
+(function () {
+  var NAVIGOINTI = ['startTests(', 'nextTest(', 'prevTest(', 'restart('];
+  function onNavigointinappi(el) {
+    if (!el) return false;
+    var oc = el.getAttribute('onclick');
+    if (!oc) return false;
+    for (var i = 0; i < NAVIGOINTI.length; i++) {
+      if (oc.indexOf(NAVIGOINTI[i]) !== -1) return true;
+    }
+    return false;
+  }
+  function hyppaaAlkuun() {
+    var app = document.getElementById('app');
+    if (!app) return;
+    try {
+      app.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    } catch (e) {
+      app.scrollIntoView(true);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('[onclick]');
+    if (!onNavigointinappi(el)) return;
+    requestAnimationFrame(hyppaaAlkuun);
+  }, true);
+})();
+</script>
 <title>Fyysisen suorituskyvyn kartoitus · 3K</title>
 <meta name="description" content="Fyysisen suorituskyvyn itsearviointityökalu" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
