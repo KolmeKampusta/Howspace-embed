@@ -377,7 +377,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     padding: 10px 14px;
-    text-align: left;
+    text-align: start;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -418,6 +418,120 @@
     animation: fadeIn 420ms 440ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
+  /* ============ Language selector ============ */
+  .welcome-actions {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+  .lang {
+    position: relative;
+    justify-self: start;
+    text-align: left;
+  }
+  .lang-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: var(--navy);
+    border: 1px solid var(--border);
+    padding: 9px 12px 9px 10px;
+    font-family: 'Geist', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+  .lang-toggle:hover,
+  .lang.open .lang-toggle {
+    border-color: var(--navy);
+    background: var(--card-bg);
+  }
+  .lang-flag {
+    flex: 0 0 auto;
+    display: inline-block;
+    width: 21px;
+    height: 14px;
+    border-radius: 3px;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(12, 37, 67, 0.14);
+  }
+  .lang-flag svg { display: block; width: 100%; height: 100%; }
+  .lang-caret {
+    width: 10px;
+    height: 10px;
+    transition: transform var(--transition);
+  }
+  .lang.open .lang-caret { transform: rotate(180deg); }
+  .lang-menu {
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 8px);
+    z-index: 20;
+    min-width: 190px;
+    overflow-y: auto;
+    list-style: none;
+    background: var(--container-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 12px 32px rgba(12, 37, 67, 0.18);
+    padding: 6px;
+    animation: fadeIn 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .lang-menu.down {
+    top: calc(100% + 8px);
+    bottom: auto;
+  }
+  .lang-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 7px 10px;
+    font-family: 'Geist', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.3;
+    color: var(--navy);
+    text-align: left;
+    cursor: pointer;
+    transition: background 160ms ease;
+  }
+  .lang-option:hover,
+  .lang-option:focus-visible {
+    background: var(--blue-soft);
+    outline: none;
+  }
+  .lang-option[aria-current="true"] {
+    background: #e0eff9;
+    font-weight: 500;
+  }
+  .lang-option[aria-current="true"]::after {
+    content: '';
+    width: 5px;
+    height: 9px;
+    margin: -3px 4px 0 auto;
+    border: solid var(--navy);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  @media (max-width: 540px) {
+    /* Kapealla näytöllä nappi siirtyy tarvittaessa valitsimen yläpuolelle */
+    .welcome-actions {
+      display: flex;
+      flex-wrap: wrap-reverse;
+      gap: 10px;
+    }
+    .welcome-actions .btn-primary { flex: 1 1 auto; }
+  }
+
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
@@ -448,65 +562,977 @@
 <div class="container" id="app"></div>
 
 <script>
-  // ============ Data ============
-  const CATEGORIES = [
-    {
-      title: 'Tavoitteenhallinta',
-      description: 'Tavoitteiden konkretisointi ja etenemisen seuranta.',
-      questions: [
-        'Tiedän tarkalleen, mitä minun tulee tehdä seuraavaksi tavoitteeni eteen.',
-        'Tavoitteeni on muutettu konkreettisiksi tehtäviksi kalenteriini.',
-        'Minulla on selkeä käsitys siitä, miltä onnistuminen edellyttää.',
-        'Osaan asettaa tehtäväni tärkeysjärjestykseen.',
-        'Tiedän, mitkä asiat ovat kriittisiä tavoitteen maaliin viemiseksi.',
-        'Seuraan edistymistäni säännöllisesti.',
-        'Tavoitteeni kokonaiskuva on minulle täysin kirkas.'
+  // ============ Translations ============
+  // Jokaisella kielellä: ui = käyttöliittymän tekstit, categories = kategoriat ja kysymykset.
+  const I18N = {
+    fi: {
+      ui: {
+        docTitle: 'Aikaansaamisen kartoitus · 3K',
+        docDescription: 'Aikaansaamisen itsearviointityökalu',
+        eyebrow: 'Aikaansaaminen',
+        title: 'Kartoitus: <em>Aikaansaaminen</em>',
+        intro: 'Tässä osiossa kartoitetaan aikaansaamistasi neljän kategorian kautta: tavoitteenhallinta, itseluottamus, työvire ja toimeenpaneminen. Vastaa rehellisesti, kukaan ei näe yksittäisiä vastauksiasi.',
+        resultsTitle: 'Aikaansaamisesi <em>profiili</em>',
+        language: 'Kieli',
+        metaCategories: '{n} kategoriaa',
+        metaQuestions: '{n} kysymystä',
+        metaMinutes: '{n} minuuttia',
+        start: 'Aloita kartoitus →',
+        answerAria: 'Vastaus {n}',
+        scaleMin: 'Täysin eri mieltä',
+        scaleMax: 'Täysin samaa mieltä',
+        resultsEyebrow: 'Tuloksesi',
+        resultsSub: 'Jokainen akseli kuvaa yhden kategorian tilannetta asteikolla 1–7. Korkea arvo tarkoittaa, että koet osa-alueen olevan elämässäsi hyvässä tilassa.',
+        saveNote: 'Emme tallenna vastauksiasi, suosittelen että lataat tästä kuvan omalle laitteellesi.',
+        download: 'Tallenna kuva ↓',
+        restart: 'Aloita alusta',
+        datasetLabel: 'Vastauksesi'
+      },
+      categories: [
+        {
+          title: 'Tavoitteenhallinta',
+          description: 'Tavoitteiden konkretisointi ja etenemisen seuranta.',
+          questions: [
+            'Tiedän tarkalleen, mitä minun tulee tehdä seuraavaksi tavoitteeni eteen.',
+            'Tavoitteeni on muutettu konkreettisiksi tehtäviksi kalenteriini.',
+            'Minulla on selkeä käsitys siitä, mitä onnistuminen edellyttää.',
+            'Osaan asettaa tehtäväni tärkeysjärjestykseen.',
+            'Tiedän, mitkä asiat ovat kriittisiä tavoitteen maaliin viemiseksi.',
+            'Seuraan edistymistäni säännöllisesti.',
+            'Tavoitteeni kokonaiskuva on minulle täysin kirkas.'
+          ]
+        },
+        {
+          title: 'Itseluottamus',
+          description: 'Usko omaan osaamiseen ja kykyyn selviytyä haasteista.',
+          questions: [
+            'Luotan kykyyni selviytyä tavoitteeni kannalta vaativistakin haasteista.',
+            'Uskon osaamiseeni ja asiantuntemukseeni tavoitteen eteen työskentelyssä.',
+            'Koen olevani oikea ihminen toteuttamaan tämän tavoitteen.',
+            'Luotan kykyyni omaksua uutta tietoa matkan varrella.',
+            'Tiedän, että pystyn vaikuttamaan asioiden kulkuun.',
+            'En lannistu pienistä vastoinkäymisistä.',
+            'Luotan siihen, että löydän keinot tavoitteen saavuttamiseksi.'
+          ]
+        },
+        {
+          title: 'Työvire',
+          description: 'Energiataso ja innostus tavoitteen eteen työskentelyssä.',
+          questions: [
+            'Koen olevani parhaimmillani edistäessäni tavoitettani.',
+            'Arkeni on energistä ja koen saavani asioita tehdyksi.',
+            'Tavoitetyöskentely herättää minussa aitoa innostusta.',
+            'Huolehdin tietoisesti energiatasoistani päivän aikana.',
+            'Tauotan tekemistäni pitääkseni vireystilan hyvänä.',
+            'Osaan tasapainottaa tavoitteen eteen tehtävän työn ja levon oikeassa suhteessa.',
+            'Lähipiirini kannustaa minua ja saan heiltä energiaa tavoitteeni edistämiseen.'
+          ]
+        },
+        {
+          title: 'Toimeenpaneminen',
+          description: 'Kyky saattaa aloitetut tehtävät valmiiksi.',
+          questions: [
+            'Saan asiat valmiiksi sovitussa aikataulussa.',
+            'Viimeistelen aloittamani tehtävät huolellisesti loppuun.',
+            'Minulla on kykyä tarttua toimeen heti, kun se on tarpeen.',
+            'Pystyn työskentelemään tavoitteellisesti myös motivaation loistaessa poissaolollaan.',
+            'Aloittaminen ei ole minulle vaikeaa.',
+            'Olen ylpeä kyvystäni saada asioita aikaiseksi.',
+            'Toimin päättäväisesti tavoitteeni edistämiseksi.'
+          ]
+        }
       ]
     },
-    {
-      title: 'Itseluottamus',
-      description: 'Usko omaan osaamiseen ja kykyyn selviytyä haasteista.',
-      questions: [
-        'Luotan kykyyni selviytyä tavoitteeni kannalta vaativistakin haasteista.',
-        'Uskon osaamiseeni ja asiantuntemukseeni tavoitteen eteen työskentelyssä.',
-        'Koen olevani oikea ihminen toteuttamaan tämän tavoitteen.',
-        'Luotan kykyyni omaksua uutta tietoa matkan varrella.',
-        'Tiedän, että pystyn vaikuttamaan asioiden kulkuun.',
-        'En lannistu pienistä vastoinkäymisistä.',
-        'Luotan siihen, että löydän keinot tavoitteen saavuttamiseksi.'
+    de: {
+      ui: {
+        docTitle: 'Selbstcheck Umsetzungskraft · 3K',
+        docDescription: 'Tool zur Selbsteinschätzung der Umsetzungskraft',
+        eyebrow: 'Umsetzungskraft',
+        title: 'Selbstcheck: <em>Umsetzungskraft</em>',
+        intro: 'In diesem Teil betrachten wir deine Umsetzungskraft anhand von vier Kategorien: Zielmanagement, Selbstvertrauen, Arbeitsenergie und Umsetzung. Antworte ehrlich – niemand sieht deine einzelnen Antworten.',
+        resultsTitle: 'Deine Umsetzungskraft im <em>Profil</em>',
+        language: 'Sprache',
+        metaCategories: '{n} Kategorien',
+        metaQuestions: '{n} Fragen',
+        metaMinutes: '{n} Minuten',
+        start: 'Selbstcheck starten →',
+        answerAria: 'Antwort {n}',
+        scaleMin: 'Stimme überhaupt nicht zu',
+        scaleMax: 'Stimme voll und ganz zu',
+        resultsEyebrow: 'Deine Ergebnisse',
+        resultsSub: 'Jede Achse zeigt die Situation in einer Kategorie auf einer Skala von 1–7. Ein hoher Wert bedeutet, dass dieser Bereich in deinem Leben aus deiner Sicht gut aufgestellt ist.',
+        saveNote: 'Wir speichern deine Antworten nicht. Ich empfehle dir, dieses Bild auf dein eigenes Gerät herunterzuladen.',
+        download: 'Bild speichern ↓',
+        restart: 'Von vorne beginnen',
+        datasetLabel: 'Deine Antworten'
+      },
+      categories: [
+        {
+          title: 'Zielmanagement',
+          description: 'Ziele konkret machen und Fortschritte verfolgen.',
+          questions: [
+            'Ich weiß genau, was ich als Nächstes für mein Ziel tun muss.',
+            'Ich habe mein Ziel in konkrete Aufgaben aufgeteilt und in meinen Kalender eingetragen.',
+            'Ich habe eine klare Vorstellung davon, was es für den Erfolg braucht.',
+            'Ich kann meine Aufgaben nach Wichtigkeit ordnen.',
+            'Ich weiß, welche Dinge entscheidend sind, um mein Ziel zu erreichen.',
+            'Ich verfolge meine Fortschritte regelmäßig.',
+            'Das Gesamtbild meines Ziels ist mir völlig klar.'
+          ]
+        },
+        {
+          title: 'Selbstvertrauen',
+          description: 'Vertrauen in das eigene Können und in die Fähigkeit, Herausforderungen zu meistern.',
+          questions: [
+            'Ich vertraue darauf, dass ich auch anspruchsvolle Herausforderungen auf dem Weg zu meinem Ziel meistern kann.',
+            'Ich glaube an mein Können und mein Fachwissen, wenn ich an meinem Ziel arbeite.',
+            'Ich habe das Gefühl, der richtige Mensch für dieses Ziel zu sein.',
+            'Ich vertraue darauf, dass ich unterwegs neues Wissen aufnehmen kann.',
+            'Ich weiß, dass ich den Lauf der Dinge beeinflussen kann.',
+            'Ich lasse mich von kleinen Rückschlägen nicht entmutigen.',
+            'Ich vertraue darauf, dass ich Wege finde, mein Ziel zu erreichen.'
+          ]
+        },
+        {
+          title: 'Arbeitsenergie',
+          description: 'Energie und Begeisterung bei der Arbeit am Ziel.',
+          questions: [
+            'Ich bin in Bestform, wenn ich an meinem Ziel arbeite.',
+            'Mein Alltag ist voller Energie und ich habe das Gefühl, Dinge zu erledigen.',
+            'Die Arbeit an meinem Ziel weckt echte Begeisterung in mir.',
+            'Ich achte im Laufe des Tages bewusst auf mein Energielevel.',
+            'Ich mache bewusst Pausen, um wach und leistungsfähig zu bleiben.',
+            'Ich finde ein gutes Gleichgewicht zwischen der Arbeit an meinem Ziel und Erholung.',
+            'Die Menschen in meinem Umfeld ermutigen mich und geben mir Energie für mein Ziel.'
+          ]
+        },
+        {
+          title: 'Umsetzung',
+          description: 'Die Fähigkeit, begonnene Aufgaben abzuschließen.',
+          questions: [
+            'Ich erledige Dinge im vereinbarten Zeitrahmen.',
+            'Ich bringe begonnene Aufgaben sorgfältig zu Ende.',
+            'Ich kann sofort anpacken, wenn es nötig ist.',
+            'Ich kann auch dann zielgerichtet arbeiten, wenn die Motivation fehlt.',
+            'Anfangen fällt mir nicht schwer.',
+            'Ich bin stolz darauf, dass ich Dinge umsetzen kann.',
+            'Ich handle entschlossen, um mein Ziel voranzubringen.'
+          ]
+        }
       ]
     },
-    {
-      title: 'Työvire',
-      description: 'Energiataso ja innostus tavoitteen eteen työskentelyssä.',
-      questions: [
-        'Koen olevani parhaimmillani edistäessäni tavoitettani.',
-        'Arkeni on energistä ja koen saavani asioita tehdyksi.',
-        'Tavoitetyöskentely herättää minussa aitoa innostusta.',
-        'Huolehdin tietoisesti energiatasoistani päivän aikana.',
-        'Tauotan tekemistäni pitääkseni vireystilan hyvänä.',
-        'Osaan tasapainottaa tavoitteen eteen tehtävän työn ja levon oikeassa suhteessa.',
-        'Lähipiirini kannustaa minua ja saan heiltä energiaa tavoitteeni edistämiseen.'
+    en: {
+      ui: {
+        docTitle: 'Getting Things Done Assessment · 3K',
+        docDescription: 'A self-assessment tool for getting things done',
+        eyebrow: 'Getting things done',
+        title: 'Assessment: <em>Getting things done</em>',
+        intro: 'This section looks at how you get things done through four categories: goal management, self-confidence, drive and follow-through. Answer honestly – no one will see your individual answers.',
+        resultsTitle: 'Your <em>profile</em> for getting things done',
+        language: 'Language',
+        metaCategories: '{n} categories',
+        metaQuestions: '{n} questions',
+        metaMinutes: '{n} minutes',
+        start: 'Start the assessment →',
+        answerAria: 'Answer {n}',
+        scaleMin: 'Strongly disagree',
+        scaleMax: 'Strongly agree',
+        resultsEyebrow: 'Your results',
+        resultsSub: 'Each axis shows the situation in one category on a scale of 1–7. A high score means you feel this area of your life is in good shape.',
+        saveNote: 'We don\'t store your answers; I recommend downloading this image to your own device.',
+        download: 'Save image ↓',
+        restart: 'Start over',
+        datasetLabel: 'Your answers'
+      },
+      categories: [
+        {
+          title: 'Goal management',
+          description: 'Making goals concrete and tracking your progress.',
+          questions: [
+            'I know exactly what I need to do next to move towards my goal.',
+            'My goal has been turned into concrete tasks in my calendar.',
+            'I have a clear picture of what success requires.',
+            'I can prioritise my tasks.',
+            'I know which things are critical to seeing my goal through.',
+            'I track my progress regularly.',
+            'The big picture of my goal is completely clear to me.'
+          ]
+        },
+        {
+          title: 'Self-confidence',
+          description: 'Belief in your own skills and your ability to cope with challenges.',
+          questions: [
+            'I trust my ability to cope with even demanding challenges related to my goal.',
+            'I believe in my skills and expertise when I work towards my goal.',
+            'I feel I am the right person to achieve this goal.',
+            'I trust my ability to take in new information along the way.',
+            'I know I can influence how things turn out.',
+            'Small setbacks don\'t discourage me.',
+            'I trust that I will find ways to reach my goal.'
+          ]
+        },
+        {
+          title: 'Drive',
+          description: 'Your energy level and enthusiasm when working towards your goal.',
+          questions: [
+            'I feel at my best when I am making progress towards my goal.',
+            'My everyday life is full of energy and I feel I get things done.',
+            'Working towards my goal fills me with genuine enthusiasm.',
+            'I consciously look after my energy levels during the day.',
+            'I take regular breaks to stay alert.',
+            'I can find the right balance between working towards my goal and resting.',
+            'The people close to me encourage me, and they give me energy to keep working towards my goal.'
+          ]
+        },
+        {
+          title: 'Follow-through',
+          description: 'The ability to finish the tasks you start.',
+          questions: [
+            'I get things finished on the agreed schedule.',
+            'I carefully finish the tasks I start.',
+            'I am able to take action as soon as it is needed.',
+            'I can work towards my goal even when motivation is lacking.',
+            'Getting started isn\'t difficult for me.',
+            'I am proud of my ability to get things done.',
+            'I act decisively to move my goal forward.'
+          ]
+        }
       ]
     },
-    {
-      title: 'Toimeenpaneminen',
-      description: 'Kyky saattaa aloitetut tehtävät valmiiksi.',
-      questions: [
-        'Saan asiat valmiiksi sovitussa aikataulussa.',
-        'Viimeistelen aloittamani tehtävät huolellisesti loppuun.',
-        'Minulla on kykyä tarttua toimeen heti, kun se on tarpeen.',
-        'Pystyn työskentelemään tavoitteellisesti myös motivaation loistaessa poissaolollaan.',
-        'Aloittaminen ei ole minulle vaikeaa.',
-        'Olen ylpeä kyvystäni saada asioita aikaiseksi.',
-        'Toimin päättäväisesti tavoitteeni edistämiseksi.'
+    es: {
+      ui: {
+        docTitle: 'Evaluación de la capacidad de logro · 3K',
+        docDescription: 'Herramienta de autoevaluación de la capacidad de logro',
+        eyebrow: 'Capacidad de logro',
+        title: 'Evaluación: <em>Capacidad de logro</em>',
+        intro: 'En esta sección se evalúa tu capacidad de logro a través de cuatro categorías: gestión de objetivos, autoconfianza, energía en el trabajo y ejecución. Responde con sinceridad: nadie verá tus respuestas individuales.',
+        resultsTitle: 'Tu <em>perfil</em> de capacidad de logro',
+        language: 'Idioma',
+        metaCategories: '{n} categorías',
+        metaQuestions: '{n} preguntas',
+        metaMinutes: '{n} minutos',
+        start: 'Comenzar la evaluación →',
+        answerAria: 'Respuesta {n}',
+        scaleMin: 'Totalmente en desacuerdo',
+        scaleMax: 'Totalmente de acuerdo',
+        resultsEyebrow: 'Tus resultados',
+        resultsSub: 'Cada eje muestra la situación de una categoría en una escala de 1–7. Un valor alto significa que sientes que esa área de tu vida está en buen estado.',
+        saveNote: 'No guardamos tus respuestas; te recomiendo que descargues esta imagen en tu propio dispositivo.',
+        download: 'Guardar imagen ↓',
+        restart: 'Empezar de nuevo',
+        datasetLabel: 'Tus respuestas'
+      },
+      categories: [
+        {
+          title: 'Gestión de objetivos',
+          description: 'Concretar los objetivos y hacer seguimiento del avance.',
+          questions: [
+            'Sé exactamente qué tengo que hacer a continuación para avanzar hacia mi objetivo.',
+            'He convertido mi objetivo en tareas concretas dentro de mi agenda.',
+            'Tengo una idea clara de lo que se necesita para tener éxito.',
+            'Sé ordenar mis tareas por prioridad.',
+            'Sé qué cosas son imprescindibles para llevar mi objetivo hasta el final.',
+            'Hago un seguimiento regular de mi progreso.',
+            'Tengo una visión completamente clara de mi objetivo en su conjunto.'
+          ]
+        },
+        {
+          title: 'Autoconfianza',
+          description: 'Confianza en las propias habilidades y en la capacidad de afrontar los retos.',
+          questions: [
+            'Confío en mi capacidad para afrontar incluso los retos más exigentes relacionados con mi objetivo.',
+            'Creo en mis habilidades y mis conocimientos cuando trabajo por mi objetivo.',
+            'Siento que soy la persona adecuada para lograr este objetivo.',
+            'Confío en mi capacidad para aprender cosas nuevas por el camino.',
+            'Sé que puedo influir en cómo se desarrollan las cosas.',
+            'No me desanimo por pequeños contratiempos.',
+            'Confío en que encontraré la manera de alcanzar mi objetivo.'
+          ]
+        },
+        {
+          title: 'Energía en el trabajo',
+          description: 'Nivel de energía y entusiasmo al trabajar por el objetivo.',
+          questions: [
+            'Siento que doy lo mejor de mí cuando avanzo hacia mi objetivo.',
+            'Tengo energía en mi día a día y siento que consigo hacer cosas.',
+            'Trabajar por mi objetivo me despierta un entusiasmo auténtico.',
+            'Cuido conscientemente mis niveles de energía a lo largo del día.',
+            'Hago pausas en lo que estoy haciendo para mantener un buen nivel de energía.',
+            'Sé equilibrar en su justa medida el trabajo por mi objetivo y el descanso.',
+            'Las personas cercanas me animan y me dan energía para avanzar hacia mi objetivo.'
+          ]
+        },
+        {
+          title: 'Ejecución',
+          description: 'Capacidad de terminar las tareas que se han empezado.',
+          questions: [
+            'Termino las cosas en el plazo acordado.',
+            'Completo con cuidado y hasta el final las tareas que empiezo.',
+            'Soy capaz de ponerme manos a la obra en cuanto hace falta.',
+            'Puedo trabajar con la vista puesta en mi objetivo incluso cuando me falta motivación.',
+            'No me cuesta empezar.',
+            'Me enorgullece mi capacidad de sacar las cosas adelante.',
+            'Actúo con decisión para avanzar hacia mi objetivo.'
+          ]
+        }
+      ]
+    },
+    fr: {
+      ui: {
+        docTitle: 'Bilan d’efficacité personnelle · 3K',
+        docDescription: 'Outil d’auto-évaluation de l’efficacité personnelle',
+        eyebrow: 'Efficacité personnelle',
+        title: 'Bilan : <em>Efficacité personnelle</em>',
+        intro: 'Cette section fait le point sur votre efficacité personnelle à travers quatre catégories : gestion des objectifs, confiance en soi, dynamisme et mise en œuvre. Répondez honnêtement : personne ne verra vos réponses individuelles.',
+        resultsTitle: 'Votre <em>profil</em> d’efficacité personnelle',
+        language: 'Langue',
+        metaCategories: '{n} catégories',
+        metaQuestions: '{n} questions',
+        metaMinutes: '{n} minutes',
+        start: 'Commencer le bilan →',
+        answerAria: 'Réponse {n}',
+        scaleMin: 'Pas du tout d’accord',
+        scaleMax: 'Tout à fait d’accord',
+        resultsEyebrow: 'Vos résultats',
+        resultsSub: 'Chaque axe représente la situation d’une catégorie sur une échelle de 1 à 7. Une valeur élevée signifie que vous estimez que ce domaine se porte bien dans votre vie.',
+        saveNote: 'Nous n’enregistrons pas vos réponses : je vous recommande de télécharger cette image sur votre propre appareil.',
+        download: 'Enregistrer l’image ↓',
+        restart: 'Recommencer',
+        datasetLabel: 'Vos réponses'
+      },
+      categories: [
+        {
+          title: 'Gestion des objectifs',
+          description: 'Concrétiser ses objectifs et suivre ses progrès.',
+          questions: [
+            'Je sais exactement ce que je dois faire ensuite pour avancer vers mon objectif.',
+            'Mon objectif est traduit en tâches concrètes inscrites dans mon agenda.',
+            'J’ai une idée claire de ce que la réussite exige.',
+            'Je sais classer mes tâches par ordre de priorité.',
+            'Je sais quels éléments sont décisifs pour mener mon objectif à terme.',
+            'Je suis régulièrement mes progrès.',
+            'J’ai une vision d’ensemble parfaitement claire de mon objectif.'
+          ]
+        },
+        {
+          title: 'Confiance en soi',
+          description: 'Croire en ses compétences et en sa capacité à relever les défis.',
+          questions: [
+            'J’ai confiance en ma capacité à surmonter même les défis exigeants liés à mon objectif.',
+            'Je crois en mes compétences et en mon expertise pour travailler à mon objectif.',
+            'Je me sens la bonne personne pour réaliser cet objectif.',
+            'J’ai confiance en ma capacité à acquérir de nouvelles connaissances en cours de route.',
+            'Je sais que je peux influer sur le cours des choses.',
+            'Je ne me décourage pas face aux petits revers.',
+            'J’ai la certitude de trouver les moyens d’atteindre mon objectif.'
+          ]
+        },
+        {
+          title: 'Dynamisme',
+          description: 'Niveau d’énergie et enthousiasme pour avancer vers l’objectif.',
+          questions: [
+            'Je me sens au meilleur de moi-même quand je fais avancer mon objectif.',
+            'Mon quotidien est plein d’énergie et j’ai le sentiment d’accomplir des choses.',
+            'Travailler à mon objectif suscite en moi un véritable enthousiasme.',
+            'Je prends consciemment soin de mon niveau d’énergie au fil de la journée.',
+            'Je fais des pauses dans mes activités pour garder un bon niveau de vigilance.',
+            'Je sais trouver le bon équilibre entre le travail pour mon objectif et le repos.',
+            'Mon entourage m’encourage et me donne de l’énergie pour faire avancer mon objectif.'
+          ]
+        },
+        {
+          title: 'Mise en œuvre',
+          description: 'Capacité à mener à terme les tâches commencées.',
+          questions: [
+            'Je termine les choses dans les délais convenus.',
+            'Je finalise avec soin les tâches que j’ai commencées.',
+            'Je suis capable de passer à l’action dès que c’est nécessaire.',
+            'Je suis capable de travailler pour mon objectif même quand la motivation fait défaut.',
+            'Me lancer n’est pas difficile pour moi.',
+            'Je ressens de la fierté pour ma capacité à mener les choses à bien.',
+            'J’agis avec détermination pour faire avancer mon objectif.'
+          ]
+        }
+      ]
+    },
+    so: {
+      ui: {
+        docTitle: 'Qiimaynta wax-qabadka · 3K',
+        docDescription: 'Qalabka is-qiimaynta wax-qabadka',
+        eyebrow: 'Wax-qabad',
+        title: 'Qiimayn: <em>Wax-qabad</em>',
+        intro: 'Halkan waxaa lagu qiimaynayaa wax-qabadkaaga iyadoo loo marayo afar qaybood: maaraynta yoolka, kalsoonida naftaada, firfircoonida shaqada iyo fulinta. Su\'aalaha si daacad ah uga jawaab, qofna ma arki doono jawaabahaaga gaarka ah.',
+        resultsTitle: '<em>Sawirka guud</em> ee wax-qabadkaaga',
+        language: 'Luqadda',
+        metaCategories: '{n} qaybood',
+        metaQuestions: '{n} su\'aalood',
+        metaMinutes: '{n} daqiiqo',
+        start: 'Bilow qiimaynta →',
+        answerAria: 'Jawaab {n}',
+        scaleMin: 'Gabi ahaanba kuma raacsani',
+        scaleMax: 'Gabi ahaanba waan ku raacsanahay',
+        resultsEyebrow: 'Natiijadaada',
+        resultsSub: 'Dhidib kastaa wuxuu muujinayaa xaaladda hal qayb, iyadoo la adeegsanayo cabbir 1–7 ah. Qiime sare wuxuu ka dhigan yahay inaad dareemayso in qaybtani ay noloshaada ku jirto xaalad wanaagsan.',
+        saveNote: 'Jawaabahaaga ma kaydinno; waxaan kugula talinayaa inaad sawirkan ku soo dejiso qalabkaaga.',
+        download: 'Kaydi sawirka ↓',
+        restart: 'Dib u bilow',
+        datasetLabel: 'Jawaabahaaga'
+      },
+      categories: [
+        {
+          title: 'Maaraynta yoolka',
+          description: 'Yoolalka oo laga dhigo kuwo la taaban karo iyo la socoshada horumarka.',
+          questions: [
+            'Si sax ah ayaan u ogahay waxa ay tahay inaan marka xigta sameeyo si aan yoolkayga ugu dhawaado.',
+            'Yoolkayga waxaan u beddelay hawlo la taaban karo oo ku qoran jadwalkayga.',
+            'Si cad ayaan u garanayaa waxa guushu u baahan tahay.',
+            'Waan awoodaa inaan hawlahayga u kala horreysiiyo sida ay muhiimka u yihiin.',
+            'Waan ogahay waxyaabaha lagama maarmaanka u ah in yoolka la dhammaystiro.',
+            'Si joogto ah ayaan ula socdaa horumarkayga.',
+            'Sawirka guud ee yoolkaygu gabi ahaanba wuu ii cad yahay.'
+          ]
+        },
+        {
+          title: 'Kalsoonida naftaada',
+          description: 'Rumaysashada aqoontaada iyo awooddaada aad kaga gudbi karto caqabadaha.',
+          questions: [
+            'Waan ku kalsoonahay awooddayda aan kaga gudbi karo xitaa caqabadaha adag ee la xiriira yoolkayga.',
+            'Waan rumaysanahay aqoontayda iyo khibradayda marka aan u shaqaynayo yoolka.',
+            'Waxaan dareemayaa inaan ahay qofka saxda ah ee yoolkan fulin kara.',
+            'Waan ku kalsoonahay awooddayda aan wax cusub ku barto inta aan socdo.',
+            'Waan ogahay inaan saameyn ku yeelan karo sida ay arrimuhu u dhacaan.',
+            'Dib-u-dhacyada yaryar niyadda iima jebiyaan.',
+            'Waan ku kalsoonahay inaan heli doono habab aan yoolka ku gaaro.'
+          ]
+        },
+        {
+          title: 'Firfircoonida shaqada',
+          description: 'Heerka tamarta iyo xamaasadda marka aad u shaqaynayso yoolka.',
+          questions: [
+            'Waxaan dareemaa inaan ugu fiicnahay marka aan yoolkayga horumarinayo.',
+            'Nolol maalmeedkaygu waa mid tamar leh, waxaanan dareemaa inaan wax qabsado.',
+            'U shaqaynta yoolka waxay igu abuurtaa xamaasad dhab ah.',
+            'Si ula kac ah ayaan u daryeelaa heerka tamartayda inta maalintu socoto.',
+            'Waxaan qaataa nasasho si aan u ilaaliyo firfircoonidayda.',
+            'Waan awoodaa inaan si habboon isugu dheellitiro shaqada yoolka iyo nasashada.',
+            'Dadka iigu dhow way i dhiirrigeliyaan, waxaanan ka helaa tamar aan ku horumariyo yoolkayga.'
+          ]
+        },
+        {
+          title: 'Fulinta',
+          description: 'Awoodda aad ku dhammaystirto hawlaha aad bilowday.',
+          questions: [
+            'Hawlaha waxaan ku dhammeeyaa waqtiga la isku afgartay.',
+            'Hawlaha aan bilaabo si taxadar leh ayaan u dhammaystiraa.',
+            'Waxaan leeyahay awood aan isla markiiba hawl ugu dhaqaaqo marka loo baahdo.',
+            'Waan awoodaa inaan u shaqeeyo yoolkayga xitaa marka dhiirrigelintaydu yar tahay.',
+            'Wax bilaabiddu iguma adka.',
+            'Waxaan ku faanaa awooddayda aan wax ku qabsado.',
+            'Si go\'an ayaan u dhaqmaa si aan yoolkayga u horumariyo.'
+          ]
+        }
+      ]
+    },
+    sv: {
+      ui: {
+        docTitle: 'Kartläggning av handlingskraft · 3K',
+        docDescription: 'Verktyg för självskattning av handlingskraft',
+        eyebrow: 'Handlingskraft',
+        title: 'Kartläggning: <em>Handlingskraft</em>',
+        intro: 'I den här delen kartläggs din handlingskraft utifrån fyra kategorier: målhantering, självförtroende, arbetsenergi och genomförande. Svara ärligt – ingen ser dina enskilda svar.',
+        resultsTitle: 'Din <em>profil</em> för handlingskraft',
+        language: 'Språk',
+        metaCategories: '{n} kategorier',
+        metaQuestions: '{n} frågor',
+        metaMinutes: '{n} minuter',
+        start: 'Starta kartläggningen →',
+        answerAria: 'Svar {n}',
+        scaleMin: 'Instämmer inte alls',
+        scaleMax: 'Instämmer helt',
+        resultsEyebrow: 'Ditt resultat',
+        resultsSub: 'Varje axel visar läget inom en kategori på en skala 1–7. Ett högt värde betyder att du upplever att det här området fungerar bra i ditt liv.',
+        saveNote: 'Vi sparar inte dina svar, så jag rekommenderar att du laddar ner bilden till din egen enhet.',
+        download: 'Spara bild ↓',
+        restart: 'Börja om',
+        datasetLabel: 'Dina svar'
+      },
+      categories: [
+        {
+          title: 'Målhantering',
+          description: 'Att göra målen konkreta och följa upp hur det går.',
+          questions: [
+            'Jag vet exakt vad jag behöver göra härnäst för att komma närmare mitt mål.',
+            'Mitt mål är omsatt i konkreta uppgifter i min kalender.',
+            'Jag har en tydlig bild av vad som krävs för att lyckas.',
+            'Jag kan prioritera mina uppgifter efter hur viktiga de är.',
+            'Jag vet vilka saker som är avgörande för att jag ska nå ända fram med mitt mål.',
+            'Jag följer regelbundet upp mina framsteg.',
+            'Helhetsbilden av mitt mål är helt klar för mig.'
+          ]
+        },
+        {
+          title: 'Självförtroende',
+          description: 'Tro på din egen kompetens och din förmåga att klara utmaningar.',
+          questions: [
+            'Jag litar på min förmåga att klara även krävande utmaningar på vägen mot mitt mål.',
+            'Jag tror på min kompetens och mina kunskaper i arbetet mot mitt mål.',
+            'Jag känner att jag är rätt person att förverkliga det här målet.',
+            'Jag litar på min förmåga att ta till mig ny kunskap längs vägen.',
+            'Jag vet att jag kan påverka hur saker utvecklas.',
+            'Jag tappar inte modet av små motgångar.',
+            'Jag litar på att jag hittar sätt att nå mitt mål.'
+          ]
+        },
+        {
+          title: 'Arbetsenergi',
+          description: 'Energinivå och entusiasm i arbetet mot målet.',
+          questions: [
+            'Jag känner att jag är som bäst när jag arbetar mot mitt mål.',
+            'Min vardag är full av energi och jag känner att jag får saker gjorda.',
+            'Arbetet mot mitt mål väcker äkta entusiasm hos mig.',
+            'Jag tar medvetet hand om min energinivå under dagen.',
+            'Jag tar pauser i det jag gör för att hålla mig pigg och alert.',
+            'Jag kan hitta rätt balans mellan arbetet för mitt mål och vila.',
+            'Mina närstående uppmuntrar mig och jag får energi av dem att arbeta mot mitt mål.'
+          ]
+        },
+        {
+          title: 'Genomförande',
+          description: 'Förmåga att slutföra uppgifter som du har påbörjat.',
+          questions: [
+            'Jag gör klart saker inom den tid som vi har kommit överens om.',
+            'Jag gör noggrant färdigt de uppgifter som jag har påbörjat.',
+            'Jag har förmågan att ta tag i saker direkt när det behövs.',
+            'Jag kan arbeta målinriktat även när motivationen saknas.',
+            'Det är inte svårt för mig att komma igång.',
+            'Jag är stolt över min förmåga att få saker gjorda.',
+            'Jag agerar beslutsamt för att komma närmare mitt mål.'
+          ]
+        }
+      ]
+    },
+    ru: {
+      ui: {
+        docTitle: 'Оценка продуктивности · 3K',
+        docDescription: 'Инструмент самооценки продуктивности',
+        eyebrow: 'Продуктивность',
+        title: 'Оценка: <em>Продуктивность</em>',
+        intro: 'В этом разделе оценивается ваша продуктивность по четырём категориям: управление целями, уверенность в себе, рабочий настрой и реализация. Отвечайте честно: никто не увидит ваших отдельных ответов.',
+        resultsTitle: 'Ваш <em>профиль</em> продуктивности',
+        language: 'Язык',
+        metaCategories: '{n} категории',
+        metaQuestions: '{n} вопросов',
+        metaMinutes: '{n} минут',
+        start: 'Начать оценку →',
+        answerAria: 'Ответ {n}',
+        scaleMin: 'Полностью не согласен(-на)',
+        scaleMax: 'Полностью согласен(-на)',
+        resultsEyebrow: 'Ваши результаты',
+        resultsSub: 'Каждая ось показывает ситуацию в одной из категорий по шкале 1–7. Высокое значение означает, что, по вашим ощущениям, в этой сфере жизни у вас всё хорошо.',
+        saveNote: 'Мы не сохраняем ваши ответы, поэтому рекомендую скачать это изображение на своё устройство.',
+        download: 'Сохранить изображение ↓',
+        restart: 'Начать заново',
+        datasetLabel: 'Ваши ответы'
+      },
+      categories: [
+        {
+          title: 'Управление целями',
+          description: 'Конкретизация целей и отслеживание прогресса.',
+          questions: [
+            'Я точно знаю, что мне нужно сделать дальше, чтобы приблизиться к своей цели.',
+            'Моя цель разбита на конкретные задачи, которые внесены в мой календарь.',
+            'У меня есть чёткое представление о том, что нужно для успеха.',
+            'Я умею расставлять задачи по приоритету.',
+            'Я знаю, что критически важно, чтобы довести цель до конца.',
+            'Я регулярно отслеживаю свой прогресс.',
+            'Я совершенно ясно вижу общую картину своей цели.'
+          ]
+        },
+        {
+          title: 'Уверенность в себе',
+          description: 'Вера в свои знания и умения и в способность справляться с трудностями.',
+          questions: [
+            'Я верю, что справлюсь даже с серьёзными трудностями на пути к своей цели.',
+            'В работе над целью я полагаюсь на свои знания и опыт.',
+            'Я чувствую, что именно я — тот человек, который может достичь этой цели.',
+            'Я верю, что смогу осваивать новое по ходу дела.',
+            'Я знаю, что могу влиять на ход событий.',
+            'Небольшие неудачи не выбивают меня из колеи.',
+            'Я верю, что найду способы достичь своей цели.'
+          ]
+        },
+        {
+          title: 'Рабочий настрой',
+          description: 'Уровень энергии и воодушевление в работе над целью.',
+          questions: [
+            'Я чувствую себя в лучшей форме, когда продвигаюсь к своей цели.',
+            'Мои будни полны энергии, и я чувствую, что успеваю делать дела.',
+            'Работа над целью вызывает у меня искреннее воодушевление.',
+            'В течение дня я осознанно слежу за своим уровнем энергии.',
+            'Я делаю перерывы в работе, чтобы сохранять бодрость и ясность ума.',
+            'Я умею соблюдать правильный баланс между работой над целью и отдыхом.',
+            'Близкие люди поддерживают меня, и я черпаю у них энергию для движения к цели.'
+          ]
+        },
+        {
+          title: 'Реализация',
+          description: 'Умение доводить начатые задачи до конца.',
+          questions: [
+            'Я завершаю дела в оговорённые сроки.',
+            'Я тщательно довожу начатые задачи до конца.',
+            'Я умею сразу браться за дело, когда это нужно.',
+            'Я могу целенаправленно работать даже тогда, когда мотивации не хватает.',
+            'Мне нетрудно приступать к делу.',
+            'Я горжусь своим умением добиваться результатов.',
+            'Я действую решительно, чтобы продвигаться к своей цели.'
+          ]
+        }
+      ]
+    },
+    uk: {
+      ui: {
+        docTitle: 'Оцінювання результативності · 3K',
+        docDescription: 'Інструмент самооцінювання результативності',
+        eyebrow: 'Результативність',
+        title: 'Оцінювання: <em>Результативність</em>',
+        intro: 'У цьому розділі ви оціните свою результативність за чотирма категоріями: управління цілями, впевненість у собі, робочий запал і реалізація. Відповідайте чесно: ніхто не бачить ваших окремих відповідей.',
+        resultsTitle: '<em>Профіль</em> вашої результативності',
+        language: 'Мова',
+        metaCategories: '{n} категорії',
+        metaQuestions: '{n} запитань',
+        metaMinutes: '{n} хвилин',
+        start: 'Почати оцінювання →',
+        answerAria: 'Відповідь {n}',
+        scaleMin: 'Зовсім не погоджуюся',
+        scaleMax: 'Повністю погоджуюся',
+        resultsEyebrow: 'Ваші результати',
+        resultsSub: 'Кожна вісь показує стан однієї категорії за шкалою 1–7. Високе значення означає, що, на вашу думку, ця сфера вашого життя в доброму стані.',
+        saveNote: 'Ми не зберігаємо ваших відповідей, тому радимо завантажити це зображення на свій пристрій.',
+        download: 'Зберегти зображення ↓',
+        restart: 'Почати спочатку',
+        datasetLabel: 'Ваші відповіді'
+      },
+      categories: [
+        {
+          title: 'Управління цілями',
+          description: 'Конкретизація цілей і відстеження прогресу.',
+          questions: [
+            'Я точно знаю, що мені потрібно зробити далі, щоб наблизитися до своєї мети.',
+            'Моя мета розписана в календарі у вигляді конкретних завдань.',
+            'Я маю чітке уявлення про те, чого вимагає успіх.',
+            'Я вмію розставляти пріоритети у своїх завданнях.',
+            'Я знаю, що є критично важливим, щоб довести мету до кінця.',
+            'Я регулярно відстежую свій прогрес.',
+            'Загальна картина моєї мети мені цілком зрозуміла.'
+          ]
+        },
+        {
+          title: 'Впевненість у собі',
+          description: 'Віра у власні вміння та здатність долати труднощі.',
+          questions: [
+            'Я вірю, що впораюся навіть зі складними викликами на шляху до своєї мети.',
+            'Працюючи над метою, я покладаюся на свої знання та фаховість.',
+            'Я відчуваю, що саме я — та людина, яка може досягти цієї мети.',
+            'Я вірю, що зможу засвоювати нові знання в процесі.',
+            'Я знаю, що можу впливати на перебіг подій.',
+            'Дрібні невдачі мене не знеохочують.',
+            'Я вірю, що знайду способи досягти мети.'
+          ]
+        },
+        {
+          title: 'Робочий запал',
+          description: 'Рівень енергії та натхнення в роботі над метою.',
+          questions: [
+            'Я найкраще проявляю себе, коли просуваюся до своєї мети.',
+            'Мої будні наповнені енергією, і я відчуваю, що багато встигаю.',
+            'Робота над метою викликає в мені щире захоплення.',
+            'Я свідомо дбаю про свій рівень енергії протягом дня.',
+            'Я роблю перерви в роботі, щоб зберігати бадьорість.',
+            'Я вмію знаходити правильний баланс між роботою над метою та відпочинком.',
+            'Мої близькі підтримують мене, і я отримую від них енергію, щоб рухатися до мети.'
+          ]
+        },
+        {
+          title: 'Реалізація',
+          description: 'Здатність доводити розпочаті справи до кінця.',
+          questions: [
+            'Я виконую справи у визначені терміни.',
+            'Я ретельно доводжу розпочаті завдання до кінця.',
+            'Мені вистачає рішучості взятися до справи одразу, коли це потрібно.',
+            'Я можу працювати цілеспрямовано навіть тоді, коли бракує мотивації.',
+            'Мені неважко починати.',
+            'Я пишаюся тим, що вмію доводити справи до результату.',
+            'Я дію рішуче, щоб наблизитися до своєї мети.'
+          ]
+        }
+      ]
+    },
+    ar: {
+      ui: {
+        docTitle: 'تقييم الإنجاز · 3K',
+        docDescription: 'أداة التقييم الذاتي للإنجاز',
+        eyebrow: 'الإنجاز',
+        title: 'تقييم: <em>الإنجاز</em>',
+        intro: 'يقيّم هذا القسم قدرتك على الإنجاز من خلال أربع فئات: إدارة الأهداف، والثقة بالنفس، والحيوية في العمل، والتنفيذ. أجب بصدق، فلن يرى أحد إجاباتك الفردية.',
+        resultsTitle: '<em>ملف</em> إنجازك',
+        language: 'اللغة',
+        metaCategories: '{n} فئات',
+        metaQuestions: '{n} سؤالًا',
+        metaMinutes: '{n} دقائق',
+        start: 'ابدأ التقييم ←',
+        answerAria: 'الإجابة {n}',
+        scaleMin: 'لا أوافق إطلاقًا',
+        scaleMax: 'أوافق تمامًا',
+        resultsEyebrow: 'نتائجك',
+        resultsSub: 'يمثّل كل محور وضع فئة واحدة على مقياس 1–7. وتعني القيمة المرتفعة أنك ترى أن هذا الجانب من حياتك في حالة جيدة.',
+        saveNote: 'لا نحفظ إجاباتك، لذا أنصحك بتنزيل هذه الصورة على جهازك الخاص.',
+        download: 'احفظ الصورة ↓',
+        restart: 'ابدأ من جديد',
+        datasetLabel: 'إجاباتك'
+      },
+      categories: [
+        {
+          title: 'إدارة الأهداف',
+          description: 'تحويل الأهداف إلى خطوات ملموسة ومتابعة التقدّم.',
+          questions: [
+            'أعرف بالضبط ما يجب أن أفعله بعد ذلك من أجل هدفي.',
+            'حوّلتُ هدفي إلى مهام ملموسة في تقويمي.',
+            'لديّ تصوّر واضح لما يتطلّبه النجاح.',
+            'أستطيع ترتيب مهامي حسب الأولوية.',
+            'أعرف ما الأمور الحاسمة لتحقيق هدفي حتى النهاية.',
+            'أتابع تقدّمي بانتظام.',
+            'الصورة الكاملة لهدفي واضحة تمامًا بالنسبة لي.'
+          ]
+        },
+        {
+          title: 'الثقة بالنفس',
+          description: 'الإيمان بمهاراتك وبقدرتك على التغلّب على التحديات.',
+          questions: [
+            'أثق بقدرتي على التغلّب حتى على التحديات الصعبة المرتبطة بهدفي.',
+            'أؤمن بمهاراتي وخبرتي في العمل من أجل هدفي.',
+            'أشعر أنني الشخص المناسب لتحقيق هذا الهدف.',
+            'أثق بقدرتي على تعلّم معارف جديدة على طول الطريق.',
+            'أعلم أنني أستطيع التأثير في مجرى الأمور.',
+            'لا تُحبطني العقبات الصغيرة.',
+            'أثق بأنني سأجد الوسائل لتحقيق هدفي.'
+          ]
+        },
+        {
+          title: 'الحيوية في العمل',
+          description: 'مستوى الطاقة والحماس أثناء العمل من أجل الهدف.',
+          questions: [
+            'أشعر أنني في أفضل حالاتي عندما أتقدّم نحو هدفي.',
+            'حياتي اليومية مليئة بالطاقة، وأشعر أنني أُنجز الأمور.',
+            'العمل على هدفي يثير فيّ حماسًا حقيقيًا.',
+            'أعتني بوعي بمستوى طاقتي على مدار اليوم.',
+            'آخذ فترات راحة أثناء عملي لأحافظ على نشاطي ويقظتي.',
+            'أستطيع تحقيق التوازن الصحيح بين العمل من أجل هدفي والراحة.',
+            'يشجّعني المقرّبون مني، وأستمدّ منهم الطاقة للتقدّم نحو هدفي.'
+          ]
+        },
+        {
+          title: 'التنفيذ',
+          description: 'القدرة على إتمام المهام التي بدأتها.',
+          questions: [
+            'أُنجز الأمور في الموعد المتفق عليه.',
+            'أُكمل المهام التي أبدؤها بعناية حتى النهاية.',
+            'لديّ القدرة على البدء في العمل فورًا عندما يلزم ذلك.',
+            'أستطيع العمل بتركيز على هدفي حتى عندما يغيب الحافز.',
+            'البدء في الأمور ليس صعبًا عليّ.',
+            'أنا فخور بقدرتي على إنجاز الأمور.',
+            'أتصرّف بحزم لدفع هدفي إلى الأمام.'
+          ]
+        }
       ]
     }
+  };
+
+  // ============ Language ============
+  // Kielet aakkosjärjestyksessä omalla nimellään (latinalaiset, kyrilliset, arabia).
+  const LANGS = [
+    { code: 'de', name: 'Deutsch' },
+    { code: 'en', name: 'English' },
+    { code: 'es', name: 'Español' },
+    { code: 'fr', name: 'Français' },
+    { code: 'so', name: 'Soomaali' },
+    { code: 'fi', name: 'Suomi' },
+    { code: 'sv', name: 'Svenska' },
+    { code: 'ru', name: 'Русский' },
+    { code: 'uk', name: 'Українська' },
+    { code: 'ar', name: 'العربية', rtl: true }
   ];
+  const DEFAULT_LANG = 'fi';
+  const LANG_STORAGE_KEY = '3k-kieli';
+
+  // Liput SVG-muodossa, koska emoji-liput eivät näy Windowsissa. {id} korvataan uniikilla tunnisteella.
+  const FLAGS = {
+    ar: '<rect width="30" height="20" fill="#006c35"/><path d="M7.5 9.4c.8-1.7 1.6.9 2.4-.5.6-1.1 1.2.2 1.8-.6M12.7 7.3v2.3M14.1 8.8c.7-1.3 1.5.9 2.3-.3.7-1 1.4.6 2.1-.4M19.7 7.1v2.5M21.1 9.2c.6-1.3 1.2.4 1.7-.6" fill="none" stroke="#fff" stroke-width=".8" stroke-linecap="round"/><path d="M8 13.6h12.4M20.4 12.5v2.2M20.4 13.6h1.8" fill="none" stroke="#fff" stroke-width=".9" stroke-linecap="round"/>',
+    de: '<rect width="30" height="20" fill="#ffce00"/><rect width="30" height="13.34" fill="#dd0000"/><rect width="30" height="6.67" fill="#000"/>',
+    en: '<clipPath id="{id}"><path d="M15,10h15v10zv10h-15zh-15v-10zv-10h15z"/></clipPath><rect width="30" height="20" fill="#012169"/><path d="M0,0L30,20M30,0L0,20" stroke="#fff" stroke-width="4"/><path d="M0,0L30,20M30,0L0,20" stroke="#c8102e" stroke-width="2.6" clip-path="url(#{id})"/><path d="M15,0v20M0,10h30" stroke="#fff" stroke-width="6.6"/><path d="M15,0v20M0,10h30" stroke="#c8102e" stroke-width="4"/>',
+    es: '<rect width="30" height="20" fill="#aa151b"/><rect y="5" width="30" height="10" fill="#f1bf00"/>',
+    fi: '<rect width="30" height="20" fill="#fff"/><rect x="8.2" width="5.4" height="20" fill="#002f6c"/><rect y="7.3" width="30" height="5.4" fill="#002f6c"/>',
+    fr: '<rect width="30" height="20" fill="#ef4135"/><rect width="20" height="20" fill="#fff"/><rect width="10" height="20" fill="#0055a4"/>',
+    ru: '<rect width="30" height="20" fill="#d52b1e"/><rect width="30" height="13.34" fill="#0039a6"/><rect width="30" height="6.67" fill="#fff"/>',
+    so: '<rect width="30" height="20" fill="#4189dd"/><polygon points="15.00,4.80 16.29,8.62 20.33,8.67 17.09,11.08 18.29,14.93 15.00,12.60 11.71,14.93 12.91,11.08 9.67,8.67 13.71,8.62" fill="#fff"/>',
+    sv: '<rect width="30" height="20" fill="#006aa7"/><rect x="9.4" width="3.8" height="20" fill="#fecc00"/><rect y="8.1" width="30" height="3.8" fill="#fecc00"/>',
+    uk: '<rect width="30" height="20" fill="#ffd700"/><rect width="30" height="10" fill="#0057b7"/>'
+  };
+
+  // Kieli valitaan: ?lang=xx osoitteessa, sitten aiempi valinta, muuten suomi.
+  function initialLang() {
+    try {
+      const fromUrl = new URLSearchParams(window.location.search).get('lang');
+      if (fromUrl && I18N[fromUrl]) return fromUrl;
+    } catch (e) {
+      // Upotuksessa osoitetta ei välttämättä voi lukea
+    }
+    try {
+      const saved = window.localStorage.getItem(LANG_STORAGE_KEY);
+      if (saved && I18N[saved]) return saved;
+    } catch (e) {
+      // localStorage voi olla estetty upotuksessa
+    }
+    return DEFAULT_LANG;
+  }
+
+  function langInfo(code) {
+    return LANGS.find(l => l.code === code);
+  }
+
+  function langDir() {
+    return langInfo(state.lang).rtl ? 'rtl' : 'ltr';
+  }
+
+  function ui() {
+    return I18N[state.lang].ui;
+  }
+
+  // Korvaa {avain}-paikkamerkit annetuilla arvoilla
+  function fmt(text, vars) {
+    return text.replace(/\{(\w+)\}/g, (m, key) => (key in vars ? vars[key] : m));
+  }
+
+  function applyLang() {
+    document.documentElement.lang = state.lang;
+    document.documentElement.dir = langDir();
+    document.title = ui().docTitle;
+    const desc = document.querySelector('meta[name="description"]');
+    if (desc) desc.setAttribute('content', ui().docDescription);
+  }
+
+  let flagSeq = 0;
+  function flagSvg(code) {
+    const id = 'flag-clip-' + (++flagSeq);
+    return `<span class="lang-flag"><svg viewBox="0 0 30 20" preserveAspectRatio="none" aria-hidden="true" focusable="false">${FLAGS[code].replace(/\{id\}/g, id)}</svg></span>`;
+  }
+
+  function renderLangSelector() {
+    const current = langInfo(state.lang);
+    const options = LANGS.map(l => `
+          <li>
+            <button type="button" class="lang-option" lang="${l.code}"${l.code === state.lang ? ' aria-current="true"' : ''} onclick="setLang('${l.code}')">
+              ${flagSvg(l.code)}<span>${l.name}</span>
+            </button>
+          </li>`).join('');
+    return `
+        <div class="lang" id="lang">
+          <button type="button" class="lang-toggle" id="lang-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="lang-menu" aria-label="${ui().language}: ${current.name}" onclick="toggleLangMenu()">
+            ${flagSvg(current.code)}
+            <span lang="${current.code}">${current.name}</span>
+            <svg class="lang-caret" viewBox="0 0 10 10" aria-hidden="true" focusable="false"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <ul class="lang-menu" id="lang-menu" aria-label="${ui().language}" hidden>${options}
+          </ul>
+        </div>
+    `;
+  }
+
+  function toggleLangMenu() {
+    const menu = $('lang-menu');
+    if (!menu) return;
+    if (menu.hidden) openLangMenu();
+    else closeLangMenu(false);
+  }
+
+  function openLangMenu() {
+    const menu = $('lang-menu');
+    const toggle = $('lang-toggle');
+    menu.hidden = false;
+    menu.style.maxHeight = '';
+    $('lang').classList.add('open');
+    toggle.setAttribute('aria-expanded', 'true');
+
+    // Avaa lista sinne, missä on enemmän tilaa (upotuksen korkeus voi olla rajattu)
+    const rect = toggle.getBoundingClientRect();
+    const spaceAbove = rect.top - 12;
+    const spaceBelow = window.innerHeight - rect.bottom - 12;
+    const openDown = spaceBelow >= menu.scrollHeight || spaceBelow > spaceAbove;
+    menu.classList.toggle('down', openDown);
+    menu.style.maxHeight = Math.max(160, openDown ? spaceBelow : spaceAbove) + 'px';
+
+    const selected = menu.querySelector('[aria-current="true"]') || menu.querySelector('.lang-option');
+    selected.focus({ preventScroll: true });
+  }
+
+  function closeLangMenu(returnFocus) {
+    const menu = $('lang-menu');
+    if (!menu || menu.hidden) return;
+    menu.hidden = true;
+    $('lang').classList.remove('open');
+    const toggle = $('lang-toggle');
+    toggle.setAttribute('aria-expanded', 'false');
+    if (returnFocus) toggle.focus();
+  }
+
+  function setLang(code) {
+    if (!I18N[code]) return;
+    state.lang = code;
+    try {
+      window.localStorage.setItem(LANG_STORAGE_KEY, code);
+    } catch (e) {
+      // Valinta toimii silti tämän sivun ajan
+    }
+    applyLang();
+    render();
+    const toggle = $('lang-toggle');
+    if (toggle) toggle.focus({ preventScroll: true });
+  }
+
+  // Sulje lista, kun klikataan tai siirrytään sen ulkopuolelle
+  document.addEventListener('click', (e) => {
+    const wrap = $('lang');
+    if (wrap && !wrap.contains(e.target)) closeLangMenu(false);
+  });
+  document.addEventListener('focusin', (e) => {
+    const wrap = $('lang');
+    if (wrap && !wrap.contains(e.target)) closeLangMenu(false);
+  });
+
+  // Näppäimistö: Esc sulkee, nuolet liikkuvat listassa
+  document.addEventListener('keydown', (e) => {
+    const menu = $('lang-menu');
+    if (!menu || menu.hidden) return;
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeLangMenu(true);
+      return;
+    }
+    const keys = ['ArrowDown', 'ArrowUp', 'Home', 'End'];
+    if (!keys.includes(e.key)) return;
+    e.preventDefault();
+    const items = Array.from(menu.querySelectorAll('.lang-option'));
+    const i = items.indexOf(document.activeElement);
+    let next = 0;
+    if (e.key === 'End') next = items.length - 1;
+    else if (e.key === 'ArrowDown') next = (i + 1) % items.length;
+    else if (e.key === 'ArrowUp') next = i <= 0 ? items.length - 1 : i - 1;
+    items[next].focus();
+  });
 
   // ============ State ============
   const state = {
     screen: 'welcome',
+    lang: initialLang(),
     currentCategory: 0,
     answers: {},
     chartInstance: null
@@ -517,8 +1543,12 @@
   const $ = (id) => document.getElementById(id);
   const answerKey = (c, q) => `${c}-${q}`;
 
+  function categories() {
+    return I18N[state.lang].categories;
+  }
+
   function isCategoryComplete(catIdx) {
-    const qLen = CATEGORIES[catIdx].questions.length;
+    const qLen = categories()[catIdx].questions.length;
     for (let q = 0; q < qLen; q++) {
       if (state.answers[answerKey(catIdx, q)] === undefined) return false;
     }
@@ -526,7 +1556,7 @@
   }
 
   function categoryAverage(catIdx) {
-    const qLen = CATEGORIES[catIdx].questions.length;
+    const qLen = categories()[catIdx].questions.length;
     let sum = 0;
     for (let q = 0; q < qLen; q++) sum += state.answers[answerKey(catIdx, q)] ?? 0;
     return sum / qLen;
@@ -538,7 +1568,8 @@
 
   // ============ Welcome ============
   function renderWelcome() {
-    const totalQuestions = CATEGORIES.reduce((acc, c) => acc + c.questions.length, 0);
+    const t = ui();
+    const totalQuestions = categories().reduce((acc, c) => acc + c.questions.length, 0);
     $('app').innerHTML = `
       <div class="welcome">
         <svg class="welcome-bg" viewBox="0 0 200 200" aria-hidden="true">
@@ -551,17 +1582,20 @@
             <line x1="31" y1="140" x2="169" y2="60" />
           </g>
         </svg>
-        <div class="welcome-eyebrow">Aikaansaaminen</div>
-        <h1>Kartoitus: <em>Aikaansaaminen</em></h1>
-        <p>Tässä osiossa kartoitetaan aikaansaamistasi neljän kategorian kautta: tavoitteenhallinta, itseluottamus, työvire ja toimeenpaneminen. Vastaa rehellisesti, kukaan ei näe yksittäisiä vastauksiasi.</p>
+        <div class="welcome-eyebrow">${t.eyebrow}</div>
+        <h1>${t.title}</h1>
+        <p>${t.intro}</p>
         <div class="welcome-meta">
-          <span><strong>${CATEGORIES.length}</strong> kategoriaa</span>
+          <span>${fmt(t.metaCategories, { n: `<strong>${categories().length}</strong>` })}</span>
           <span class="welcome-meta-sep">·</span>
-          <span><strong>${totalQuestions}</strong> kysymystä</span>
+          <span>${fmt(t.metaQuestions, { n: `<strong>${totalQuestions}</strong>` })}</span>
           <span class="welcome-meta-sep">·</span>
-          <span><strong>6</strong> minuuttia</span>
+          <span>${fmt(t.metaMinutes, { n: '<strong>6</strong>' })}</span>
         </div>
-        <button class="btn-primary" onclick="startQuestionnaire()">Aloita kartoitus →</button>
+        <div class="welcome-actions" dir="ltr">
+          ${renderLangSelector()}
+          <button class="btn-primary" dir="${langDir()}" onclick="startQuestionnaire()">${t.start}</button>
+        </div>
       </div>
     `;
   }
@@ -576,8 +1610,8 @@
 
   // ============ Questionnaire ============
   function renderQuestionnaire() {
-    const cat = CATEGORIES[state.currentCategory];
-    const dots = CATEGORIES.map((_, i) => {
+    const cat = categories()[state.currentCategory];
+    const dots = categories().map((_, i) => {
       let cls = 'q-progress-dot';
       if (i < state.currentCategory) cls += ' done';
       else if (i === state.currentCategory) cls += ' current';
@@ -588,7 +1622,7 @@
       <div class="q-header">
         <div class="q-counter">
           ${String(state.currentCategory + 1).padStart(2, '0')}
-          <span>/ ${String(CATEGORIES.length).padStart(2, '0')}</span>
+          <span>/ ${String(categories().length).padStart(2, '0')}</span>
         </div>
         <div class="q-progress">${dots}</div>
       </div>
@@ -608,15 +1642,15 @@
     let buttons = '';
     for (let v = 1; v <= 7; v++) {
       const sel = v === selected ? 'selected' : '';
-      buttons += `<button class="q-button ${sel}" onclick="setAnswer(${catIdx}, ${qIdx}, ${v})" aria-label="Vastaus ${v}">${v}</button>`;
+      buttons += `<button class="q-button ${sel}" onclick="setAnswer(${catIdx}, ${qIdx}, ${v})" aria-label="${fmt(ui().answerAria, { n: v })}">${v}</button>`;
     }
     return `
       <div class="q-item ${answered ? 'answered' : ''}" id="q-${catIdx}-${qIdx}">
         <div class="q-text">${text}</div>
         <div class="q-scale">${buttons}</div>
         <div class="q-scale-labels">
-          <span>Täysin eri mieltä</span>
-          <span>Täysin samaa mieltä</span>
+          <span>${ui().scaleMin}</span>
+          <span>${ui().scaleMax}</span>
         </div>
       </div>
     `;
@@ -628,7 +1662,7 @@
     const qEl = $(`q-${catIdx}-${qIdx}`);
     if (qEl) {
       const wrapper = document.createElement('div');
-      wrapper.innerHTML = renderQuestion(catIdx, qIdx, CATEGORIES[catIdx].questions[qIdx]);
+      wrapper.innerHTML = renderQuestion(catIdx, qIdx, categories()[catIdx].questions[qIdx]);
       qEl.replaceWith(wrapper.firstElementChild);
     }
 
@@ -636,7 +1670,7 @@
     if (isCategoryComplete(catIdx)) {
       advanceTimeout = setTimeout(() => {
         advanceTimeout = null;
-        if (catIdx + 1 < CATEGORIES.length) {
+        if (catIdx + 1 < categories().length) {
           state.currentCategory = catIdx + 1;
           render();
           scrollToTop();
@@ -651,7 +1685,7 @@
 
   // ============ Results ============
   function renderResults() {
-    const cats = CATEGORIES.map((c, i) => ({
+    const cats = categories().map((c, i) => ({
       title: c.title,
       avg: categoryAverage(i)
     }));
@@ -664,19 +1698,19 @@
 
     $('app').innerHTML = `
       <div class="results">
-        <div class="results-eyebrow">Tuloksesi</div>
-        <h2>Aikaansaamisesi <em>profiili</em></h2>
-        <p class="results-sub">Jokainen akseli kuvaa yhden kategorian tilannetta asteikolla 1–7. Korkea arvo tarkoittaa, että koet osa-alueen olevan elämässäsi hyvässä tilassa.</p>
+        <div class="results-eyebrow">${ui().resultsEyebrow}</div>
+        <h2>${ui().resultsTitle}</h2>
+        <p class="results-sub">${ui().resultsSub}</p>
         <div class="chart-container">
           <div class="chart-wrap">
             <canvas id="radarChart"></canvas>
           </div>
         </div>
         <div class="scores">${scoreCards}</div>
-        <p class="save-note">Emme tallenna vastauksiasi, suosittelen että lataat tästä kuvan omalle laitteellesi.</p>
+        <p class="save-note">${ui().saveNote}</p>
         <div class="actions">
-          <button class="btn-primary" onclick="downloadChart()">Tallenna kuva ↓</button>
-          <button class="btn-secondary" onclick="restart()">Aloita alusta</button>
+          <button class="btn-primary" onclick="downloadChart()">${ui().download}</button>
+          <button class="btn-secondary" onclick="restart()">${ui().restart}</button>
         </div>
       </div>
     `;
@@ -688,15 +1722,15 @@
     const canvas = $('radarChart');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    const labels = CATEGORIES.map(c => c.title);
-    const data = CATEGORIES.map((_, i) => categoryAverage(i));
+    const labels = categories().map(c => c.title);
+    const data = categories().map((_, i) => categoryAverage(i));
 
     state.chartInstance = new Chart(ctx, {
       type: 'radar',
       data: {
         labels,
         datasets: [{
-          label: 'Vastauksesi',
+          label: ui().datasetLabel,
           data,
           backgroundColor: 'rgba(163, 217, 197, 0.42)',
           borderColor: '#0c2543',
@@ -791,7 +1825,10 @@
   window.setAnswer = setAnswer;
   window.downloadChart = downloadChart;
   window.restart = restart;
+  window.toggleLangMenu = toggleLangMenu;
+  window.setLang = setLang;
 
+  applyLang();
   render();
 </script>
 </body>

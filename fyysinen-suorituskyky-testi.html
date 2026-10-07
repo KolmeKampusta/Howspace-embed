@@ -196,7 +196,7 @@
     border-radius: var(--radius);
     padding: 16px 18px;
     margin-bottom: 12px;
-    text-align: left;
+    text-align: start;
   }
   .info-card.safety {
     background: var(--blue-soft);
@@ -218,7 +218,7 @@
   .info-list li {
     font-size: 14px;
     color: var(--navy);
-    padding-left: 18px;
+    padding-inline-start: 18px;
     position: relative;
     margin-bottom: 7px;
     line-height: 1.45;
@@ -227,7 +227,7 @@
   .info-list li::before {
     content: '';
     position: absolute;
-    left: 3px;
+    inset-inline-start: 3px;
     top: 8px;
     width: 5px;
     height: 5px;
@@ -235,11 +235,11 @@
     background: var(--navy);
   }
   .info-list.numbered { counter-reset: infonum; }
-  .info-list.numbered li { padding-left: 26px; }
+  .info-list.numbered li { padding-inline-start: 26px; }
   .info-list.numbered li::before {
     counter-increment: infonum;
     content: counter(infonum);
-    left: 0;
+    inset-inline-start: 0;
     top: 0;
     width: 19px;
     height: 19px;
@@ -348,7 +348,7 @@
     font-family: 'Geist', sans-serif;
     font-size: 14px;
     color: var(--navy);
-    text-align: left;
+    text-align: start;
     cursor: pointer;
     transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
     width: 100%;
@@ -516,16 +516,18 @@
     color: var(--navy);
   }
   .ref-table th {
-    text-align: left;
+    text-align: start;
     font-weight: 600;
     font-size: 11.5px;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    padding: 0 8px 7px 0;
+    padding-block: 0 7px;
+    padding-inline: 0 8px;
     border-bottom: 1px solid var(--border-strong);
   }
   .ref-table td {
-    padding: 7px 8px 7px 0;
+    padding-block: 7px;
+    padding-inline: 0 8px;
     border-bottom: 1px solid var(--border);
     vertical-align: top;
   }
@@ -615,7 +617,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     padding: 10px 14px;
-    text-align: left;
+    text-align: start;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -652,7 +654,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 14px 18px;
-    text-align: left;
+    text-align: start;
     font-size: 13.5px;
     line-height: 1.5;
     color: var(--navy);
@@ -676,6 +678,120 @@
     flex-wrap: wrap;
     opacity: 0;
     animation: fadeIn 420ms 440ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* ============ Language selector ============ */
+  .welcome-actions {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+  .lang {
+    position: relative;
+    justify-self: start;
+    text-align: left;
+  }
+  .lang-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: var(--navy);
+    border: 1px solid var(--border);
+    padding: 9px 12px 9px 10px;
+    font-family: 'Geist', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+  .lang-toggle:hover,
+  .lang.open .lang-toggle {
+    border-color: var(--navy);
+    background: var(--card-bg);
+  }
+  .lang-flag {
+    flex: 0 0 auto;
+    display: inline-block;
+    width: 21px;
+    height: 14px;
+    border-radius: 3px;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(12, 37, 67, 0.14);
+  }
+  .lang-flag svg { display: block; width: 100%; height: 100%; }
+  .lang-caret {
+    width: 10px;
+    height: 10px;
+    transition: transform var(--transition);
+  }
+  .lang.open .lang-caret { transform: rotate(180deg); }
+  .lang-menu {
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 8px);
+    z-index: 20;
+    min-width: 190px;
+    overflow-y: auto;
+    list-style: none;
+    background: var(--container-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 12px 32px rgba(12, 37, 67, 0.18);
+    padding: 6px;
+    animation: fadeIn 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .lang-menu.down {
+    top: calc(100% + 8px);
+    bottom: auto;
+  }
+  .lang-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 7px 10px;
+    font-family: 'Geist', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.3;
+    color: var(--navy);
+    text-align: left;
+    cursor: pointer;
+    transition: background 160ms ease;
+  }
+  .lang-option:hover,
+  .lang-option:focus-visible {
+    background: var(--blue-soft);
+    outline: none;
+  }
+  .lang-option[aria-current="true"] {
+    background: #e0eff9;
+    font-weight: 500;
+  }
+  .lang-option[aria-current="true"]::after {
+    content: '';
+    width: 5px;
+    height: 9px;
+    margin: -3px 4px 0 auto;
+    border: solid var(--navy);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  @media (max-width: 540px) {
+    /* Kapealla näytöllä nappi siirtyy tarvittaessa valitsimen yläpuolelle */
+    .welcome-actions {
+      display: flex;
+      flex-wrap: wrap-reverse;
+      gap: 10px;
+    }
+    .welcome-actions .btn-primary { flex: 1 1 auto; }
   }
 
   @keyframes fadeIn {
@@ -709,29 +825,11 @@
 <script>
   // ============ Data ============
   // Jokainen testi on oma sivunsa. levelFn laskee itsearviointitason 1-5.
+  // Testien tekstit ovat kielittäin I18N-objektissa (tests).
   const TESTS = [
     {
       id: 'kestavyys',
-      title: 'Kestävyyskunto',
-      sub: 'Paikallaanmarssi 2 minuuttia',
       duration: 120,
-      steps: [
-        'Seiso ryhdikkäästi, jalat lantion leveydellä.',
-        'Marssi paikallaan niin reippaasti kuin jaksat kahden minuutin ajan. Nosta polvi suunnilleen lantion korkeudelle.',
-        'Voit heilauttaa käsiä mukana tai pitää tukea seinästä tai tuolinselästä.',
-        'Laske vain oikean polven nostot.'
-      ],
-      tip: '',
-      inputLabel: 'Oikean polven nostot',
-      easing: 'Tein marssin istuen tai matalalla polvennostolla',
-      easingNote: 'Kevennetyllä suorituksella taso on enintään 3.',
-      table: [
-        ['1', 'alle 50', 'Hengästyn arjen rasituksessa nopeasti'],
-        ['2', '50–69', 'Portaat ja reipas kävely tuntuvat'],
-        ['3', '70–89', 'Selviydyn arjesta hyvin'],
-        ['4', '90–109', 'Jaksan pidempiäkin rasituksia'],
-        ['5', '110 tai yli', 'Hyvä kestävyyskunto']
-      ],
       levelFn: function (raw, opt) {
         let lvl = 5;
         if (raw < 50) lvl = 1;
@@ -744,24 +842,7 @@
     },
     {
       id: 'vatsa',
-      title: 'Vatsalihakset',
-      sub: 'Osittainen rutistus 30 sekuntia',
       duration: 30,
-      steps: [
-        'Asetu selinmakuulle, polvet koukussa ja jalkapohjat lattiassa. Älä tue jalkoja mihinkään.',
-        'Kädet ovat suorina lattialla reisiä pitkin, sormet kohti kantapäitä.',
-        'Nosta hartiat irti lattiasta niin, että sormesi liukuvat noin 8 senttimetriä eteenpäin.',
-        'Laske hartiat takaisin alas. Pidä leuka irti rinnasta koko liikkeen ajan.'
-      ],
-      tip: 'Tee 30 sekunnissa niin monta puhdasta suoritusta kuin kykenet.',
-      inputLabel: 'Puhtaat toistot',
-      table: [
-        ['1', 'alle 8', 'Keskivartalo väsyy heti'],
-        ['2', '8–13', 'Perusvoima on olemassa'],
-        ['3', '14–19', 'Riittää arjen tarpeisiin'],
-        ['4', '20–25', 'Hyvä keskivartalon kestävyys'],
-        ['5', '26 tai yli', 'Vahva keskivartalo']
-      ],
       levelFn: function (raw) {
         if (raw < 8) return 1;
         if (raw < 14) return 2;
@@ -772,33 +853,8 @@
     },
     {
       id: 'ylavartalo',
-      title: 'Ylävartalo',
-      sub: 'Punnerrus 30 sekuntia',
       duration: 30,
-      levels: [
-        'Kädet seinää vasten',
-        'Kädet keittiön työtasolla',
-        'Kädet tuolin tai sohvan reunalla',
-        'Polvet lattiassa',
-        'Varpaat lattiassa'
-      ],
-      levelPrompt: 'Valitse taso, jolla saat tehtyä vähintään 5 mutta korkeintaan 20 puhdasta toistoa.',
-      steps: [
-        'Aseta kädet hieman hartioita leveämmälle, sormet osoittavat eteenpäin.',
-        'Pidä keskivartalo suorana ja vakaana koko liikkeen ajan.',
-        'Ala-asennossa rintakehä lähestyy alustaa, yläasennossa kyynärpäät ojentuvat suoriksi.'
-      ],
-      tip: 'Kun toistot alkavat sujua helposti, siirry seuraavalle tasolle. Silloinkin kun toistomäärä putoaa, kuntosi on parantunut.',
-      inputLabel: 'Puhtaat toistot',
-      table: [
-        ['Taso 1–2 (seinä tai työtaso)', '1', '2'],
-        ['Taso 3 (tuoli tai sohva)', '2', '3'],
-        ['Taso 4 (polvet lattiassa)', '3', '4'],
-        ['Taso 5 (varpaat lattiassa)', '4', '5']
-      ],
-      tableHead: ['Punnerrustaso', 'Alle 15 toistoa', '15 toistoa tai yli'],
       tableMatrix: true,
-      tableNote: 'Taulukon luvut ovat kuntotestin tasoja asteikolla 1–5.',
       levelFn: function (raw, opt) {
         const t = opt.level;
         const high = raw >= 15;
@@ -810,25 +866,7 @@
     },
     {
       id: 'alavartalo',
-      title: 'Alavartalo',
-      sub: 'Tuolilta ylösnousu 30 sekuntia',
       duration: 30,
-      steps: [
-        'Istu tuolin etureunalla, jalkapohjat tukevasti lattiassa.',
-        'Kädet ovat ristissä rinnan päällä.',
-        'Nouse seisomaan täysin suoraksi ja istu hallitusti takaisin.'
-      ],
-      tip: 'Tee 30 sekunnissa niin monta suoritusta kuin kykenet.',
-      inputLabel: 'Ylösnousut',
-      easing: 'Käytin käsiä apuna (työnsin reisistä tai käsinojista)',
-      easingNote: 'Jos käytit käsiä apuna, taso on 1 riippumatta toistomäärästä. Merkitse tämä muistiin, jotta seuraava kerta on vertailukelpoinen.',
-      table: [
-        ['1', 'alle 10', 'Ylösnousu vaatii ponnistelua'],
-        ['2', '10–13', 'Onnistuu, mutta reisissä tuntuu'],
-        ['3', '14–17', 'Riittävä alavartalon voima'],
-        ['4', '18–21', 'Hyvä alavartalon kestävyys'],
-        ['5', '22 tai yli', 'Vahva alavartalo']
-      ],
       levelFn: function (raw, opt) {
         if (opt.easing === true) return 1;
         if (raw < 10) return 1;
@@ -840,9 +878,1891 @@
     }
   ];
 
+  // ============ Translations ============
+  // Jokaisella kielellä: ui = käyttöliittymän tekstit, tests = testikohtaiset tekstit.
+  const I18N = {
+    fi: {
+      ui: {
+        docTitle: 'Fyysisen suorituskyvyn kartoitus · 3K',
+        docDescription: 'Fyysisen suorituskyvyn itsearviointityökalu',
+        language: 'Kieli',
+        eyebrow: 'Fyysinen suorituskyky',
+        title: 'Kartoitus: <em>Kuntotesti</em>',
+        intro: 'Voit halutessasi tehdä itsellesi kuntokartoituksen. Testi on suunniteltu tehtäväksi kotona ilman erillisiä välineitä ja sopii kaikille kuntotasoille.',
+        meta: [
+          '<strong>4</strong> testiä',
+          '<strong>15</strong> minuuttia',
+          '<strong>0</strong> välineitä'
+        ],
+        contentsTitle: 'Testin sisältö',
+        contents: [
+          '<b>Kestävyyskunto.</b> Paikallaanmarssi 2 minuuttia.',
+          '<b>Vatsalihakset.</b> Osittainen rutistus 30 sekuntia.',
+          '<b>Ylävartalo.</b> Punnerrus 30 sekuntia omalla tasollasi.',
+          '<b>Alavartalo.</b> Tuolilta ylösnousu 30 sekuntia.'
+        ],
+        contentsNote: 'Jokaisesta testistä kirjataan toistomäärä, ja sovellus laskee siitä tasosi asteikolla 1–5. Lopuksi näet tuloksesi kaaviona.',
+        needsTitle: 'Mitä tarvitset',
+        needs: [
+          'Tukevan tuolin',
+          'Noin kahden neliömetrin vapaan tilan',
+          'Seinän tai keittiön työtason punnerrusta varten',
+          'Ajastin löytyy tästä sovelluksesta, erillistä kelloa ei tarvita'
+        ],
+        needsNote: 'Sykemittaria tai muita laitteita ei tarvita.',
+        safetyTitle: 'Turvallisuus',
+        safety: [
+          'Keskeytä testi heti, jos tunnet rintakipua, huimausta tai voimakasta pahoinvointia.',
+          'Älä tee testiä kuumeisena tai akuutin vamman kanssa.',
+          'Jos sinulla on tiedossa oleva sydänsairaus, keskustele ensin hoitavan tahon kanssa.',
+          'Lämmittele muutama minuutti ennen aloitusta, esimerkiksi kävelemällä paikallaan ja pyörittelemällä olkapäitä.',
+          'Pidä testien välissä tauko, kunnes hengitys tasaantuu.'
+        ],
+        start: 'Aloita kartoitus →',
+        chooseLevel: 'Valitse oma tasosi',
+        instructions: 'Suoritusohje',
+        recordResult: 'Kirjaa tuloksesi',
+        referenceValues: 'Viitearvot',
+        tableHead: [
+          'Taso',
+          'Toistot',
+          'Kuvaus'
+        ],
+        timer: 'Ajastin',
+        timerGetReady: 'Valmistaudu',
+        timerGo: 'Suorita nyt',
+        timerDone: 'Valmis',
+        timerTimeUp: 'Aika!',
+        timerStart: 'Käynnistä ajastin',
+        timerCancel: 'Peruuta',
+        timerStop: 'Pysäytä',
+        timerReset: 'Nollaa ajastin',
+        prev: '← Edellinen',
+        next: 'Seuraava testi →',
+        showResults: 'Näytä tulokset →',
+        yourLevel: 'Kuntotestin tasosi: <strong>{n} / 5</strong>',
+        reps: {
+          one: '{n} toisto',
+          other: '{n} toistoa'
+        },
+        levelAndReps: 'taso {level}, {reps}',
+        eased: '{text}, kevennetty',
+        resultsEyebrow: 'Tuloksesi',
+        resultsTitle: 'Fyysisen suorituskykysi <em>profiili</em>',
+        resultsSub: 'Jokainen akseli kuvaa yhden osa-alueen tasoa asteikolla 1–5. Korkea arvo tarkoittaa, että osa-alue palvelee sinua arjessa hyvin.',
+        resultsNote: '<strong>Näin luet tuloksesi.</strong> Viitearvot ovat suuntaa antavia, eivät lääketieteellisiä. Ne on tehty koko aikuisväestölle, joten ne eivät huomioi ikääsi tai taustaasi. Käytä niitä karkeana lähtöpisteenä, älä arvosanana.<br /><br />Kotona tehdyn testin todellinen arvo on oma muutoksesi. Tee testi uudelleen 8–12 viikon kuluttua samoilla ohjeilla ja vertaa ensisijaisesti toistomääriä edelliseen kertaan.',
+        saveNote: 'Emme tallenna vastauksiasi, suosittelen että lataat tästä kuvan omalle laitteellesi.',
+        download: 'Tallenna kuva ↓',
+        restart: 'Aloita alusta',
+        datasetLabel: 'Tuloksesi',
+        tooltip: 'Taso {n} / 5'
+      },
+      tests: {
+        kestavyys: {
+          title: 'Kestävyyskunto',
+          sub: 'Paikallaanmarssi 2 minuuttia',
+          steps: [
+            'Seiso ryhdikkäästi, jalat lantion leveydellä.',
+            'Marssi paikallaan niin reippaasti kuin jaksat kahden minuutin ajan. Nosta polvi suunnilleen lantion korkeudelle.',
+            'Voit heilauttaa käsiä mukana tai pitää tukea seinästä tai tuolinselästä.',
+            'Laske vain oikean polven nostot.'
+          ],
+          tip: '',
+          inputLabel: 'Oikean polven nostot',
+          easing: 'Tein marssin istuen tai matalalla polvennostolla',
+          easingNote: 'Kevennetyllä suorituksella taso on enintään 3.',
+          table: [
+            ['1', 'alle 50', 'Hengästyn arjen rasituksessa nopeasti'],
+            ['2', '50–69', 'Portaat ja reipas kävely tuntuvat'],
+            ['3', '70–89', 'Selviydyn arjesta hyvin'],
+            ['4', '90–109', 'Jaksan pidempiäkin rasituksia'],
+            ['5', '110 tai yli', 'Hyvä kestävyyskunto']
+          ]
+        },
+        vatsa: {
+          title: 'Vatsalihakset',
+          sub: 'Osittainen rutistus 30 sekuntia',
+          steps: [
+            'Asetu selinmakuulle, polvet koukussa ja jalkapohjat lattiassa. Älä tue jalkoja mihinkään.',
+            'Kädet ovat suorina lattialla reisiä pitkin, sormet kohti kantapäitä.',
+            'Nosta hartiat irti lattiasta niin, että sormesi liukuvat noin 8 senttimetriä eteenpäin.',
+            'Laske hartiat takaisin alas. Pidä leuka irti rinnasta koko liikkeen ajan.'
+          ],
+          tip: 'Tee 30 sekunnissa niin monta puhdasta suoritusta kuin kykenet.',
+          inputLabel: 'Puhtaat toistot',
+          table: [
+            ['1', 'alle 8', 'Keskivartalo väsyy heti'],
+            ['2', '8–13', 'Perusvoima on olemassa'],
+            ['3', '14–19', 'Riittää arjen tarpeisiin'],
+            ['4', '20–25', 'Hyvä keskivartalon kestävyys'],
+            ['5', '26 tai yli', 'Vahva keskivartalo']
+          ]
+        },
+        ylavartalo: {
+          title: 'Ylävartalo',
+          sub: 'Punnerrus 30 sekuntia',
+          levels: [
+            'Kädet seinää vasten',
+            'Kädet keittiön työtasolla',
+            'Kädet tuolin tai sohvan reunalla',
+            'Polvet lattiassa',
+            'Varpaat lattiassa'
+          ],
+          levelPrompt: 'Valitse taso, jolla saat tehtyä vähintään 5 mutta korkeintaan 20 puhdasta toistoa.',
+          steps: [
+            'Aseta kädet hieman hartioita leveämmälle, sormet osoittavat eteenpäin.',
+            'Pidä keskivartalo suorana ja vakaana koko liikkeen ajan.',
+            'Ala-asennossa rintakehä lähestyy alustaa, yläasennossa kyynärpäät ojentuvat suoriksi.'
+          ],
+          tip: 'Kun toistot alkavat sujua helposti, siirry seuraavalle tasolle. Silloinkin kun toistomäärä putoaa, kuntosi on parantunut.',
+          inputLabel: 'Puhtaat toistot',
+          table: [
+            ['Taso 1–2 (seinä tai työtaso)', '1', '2'],
+            ['Taso 3 (tuoli tai sohva)', '2', '3'],
+            ['Taso 4 (polvet lattiassa)', '3', '4'],
+            ['Taso 5 (varpaat lattiassa)', '4', '5']
+          ],
+          tableHead: ['Punnerrustaso', 'Alle 15 toistoa', '15 toistoa tai yli'],
+          tableNote: 'Taulukon luvut ovat kuntotestin tasoja asteikolla 1–5.'
+        },
+        alavartalo: {
+          title: 'Alavartalo',
+          sub: 'Tuolilta ylösnousu 30 sekuntia',
+          steps: [
+            'Istu tuolin etureunalla, jalkapohjat tukevasti lattiassa.',
+            'Kädet ovat ristissä rinnan päällä.',
+            'Nouse seisomaan täysin suoraksi ja istu hallitusti takaisin.'
+          ],
+          tip: 'Tee 30 sekunnissa niin monta suoritusta kuin kykenet.',
+          inputLabel: 'Ylösnousut',
+          easing: 'Käytin käsiä apuna (työnsin reisistä tai käsinojista)',
+          easingNote: 'Jos käytit käsiä apuna, taso on 1 riippumatta toistomäärästä. Merkitse tämä muistiin, jotta seuraava kerta on vertailukelpoinen.',
+          table: [
+            ['1', 'alle 10', 'Ylösnousu vaatii ponnistelua'],
+            ['2', '10–13', 'Onnistuu, mutta reisissä tuntuu'],
+            ['3', '14–17', 'Riittävä alavartalon voima'],
+            ['4', '18–21', 'Hyvä alavartalon kestävyys'],
+            ['5', '22 tai yli', 'Vahva alavartalo']
+          ]
+        }
+      }
+    },
+    de: {
+      ui: {
+        docTitle: 'Selbstcheck Körperliche Leistungsfähigkeit · 3K',
+        docDescription: 'Tool zur Selbsteinschätzung der körperlichen Leistungsfähigkeit',
+        language: 'Sprache',
+        eyebrow: 'Körperliche Leistungsfähigkeit',
+        title: 'Selbstcheck: <em>Fitnesstest</em>',
+        intro: 'Wenn du möchtest, kannst du deine Fitness selbst testen. Der Test ist für zu Hause gedacht, braucht keine besonderen Geräte und passt für jedes Fitnesslevel.',
+        meta: [
+          '<strong>4</strong> Tests',
+          '<strong>15</strong> Minuten',
+          '<strong>0</strong> Geräte'
+        ],
+        contentsTitle: 'Inhalt des Tests',
+        contents: [
+          '<b>Ausdauer.</b> 2 Minuten auf der Stelle marschieren.',
+          '<b>Bauchmuskeln.</b> 30 Sekunden Crunches.',
+          '<b>Oberkörper.</b> 30 Sekunden Liegestütze auf deiner Stufe.',
+          '<b>Unterkörper.</b> 30 Sekunden Aufstehen vom Stuhl.'
+        ],
+        contentsNote: 'Bei jedem Test notierst du die Anzahl der Wiederholungen, und die App berechnet daraus deine Stufe auf einer Skala von 1–5. Am Ende siehst du deine Ergebnisse als Diagramm.',
+        needsTitle: 'Was du brauchst',
+        needs: [
+          'Einen stabilen Stuhl',
+          'Etwa zwei Quadratmeter freie Fläche',
+          'Eine Wand oder Küchenarbeitsplatte für die Liegestütze',
+          'Den Timer findest du in dieser App, eine eigene Uhr brauchst du nicht'
+        ],
+        needsNote: 'Eine Pulsuhr oder andere Geräte brauchst du nicht.',
+        safetyTitle: 'Sicherheit',
+        safety: [
+          'Brich den Test sofort ab, wenn du Schmerzen in der Brust, Schwindel oder starke Übelkeit spürst.',
+          'Mach den Test nicht, wenn du Fieber oder eine akute Verletzung hast.',
+          'Wenn du eine bekannte Herzerkrankung hast, sprich vorher mit deiner Ärztin oder deinem Arzt.',
+          'Wärm dich vor dem Start ein paar Minuten auf, zum Beispiel durch Gehen auf der Stelle und Schulterkreisen.',
+          'Mach zwischen den Tests eine Pause, bis sich deine Atmung beruhigt hat.'
+        ],
+        start: 'Selbstcheck starten →',
+        chooseLevel: 'Wähle deine Stufe',
+        instructions: 'Anleitung',
+        recordResult: 'Trag dein Ergebnis ein',
+        referenceValues: 'Richtwerte',
+        tableHead: [
+          'Stufe',
+          'Wiederholungen',
+          'Beschreibung'
+        ],
+        timer: 'Timer',
+        timerGetReady: 'Mach dich bereit',
+        timerGo: 'Jetzt los',
+        timerDone: 'Fertig',
+        timerTimeUp: 'Zeit ist um!',
+        timerStart: 'Timer starten',
+        timerCancel: 'Abbrechen',
+        timerStop: 'Anhalten',
+        timerReset: 'Timer zurücksetzen',
+        prev: '← Zurück',
+        next: 'Nächster Test →',
+        showResults: 'Ergebnisse anzeigen →',
+        yourLevel: 'Deine Stufe im Fitnesstest: <strong>{n} / 5</strong>',
+        reps: {
+          one: '{n} Wiederholung',
+          other: '{n} Wiederholungen'
+        },
+        levelAndReps: 'Stufe {level}, {reps}',
+        eased: '{text}, erleichterte Variante',
+        resultsEyebrow: 'Deine Ergebnisse',
+        resultsTitle: 'Deine körperliche Leistungsfähigkeit im <em>Profil</em>',
+        resultsSub: 'Jede Achse zeigt die Stufe eines Bereichs auf einer Skala von 1–5. Ein hoher Wert bedeutet, dass dich dieser Bereich im Alltag gut unterstützt.',
+        resultsNote: '<strong>So liest du deine Ergebnisse.</strong> Die Richtwerte dienen zur Orientierung und sind keine medizinischen Werte. Sie gelten für die gesamte erwachsene Bevölkerung und berücksichtigen daher weder dein Alter noch deinen Hintergrund. Nutze sie als groben Ausgangspunkt, nicht als Note.<br /><br />Der eigentliche Wert eines Tests zu Hause ist deine eigene Veränderung. Mach den Test nach 8–12 Wochen mit derselben Anleitung noch einmal und vergleiche vor allem die Anzahl der Wiederholungen mit dem letzten Mal.',
+        saveNote: 'Wir speichern deine Antworten nicht. Ich empfehle dir, dieses Bild auf dein eigenes Gerät herunterzuladen.',
+        download: 'Bild speichern ↓',
+        restart: 'Von vorne beginnen',
+        datasetLabel: 'Deine Ergebnisse',
+        tooltip: 'Stufe {n} / 5'
+      },
+      tests: {
+        kestavyys: {
+          title: 'Ausdauer',
+          sub: '2 Minuten auf der Stelle marschieren',
+          steps: [
+            'Stell dich aufrecht hin, die Füße hüftbreit auseinander.',
+            'Marschiere zwei Minuten lang so zügig wie möglich auf der Stelle. Hebe das Knie dabei ungefähr auf Hüfthöhe.',
+            'Du kannst die Arme mitschwingen lassen oder dich an einer Wand oder Stuhllehne festhalten.',
+            'Zähle nur, wie oft du das rechte Knie hebst.'
+          ],
+          tip: '',
+          inputLabel: 'Kniehebungen rechts',
+          easing: 'Ich bin im Sitzen oder mit niedrigem Kniehub marschiert',
+          easingNote: 'Bei der erleichterten Variante ist die Stufe höchstens 3.',
+          table: [
+            ['1', 'unter 50', 'Ich komme im Alltag schnell außer Atem'],
+            ['2', '50–69', 'Treppen und zügiges Gehen sind spürbar anstrengend'],
+            ['3', '70–89', 'Ich komme im Alltag gut zurecht'],
+            ['4', '90–109', 'Ich halte auch längere Belastungen durch'],
+            ['5', '110 oder mehr', 'Gute Ausdauer']
+          ]
+        },
+        vatsa: {
+          title: 'Bauchmuskeln',
+          sub: '30 Sekunden Crunches',
+          steps: [
+            'Leg dich auf den Rücken, die Knie gebeugt und die Füße flach auf dem Boden. Fixiere die Füße nirgends.',
+            'Die Arme liegen gestreckt neben den Oberschenkeln auf dem Boden, die Finger zeigen zu den Fersen.',
+            'Hebe die Schultern so weit vom Boden, dass deine Finger etwa 8 Zentimeter nach vorne gleiten.',
+            'Senke die Schultern wieder ab. Halte das Kinn während der ganzen Bewegung von der Brust weg.'
+          ],
+          tip: 'Mach in 30 Sekunden so viele saubere Wiederholungen, wie du schaffst.',
+          inputLabel: 'Saubere Wiederholungen',
+          table: [
+            ['1', 'unter 8', 'Der Rumpf ermüdet sofort'],
+            ['2', '8–13', 'Grundkraft ist vorhanden'],
+            ['3', '14–19', 'Reicht für den Alltag'],
+            ['4', '20–25', 'Gute Ausdauer im Rumpf'],
+            ['5', '26 oder mehr', 'Starker Rumpf']
+          ]
+        },
+        ylavartalo: {
+          title: 'Oberkörper',
+          sub: '30 Sekunden Liegestütze',
+          levels: [
+            'Hände an der Wand',
+            'Hände auf der Küchenarbeitsplatte',
+            'Hände auf der Kante eines Stuhls oder Sofas',
+            'Knie auf dem Boden',
+            'Fußspitzen auf dem Boden'
+          ],
+          levelPrompt: 'Wähle die Stufe, auf der du mindestens 5, aber höchstens 20 saubere Wiederholungen schaffst.',
+          steps: [
+            'Setze die Hände etwas breiter als schulterbreit auf, die Finger zeigen nach vorne.',
+            'Halte den Rumpf während der ganzen Bewegung gerade und stabil.',
+            'In der unteren Position nähert sich die Brust der Unterlage, in der oberen Position sind die Ellbogen ganz gestreckt.'
+          ],
+          tip: 'Wenn dir die Wiederholungen leichtfallen, wechsle zur nächsten Stufe. Auch wenn die Anzahl der Wiederholungen dann sinkt, hat sich deine Fitness verbessert.',
+          inputLabel: 'Saubere Wiederholungen',
+          table: [
+            ['Stufe 1–2 (Wand oder Arbeitsplatte)', '1', '2'],
+            ['Stufe 3 (Stuhl oder Sofa)', '2', '3'],
+            ['Stufe 4 (Knie auf dem Boden)', '3', '4'],
+            ['Stufe 5 (Fußspitzen auf dem Boden)', '4', '5']
+          ],
+          tableHead: [
+            'Liegestütz-Stufe',
+            'Unter 15 Wiederholungen',
+            '15 Wiederholungen oder mehr'
+          ],
+          tableNote: 'Die Zahlen in der Tabelle sind Fitnesstest-Stufen auf einer Skala von 1–5.'
+        },
+        alavartalo: {
+          title: 'Unterkörper',
+          sub: '30 Sekunden Aufstehen vom Stuhl',
+          steps: [
+            'Setz dich auf die vordere Kante eines Stuhls, die Füße stehen fest auf dem Boden.',
+            'Verschränke die Arme vor der Brust.',
+            'Steh ganz gerade auf und setz dich kontrolliert wieder hin.'
+          ],
+          tip: 'Mach in 30 Sekunden so viele Wiederholungen, wie du schaffst.',
+          inputLabel: 'Anzahl Aufstehen',
+          easing: 'Ich habe die Hände zu Hilfe genommen (mich an den Oberschenkeln oder Armlehnen abgedrückt)',
+          easingNote: 'Wenn du die Hände zu Hilfe genommen hast, ist deine Stufe 1 – unabhängig von der Anzahl der Wiederholungen. Notiere dir das, damit du das nächste Mal fair vergleichen kannst.',
+          table: [
+            ['1', 'unter 10', 'Aufstehen kostet Mühe'],
+            ['2', '10–13', 'Klappt, aber ich spüre es in den Oberschenkeln'],
+            ['3', '14–17', 'Ausreichende Kraft im Unterkörper'],
+            ['4', '18–21', 'Gute Ausdauer im Unterkörper'],
+            ['5', '22 oder mehr', 'Starker Unterkörper']
+          ]
+        }
+      }
+    },
+    en: {
+      ui: {
+        docTitle: 'Physical Performance Assessment · 3K',
+        docDescription: 'A self-assessment tool for physical performance',
+        language: 'Language',
+        eyebrow: 'Physical performance',
+        title: 'Assessment: <em>Fitness test</em>',
+        intro: 'If you like, you can do a fitness assessment for yourself. The test is designed to be done at home without any special equipment, and it is suitable for all fitness levels.',
+        meta: [
+          '<strong>4</strong> tests',
+          '<strong>15</strong> minutes',
+          '<strong>0</strong> equipment'
+        ],
+        contentsTitle: 'What the test includes',
+        contents: [
+          '<b>Endurance fitness.</b> Marching on the spot for 2 minutes.',
+          '<b>Abdominal muscles.</b> Partial curl-ups for 30 seconds.',
+          '<b>Upper body.</b> Push-ups for 30 seconds at your own level.',
+          '<b>Lower body.</b> Sit-to-stand from a chair for 30 seconds.'
+        ],
+        contentsNote: 'For each test, you record the number of repetitions, and the app uses it to work out your level on a scale of 1–5. At the end, you will see your results as a chart.',
+        needsTitle: 'What you need',
+        needs: [
+          'A sturdy chair',
+          'About two square metres of free space',
+          'A wall or kitchen worktop for the push-ups',
+          'The timer is built into this app, so you don\'t need a separate watch'
+        ],
+        needsNote: 'You don\'t need a heart rate monitor or any other devices.',
+        safetyTitle: 'Safety',
+        safety: [
+          'Stop the test immediately if you feel chest pain, dizziness or severe nausea.',
+          'Don\'t do the test if you have a fever or an acute injury.',
+          'If you have a known heart condition, talk to your doctor or healthcare provider first.',
+          'Warm up for a few minutes before you start, for example by walking on the spot and rolling your shoulders.',
+          'Rest between the tests until your breathing settles.'
+        ],
+        start: 'Start the assessment →',
+        chooseLevel: 'Choose your level',
+        instructions: 'How to do it',
+        recordResult: 'Record your result',
+        referenceValues: 'Reference values',
+        tableHead: [
+          'Level',
+          'Repetitions',
+          'Description'
+        ],
+        timer: 'Timer',
+        timerGetReady: 'Get ready',
+        timerGo: 'Go!',
+        timerDone: 'Done',
+        timerTimeUp: 'Time\'s up!',
+        timerStart: 'Start timer',
+        timerCancel: 'Cancel',
+        timerStop: 'Stop',
+        timerReset: 'Reset timer',
+        prev: '← Previous',
+        next: 'Next test →',
+        showResults: 'Show results →',
+        yourLevel: 'Your fitness test level: <strong>{n} / 5</strong>',
+        reps: {
+          one: '{n} repetition',
+          other: '{n} repetitions'
+        },
+        levelAndReps: 'level {level}, {reps}',
+        eased: '{text}, modified',
+        resultsEyebrow: 'Your results',
+        resultsTitle: 'Your physical performance <em>profile</em>',
+        resultsSub: 'Each axis shows your level in one area on a scale of 1–5. A high score means this area serves you well in everyday life.',
+        resultsNote: '<strong>How to read your results.</strong> The reference values are a rough guide, not a medical assessment. They are designed for the whole adult population, so they don\'t take your age or background into account. Use them as a rough starting point, not as a grade.<br /><br />The real value of a test done at home is seeing how you yourself change. Repeat the test in 8–12 weeks using the same instructions, and compare mainly your number of repetitions with last time.',
+        saveNote: 'We don\'t store your answers; I recommend downloading this image to your own device.',
+        download: 'Save image ↓',
+        restart: 'Start over',
+        datasetLabel: 'Your results',
+        tooltip: 'Level {n} / 5'
+      },
+      tests: {
+        kestavyys: {
+          title: 'Endurance fitness',
+          sub: 'Marching on the spot for 2 minutes',
+          steps: [
+            'Stand up straight with your feet hip-width apart.',
+            'March on the spot as briskly as you can for two minutes. Lift your knees to roughly hip height.',
+            'You can swing your arms as you march, or hold on to a wall or the back of a chair for support.',
+            'Count only the times you lift your right knee.'
+          ],
+          tip: '',
+          inputLabel: 'Right knee lifts',
+          easing: 'I did the march sitting down or with low knee lifts',
+          easingNote: 'With the modified version, your level is 3 at most.',
+          table: [
+            ['1', 'under 50', 'I get out of breath quickly in everyday activities'],
+            ['2', '50–69', 'Stairs and brisk walking take some effort'],
+            ['3', '70–89', 'I cope well with everyday life'],
+            ['4', '90–109', 'I can keep going during longer exertion, too'],
+            ['5', '110 or more', 'Good endurance fitness']
+          ]
+        },
+        vatsa: {
+          title: 'Abdominal muscles',
+          sub: 'Partial curl-ups for 30 seconds',
+          steps: [
+            'Lie on your back with your knees bent and the soles of your feet on the floor. Don\'t hook your feet under anything.',
+            'Keep your arms straight on the floor alongside your thighs, with your fingers pointing towards your heels.',
+            'Lift your shoulders off the floor so that your fingers slide forward about 8 centimetres.',
+            'Lower your shoulders back down. Keep your chin off your chest throughout the movement.'
+          ],
+          tip: 'Do as many correct repetitions as you can in 30 seconds.',
+          inputLabel: 'Correct repetitions',
+          table: [
+            ['1', 'under 8', 'My core tires straight away'],
+            ['2', '8–13', 'Basic strength is there'],
+            ['3', '14–19', 'Enough for everyday needs'],
+            ['4', '20–25', 'Good core endurance'],
+            ['5', '26 or more', 'Strong core']
+          ]
+        },
+        ylavartalo: {
+          title: 'Upper body',
+          sub: 'Push-ups for 30 seconds',
+          levels: [
+            'Hands against a wall',
+            'Hands on a kitchen worktop',
+            'Hands on the edge of a chair or sofa',
+            'Knees on the floor',
+            'Toes on the floor'
+          ],
+          levelPrompt: 'Choose the level at which you can do at least 5 but no more than 20 correct repetitions.',
+          steps: [
+            'Place your hands slightly wider than your shoulders, with your fingers pointing forward.',
+            'Keep your core straight and stable throughout the movement.',
+            'At the bottom, your chest comes close to the surface; at the top, your elbows straighten fully.'
+          ],
+          tip: 'When the repetitions start to feel easy, move on to the next level. Even if your number of repetitions drops when you do, your fitness has still improved.',
+          inputLabel: 'Correct repetitions',
+          table: [
+            ['Levels 1–2 (wall or worktop)', '1', '2'],
+            ['Level 3 (chair or sofa)', '2', '3'],
+            ['Level 4 (knees on the floor)', '3', '4'],
+            ['Level 5 (toes on the floor)', '4', '5']
+          ],
+          tableHead: ['Push-up level', 'Under 15 repetitions', '15 repetitions or more'],
+          tableNote: 'The numbers in the table are fitness test levels on a scale of 1–5.'
+        },
+        alavartalo: {
+          title: 'Lower body',
+          sub: 'Sit-to-stand from a chair for 30 seconds',
+          steps: [
+            'Sit on the front edge of a chair with your feet firmly on the floor.',
+            'Cross your arms over your chest.',
+            'Stand up until you are fully upright, then sit back down with control.'
+          ],
+          tip: 'Do as many repetitions as you can in 30 seconds.',
+          inputLabel: 'Number of stands',
+          easing: 'I used my hands to help (pushed off my thighs or the armrests)',
+          easingNote: 'If you used your hands to help, your level is 1 regardless of the number of repetitions. Make a note of this so that you can compare your results fairly next time.',
+          table: [
+            ['1', 'under 10', 'Standing up takes effort'],
+            ['2', '10–13', 'I can do it, but I feel it in my thighs'],
+            ['3', '14–17', 'Enough lower-body strength'],
+            ['4', '18–21', 'Good lower-body endurance'],
+            ['5', '22 or more', 'Strong lower body']
+          ]
+        }
+      }
+    },
+    es: {
+      ui: {
+        docTitle: 'Evaluación de la capacidad física · 3K',
+        docDescription: 'Herramienta de autoevaluación de la capacidad física',
+        language: 'Idioma',
+        eyebrow: 'Capacidad física',
+        title: 'Evaluación: <em>Prueba de condición física</em>',
+        intro: 'Si quieres, puedes hacerte una evaluación de tu condición física. La prueba está pensada para hacerla en casa sin ningún material especial y es adecuada para todos los niveles de forma física.',
+        meta: [
+          '<strong>4</strong> pruebas',
+          '<strong>15</strong> minutos',
+          '<strong>0</strong> materiales'
+        ],
+        contentsTitle: 'Contenido de la prueba',
+        contents: [
+          '<b>Resistencia aeróbica.</b> Marcha en el sitio durante 2 minutos.',
+          '<b>Abdominales.</b> Encogimiento abdominal parcial durante 30 segundos.',
+          '<b>Tren superior.</b> Flexiones durante 30 segundos, a tu nivel.',
+          '<b>Tren inferior.</b> Sentarse y levantarse de una silla durante 30 segundos.'
+        ],
+        contentsNote: 'En cada prueba anotas el número de repeticiones, y la aplicación calcula a partir de él tu nivel en una escala de 1–5. Al final verás tus resultados en un gráfico.',
+        needsTitle: 'Qué necesitas',
+        needs: [
+          'Una silla estable',
+          'Unos dos metros cuadrados de espacio libre',
+          'Una pared o una encimera de cocina para las flexiones',
+          'El temporizador está en esta aplicación; no necesitas un reloj aparte'
+        ],
+        needsNote: 'No necesitas monitor de frecuencia cardíaca ni otros aparatos.',
+        safetyTitle: 'Seguridad',
+        safety: [
+          'Detén la prueba de inmediato si sientes dolor en el pecho, mareo o náuseas fuertes.',
+          'No hagas la prueba si tienes fiebre o una lesión aguda.',
+          'Si tienes una enfermedad cardíaca diagnosticada, consulta primero con el profesional de la salud que te atiende.',
+          'Calienta unos minutos antes de empezar, por ejemplo caminando en el sitio y haciendo círculos con los hombros.',
+          'Descansa entre las pruebas hasta que tu respiración se normalice.'
+        ],
+        start: 'Comenzar la evaluación →',
+        chooseLevel: 'Elige tu nivel',
+        instructions: 'Cómo se hace',
+        recordResult: 'Anota tu resultado',
+        referenceValues: 'Valores de referencia',
+        tableHead: [
+          'Nivel',
+          'Repeticiones',
+          'Descripción'
+        ],
+        timer: 'Temporizador',
+        timerGetReady: 'Prepárate',
+        timerGo: '¡Adelante!',
+        timerDone: 'Terminado',
+        timerTimeUp: '¡Tiempo!',
+        timerStart: 'Iniciar temporizador',
+        timerCancel: 'Cancelar',
+        timerStop: 'Detener',
+        timerReset: 'Reiniciar temporizador',
+        prev: '← Anterior',
+        next: 'Siguiente prueba →',
+        showResults: 'Ver resultados →',
+        yourLevel: 'Tu nivel en la prueba de condición física: <strong>{n} / 5</strong>',
+        reps: {
+          one: '{n} repetición',
+          many: '{n} repeticiones',
+          other: '{n} repeticiones'
+        },
+        levelAndReps: 'nivel {level}, {reps}',
+        eased: '{text}, versión adaptada',
+        resultsEyebrow: 'Tus resultados',
+        resultsTitle: 'Tu <em>perfil</em> de capacidad física',
+        resultsSub: 'Cada eje muestra el nivel de un área en una escala de 1–5. Un valor alto significa que esa área te sirve bien en el día a día.',
+        resultsNote: '<strong>Cómo leer tus resultados.</strong> Los valores de referencia son orientativos, no médicos. Se han elaborado para toda la población adulta, por lo que no tienen en cuenta tu edad ni tu situación personal. Úsalos como un punto de partida aproximado, no como una nota.<br /><br />El verdadero valor de una prueba hecha en casa es tu propia evolución. Repite la prueba dentro de 8–12 semanas con las mismas instrucciones y compara, sobre todo, el número de repeticiones con la vez anterior.',
+        saveNote: 'No guardamos tus respuestas; te recomiendo que descargues esta imagen en tu propio dispositivo.',
+        download: 'Guardar imagen ↓',
+        restart: 'Empezar de nuevo',
+        datasetLabel: 'Tus resultados',
+        tooltip: 'Nivel {n} / 5'
+      },
+      tests: {
+        kestavyys: {
+          title: 'Resistencia aeróbica',
+          sub: 'Marcha en el sitio durante 2 minutos',
+          steps: [
+            'Ponte de pie con la espalda recta y los pies separados a la anchura de las caderas.',
+            'Marcha en el sitio tan rápido como puedas durante dos minutos. Levanta la rodilla aproximadamente hasta la altura de la cadera.',
+            'Puedes balancear los brazos o apoyarte en una pared o en el respaldo de una silla.',
+            'Cuenta solo las veces que levantas la rodilla derecha.'
+          ],
+          tip: '',
+          inputLabel: 'Elevaciones de la rodilla derecha',
+          easing: 'Hice la marcha en posición sentada o levantando poco las rodillas',
+          easingNote: 'Con la versión adaptada, el nivel máximo es 3.',
+          table: [
+            ['1', 'menos de 50', 'Me quedo sin aliento enseguida con los esfuerzos cotidianos'],
+            ['2', '50–69', 'Noto el esfuerzo al subir escaleras y al caminar a paso rápido'],
+            ['3', '70–89', 'Me desenvuelvo bien en el día a día'],
+            ['4', '90–109', 'Aguanto también esfuerzos más largos'],
+            ['5', '110 o más', 'Buena resistencia aeróbica']
+          ]
+        },
+        vatsa: {
+          title: 'Abdominales',
+          sub: 'Encogimiento abdominal parcial durante 30 segundos',
+          steps: [
+            'Túmbate boca arriba con las rodillas flexionadas y las plantas de los pies apoyadas en el suelo. No sujetes los pies a ningún sitio.',
+            'Los brazos están estirados sobre el suelo junto a los muslos, con los dedos apuntando hacia los talones.',
+            'Levanta los hombros del suelo de modo que tus dedos se deslicen unos 8 centímetros hacia delante.',
+            'Vuelve a bajar los hombros. Mantén la barbilla separada del pecho durante todo el movimiento.'
+          ],
+          tip: 'Haz en 30 segundos tantas repeticiones bien hechas como puedas.',
+          inputLabel: 'Repeticiones bien hechas',
+          table: [
+            ['1', 'menos de 8', 'La zona media se cansa enseguida'],
+            ['2', '8–13', 'Hay una base de fuerza'],
+            ['3', '14–19', 'Suficiente para las necesidades del día a día'],
+            ['4', '20–25', 'Buena resistencia de la zona media'],
+            ['5', '26 o más', 'Zona media fuerte']
+          ]
+        },
+        ylavartalo: {
+          title: 'Tren superior',
+          sub: 'Flexiones durante 30 segundos',
+          levels: [
+            'Manos contra la pared',
+            'Manos en la encimera de la cocina',
+            'Manos en el borde de una silla o un sofá',
+            'Rodillas en el suelo',
+            'Puntas de los pies en el suelo'
+          ],
+          levelPrompt: 'Elige el nivel en el que puedas hacer al menos 5 y como máximo 20 repeticiones bien hechas.',
+          steps: [
+            'Coloca las manos un poco más separadas que el ancho de los hombros, con los dedos apuntando hacia delante.',
+            'Mantén la zona media recta y estable durante todo el movimiento.',
+            'En la posición baja, el pecho se acerca a la superficie; en la posición alta, los codos se estiran por completo.'
+          ],
+          tip: 'Cuando las repeticiones empiecen a salirte con facilidad, pasa al siguiente nivel. Aunque entonces hagas menos repeticiones, tu forma física habrá mejorado.',
+          inputLabel: 'Repeticiones bien hechas',
+          table: [
+            ['Nivel 1–2 (pared o encimera)', '1', '2'],
+            ['Nivel 3 (silla o sofá)', '2', '3'],
+            ['Nivel 4 (rodillas en el suelo)', '3', '4'],
+            ['Nivel 5 (puntas de los pies en el suelo)', '4', '5']
+          ],
+          tableHead: [
+            'Nivel de flexión',
+            'Menos de 15 repeticiones',
+            '15 repeticiones o más'
+          ],
+          tableNote: 'Las cifras de la tabla son niveles de la prueba de condición física en una escala de 1–5.'
+        },
+        alavartalo: {
+          title: 'Tren inferior',
+          sub: 'Sentarse y levantarse de una silla durante 30 segundos',
+          steps: [
+            'Siéntate en el borde delantero de la silla, con las plantas de los pies bien apoyadas en el suelo.',
+            'Cruza los brazos sobre el pecho.',
+            'Levántate hasta quedar con el cuerpo completamente erguido y vuelve a sentarte de forma controlada.'
+          ],
+          tip: 'Haz en 30 segundos tantas repeticiones como puedas.',
+          inputLabel: 'Veces que te levantaste',
+          easing: 'Me ayudé con las manos (me impulsé apoyándolas en los muslos o en los reposabrazos)',
+          easingNote: 'Si te ayudaste con las manos, el nivel es 1 independientemente del número de repeticiones. Anótalo para poder comparar los resultados la próxima vez.',
+          table: [
+            ['1', 'menos de 10', 'Levantarse requiere esfuerzo'],
+            ['2', '10–13', 'Lo consigo, pero lo noto en los muslos'],
+            ['3', '14–17', 'Fuerza suficiente en el tren inferior'],
+            ['4', '18–21', 'Buena resistencia del tren inferior'],
+            ['5', '22 o más', 'Tren inferior fuerte']
+          ]
+        }
+      }
+    },
+    fr: {
+      ui: {
+        docTitle: 'Bilan de capacité physique · 3K',
+        docDescription: 'Outil d’auto-évaluation de la capacité physique',
+        language: 'Langue',
+        eyebrow: 'Capacité physique',
+        title: 'Bilan : <em>Test de forme physique</em>',
+        intro: 'Si vous le souhaitez, vous pouvez faire votre propre bilan de forme. Le test est conçu pour être réalisé à la maison, sans matériel particulier, et convient à tous les niveaux de forme.',
+        meta: [
+          '<strong>4</strong> tests',
+          '<strong>15</strong> minutes',
+          '<strong>0</strong> matériel'
+        ],
+        contentsTitle: 'Contenu du test',
+        contents: [
+          '<b>Endurance.</b> Marche sur place pendant 2 minutes.',
+          '<b>Abdominaux.</b> Redressements partiels du buste pendant 30 secondes.',
+          '<b>Haut du corps.</b> Pompes pendant 30 secondes, à votre niveau.',
+          '<b>Bas du corps.</b> Lever de chaise pendant 30 secondes.'
+        ],
+        contentsNote: 'Pour chaque test, vous notez le nombre de répétitions, et l’application en déduit votre niveau sur une échelle de 1 à 5. À la fin, vous voyez vos résultats sous forme de graphique.',
+        needsTitle: 'Ce dont vous avez besoin',
+        needs: [
+          'Une chaise stable',
+          'Un espace libre d’environ deux mètres carrés',
+          'Un mur ou un plan de travail de cuisine pour les pompes',
+          'Le minuteur est intégré à cette application : pas besoin de montre'
+        ],
+        needsNote: 'Pas besoin de cardiofréquencemètre ni d’autre appareil.',
+        safetyTitle: 'Sécurité',
+        safety: [
+          'Arrêtez immédiatement le test si vous ressentez une douleur à la poitrine, des vertiges ou une forte nausée.',
+          'Ne faites pas le test si vous avez de la fièvre ou une blessure récente.',
+          'Si vous avez une maladie cardiaque connue, parlez-en d’abord à votre médecin ou à l’équipe qui vous suit.',
+          'Échauffez-vous quelques minutes avant de commencer, par exemple en marchant sur place et en faisant des cercles avec les épaules.',
+          'Faites une pause entre les tests, jusqu’à ce que votre respiration se calme.'
+        ],
+        start: 'Commencer le bilan →',
+        chooseLevel: 'Choisissez votre niveau',
+        instructions: 'Consignes',
+        recordResult: 'Notez votre résultat',
+        referenceValues: 'Valeurs de référence',
+        tableHead: [
+          'Niveau',
+          'Répétitions',
+          'Description'
+        ],
+        timer: 'Minuteur',
+        timerGetReady: 'Préparez-vous',
+        timerGo: 'Allez-y !',
+        timerDone: 'Terminé',
+        timerTimeUp: 'Temps écoulé !',
+        timerStart: 'Lancer le minuteur',
+        timerCancel: 'Annuler',
+        timerStop: 'Arrêter',
+        timerReset: 'Réinitialiser le minuteur',
+        prev: '← Précédent',
+        next: 'Test suivant →',
+        showResults: 'Voir les résultats →',
+        yourLevel: 'Votre niveau au test de forme : <strong>{n} / 5</strong>',
+        reps: {
+          one: '{n} répétition',
+          many: '{n} répétitions',
+          other: '{n} répétitions'
+        },
+        levelAndReps: 'niveau {level}, {reps}',
+        eased: '{text}, version facilitée',
+        resultsEyebrow: 'Vos résultats',
+        resultsTitle: 'Le <em>profil</em> de votre capacité physique',
+        resultsSub: 'Chaque axe représente le niveau d’un domaine sur une échelle de 1 à 5. Une valeur élevée signifie que ce domaine vous sert bien au quotidien.',
+        resultsNote: '<strong>Comment lire vos résultats.</strong> Les valeurs de référence sont indicatives et non médicales. Elles ont été établies pour l’ensemble de la population adulte : elles ne tiennent donc compte ni de votre âge ni de votre parcours. Utilisez-les comme un point de départ approximatif, pas comme une note.<br /><br />La vraie valeur d’un test fait à la maison, c’est votre propre évolution. Refaites le test dans 8 à 12 semaines avec les mêmes consignes, et comparez avant tout votre nombre de répétitions avec celui de la fois précédente.',
+        saveNote: 'Nous n’enregistrons pas vos réponses : je vous recommande de télécharger cette image sur votre propre appareil.',
+        download: 'Enregistrer l’image ↓',
+        restart: 'Recommencer',
+        datasetLabel: 'Vos résultats',
+        tooltip: 'Niveau {n} / 5'
+      },
+      tests: {
+        kestavyys: {
+          title: 'Endurance',
+          sub: 'Marche sur place pendant 2 minutes',
+          steps: [
+            'Tenez-vous debout, le dos bien droit, les pieds écartés à la largeur du bassin.',
+            'Marchez sur place aussi vite que vous le pouvez pendant deux minutes. Levez le genou à peu près à hauteur de hanche.',
+            'Vous pouvez balancer les bras ou vous tenir à un mur ou au dossier d’une chaise.',
+            'Comptez uniquement les montées du genou droit.'
+          ],
+          tip: '',
+          inputLabel: 'Montées du genou droit',
+          easing: 'J’ai marché en position assise ou en levant peu les genoux',
+          easingNote: 'Avec une version facilitée, le niveau est de 3 au maximum.',
+          table: [
+            ['1', 'moins de 50', 'Je m’essouffle vite dans les efforts du quotidien'],
+            ['2', '50–69', 'Je sens les escaliers et la marche rapide'],
+            ['3', '70–89', 'Je me débrouille bien au quotidien'],
+            ['4', '90–109', 'Je tiens aussi des efforts plus longs'],
+            ['5', '110 ou plus', 'Bonne endurance']
+          ]
+        },
+        vatsa: {
+          title: 'Abdominaux',
+          sub: 'Redressements partiels du buste pendant 30 secondes',
+          steps: [
+            'Allongez-vous sur le dos, genoux pliés et plantes des pieds au sol. Ne calez pas vos pieds.',
+            'Les bras sont tendus au sol le long des cuisses, les doigts dirigés vers les talons.',
+            'Décollez les épaules du sol de façon à ce que vos doigts glissent d’environ 8 centimètres vers l’avant.',
+            'Redescendez les épaules. Gardez le menton éloigné de la poitrine pendant tout le mouvement.'
+          ],
+          tip: 'En 30 secondes, faites autant de répétitions correctes que possible.',
+          inputLabel: 'Répétitions correctes',
+          table: [
+            ['1', 'moins de 8', 'Le tronc se fatigue tout de suite'],
+            ['2', '8–13', 'La force de base est là'],
+            ['3', '14–19', 'Suffisant pour les besoins du quotidien'],
+            ['4', '20–25', 'Bonne endurance du tronc'],
+            ['5', '26 ou plus', 'Tronc solide']
+          ]
+        },
+        ylavartalo: {
+          title: 'Haut du corps',
+          sub: 'Pompes pendant 30 secondes',
+          levels: [
+            'Mains contre un mur',
+            'Mains sur un plan de travail de cuisine',
+            'Mains sur le bord d’une chaise ou d’un canapé',
+            'Genoux au sol',
+            'Pointes des pieds au sol'
+          ],
+          levelPrompt: 'Choisissez le niveau auquel vous arrivez à faire au moins 5 et au maximum 20 répétitions correctes.',
+          steps: [
+            'Placez les mains un peu plus écartées que la largeur des épaules, les doigts vers l’avant.',
+            'Gardez le tronc droit et stable pendant tout le mouvement.',
+            'En position basse, la poitrine se rapproche du support ; en position haute, les coudes sont complètement tendus.'
+          ],
+          tip: 'Quand les répétitions deviennent faciles, passez au niveau suivant. Même si votre nombre de répétitions baisse alors, votre forme s’est améliorée.',
+          inputLabel: 'Répétitions correctes',
+          table: [
+            ['Niveau 1–2 (mur ou plan de travail)', '1', '2'],
+            ['Niveau 3 (chaise ou canapé)', '2', '3'],
+            ['Niveau 4 (genoux au sol)', '3', '4'],
+            ['Niveau 5 (pointes des pieds au sol)', '4', '5']
+          ],
+          tableHead: [
+            'Niveau de pompes',
+            'Moins de 15 répétitions',
+            '15 répétitions ou plus'
+          ],
+          tableNote: 'Les chiffres du tableau sont les niveaux du test de forme, sur une échelle de 1 à 5.'
+        },
+        alavartalo: {
+          title: 'Bas du corps',
+          sub: 'Lever de chaise pendant 30 secondes',
+          steps: [
+            'Asseyez-vous sur le bord avant de la chaise, les pieds bien à plat au sol.',
+            'Croisez les bras sur la poitrine.',
+            'Levez-vous jusqu’à être bien debout, puis rasseyez-vous en contrôlant le mouvement.'
+          ],
+          tip: 'En 30 secondes, faites autant de répétitions que possible.',
+          inputLabel: 'Levers de chaise',
+          easing: 'J’ai utilisé mes mains pour m’aider (en poussant sur les cuisses ou les accoudoirs)',
+          easingNote: 'Si vous avez utilisé vos mains, votre niveau est 1, quel que soit le nombre de répétitions. Notez-le pour pouvoir comparer la prochaine fois.',
+          table: [
+            ['1', 'moins de 10', 'Se lever demande un effort'],
+            ['2', '10–13', 'J’y arrive, mais je le sens dans les cuisses'],
+            ['3', '14–17', 'Force suffisante du bas du corps'],
+            ['4', '18–21', 'Bonne endurance du bas du corps'],
+            ['5', '22 ou plus', 'Bas du corps solide']
+          ]
+        }
+      }
+    },
+    so: {
+      ui: {
+        docTitle: 'Qiimaynta awoodda jirka · 3K',
+        docDescription: 'Qalabka is-qiimaynta awoodda jirka',
+        language: 'Luqadda',
+        eyebrow: 'Awoodda jirka',
+        title: 'Qiimayn: <em>Tijaabada jirdhiska</em>',
+        intro: 'Haddii aad rabto, waxaad naftaada ku samayn kartaa qiimayn jirdhis. Tijaabada waxaa loogu talagalay in guriga lagu sameeyo iyadoo aan qalab gaar ah loo baahnayn, waxayna ku habboon tahay dhammaan heerarka jirdhiska.',
+        meta: [
+          '<strong>4</strong> tijaabo',
+          '<strong>15</strong> daqiiqo',
+          '<strong>0</strong> qalab'
+        ],
+        contentsTitle: 'Waxa tijaabadu ka kooban tahay',
+        contents: [
+          '<b>Adkaysiga jirka.</b> Socod meel taagan 2 daqiiqo.',
+          '<b>Murqaha caloosha.</b> Kor-u-kac gaaban oo caloosha ah 30 ilbiriqsi.',
+          '<b>Jirka sare.</b> Riixitaan 30 ilbiriqsi, heerkaaga.',
+          '<b>Jirka hoose.</b> Kursi ka kicid 30 ilbiriqsi.'
+        ],
+        contentsNote: 'Tijaabo kasta waxaa la qoraa tirada ku celinta, barnaamijkuna wuxuu ka xisaabiyaa heerkaaga cabbir 1–5 ah. Ugu dambeyn natiijadaada waxaad ku arki doontaa jaantus.',
+        needsTitle: 'Waxa aad u baahan tahay',
+        needs: [
+          'Kursi adag oo deggan',
+          'Qiyaastii laba mitir oo laba jibbaaran oo meel bannaan ah',
+          'Derbi ama miiska jikada si aad u samayso riixitaanka',
+          'Tiriyaha waqtiga wuxuu ku jiraa barnaamijkan, uma baahnid saacad gaar ah'
+        ],
+        needsNote: 'Uma baahnid qalabka garaaca wadnaha lagu cabbiro ama qalab kale.',
+        safetyTitle: 'Badbaadada',
+        safety: [
+          'Isla markiiba jooji tijaabada haddii aad dareento xanuun laabta ah, dawakhaad ama lallabo xooggan.',
+          'Ha samayn tijaabada haddii aad qandho qabto ama aad leedahay dhaawac cusub.',
+          'Haddii aad qabto cudur wadne oo la og yahay, marka hore la tasho dhakhtarkaaga ama shaqaalaha caafimaadka ee ku daaweeya.',
+          'Ka hor intaadan bilaabin, dhowr daqiiqo samee jimicsi diyaargarow ah, tusaale ahaan adigoo meel taagan ku socda oo garbaha wareejinaya.',
+          'Tijaabooyinka dhexdooda naso ilaa neeftaadu degto.'
+        ],
+        start: 'Bilow qiimaynta →',
+        chooseLevel: 'Dooro heerkaaga',
+        instructions: 'Sida loo sameeyo',
+        recordResult: 'Qor natiijadaada',
+        referenceValues: 'Qiimayaasha tixraaca',
+        tableHead: [
+          'Heer',
+          'Ku celin',
+          'Sharaxaad'
+        ],
+        timer: 'Tiriyaha waqtiga',
+        timerGetReady: 'Diyaar garow',
+        timerGo: 'Hadda samee',
+        timerDone: 'Waa dhammaatay',
+        timerTimeUp: 'Waqtigii waa dhammaaday!',
+        timerStart: 'Bilow tiriyaha waqtiga',
+        timerCancel: 'Ka noqo',
+        timerStop: 'Jooji',
+        timerReset: 'Eber ka dhig tiriyaha',
+        prev: '← Kii hore',
+        next: 'Tijaabada xigta →',
+        showResults: 'Tus natiijooyinka →',
+        yourLevel: 'Heerkaaga tijaabada jirdhiska: <strong>{n} / 5</strong>',
+        reps: {
+          one: '{n} ku celin',
+          other: '{n} ku celin'
+        },
+        levelAndReps: 'heerka {level}, {reps}',
+        eased: '{text}, la fududeeyay',
+        resultsEyebrow: 'Natiijadaada',
+        resultsTitle: '<em>Sawirka guud</em> ee awoodda jirkaaga',
+        resultsSub: 'Dhidib kastaa wuxuu muujinayaa heerka hal qayb, iyadoo la adeegsanayo cabbir 1–5 ah. Qiime sare wuxuu ka dhigan yahay in qaybtani ay si wanaagsan kuugu adeegto nolol maalmeedkaaga.',
+        resultsNote: '<strong>Sida loo akhriyo natiijadaada.</strong> Qiimayaasha tixraacu waa tilmaan guud, ma aha qiimayn caafimaad. Waxaa loo sameeyay dhammaan dadka waaweyn, sidaas darteed ma tixgeliyaan da\'daada ama xaaladdaada gaarka ah. U isticmaal meel aad ka bilowdo oo qiyaas ah, ha u isticmaalin sidii dhibco imtixaan.<br /><br />Qiimaha dhabta ah ee tijaabada guriga lagu sameeyo waa isbeddelkaaga gaarka ah. Tijaabada mar kale samee 8–12 toddobaad kadib adigoo raacaya tilmaamo isku mid ah, ugu horrayntana tirada ku celinta isbarbardhig tii markii hore.',
+        saveNote: 'Jawaabahaaga ma kaydinno; waxaan kugula talinayaa inaad sawirkan ku soo dejiso qalabkaaga.',
+        download: 'Kaydi sawirka ↓',
+        restart: 'Dib u bilow',
+        datasetLabel: 'Natiijadaada',
+        tooltip: 'Heerka {n} / 5'
+      },
+      tests: {
+        kestavyys: {
+          title: 'Adkaysiga jirka',
+          sub: 'Socod meel taagan 2 daqiiqo',
+          steps: [
+            'Si toosan u istaag, cagahaaguna ha u kala fogaadaan sida ballaca sintaada.',
+            'Meel taagan ku soco sida ugu dhaqsaha badan ee aad awooddo muddo laba daqiiqo ah. Jilibka kor u qaad ilaa qiyaastii heerka sinta.',
+            'Waad lulin kartaa gacmahaaga, ama waxaad isku tiirin kartaa derbiga ama gadaasha kursiga.',
+            'Tiri oo keliya inta jeer ee jilibka midig kor u kaco.'
+          ],
+          tip: '',
+          inputLabel: 'Kor-u-qaadista jilibka midig',
+          easing: 'Socodka waxaan sameeyay anigoo fadhiya ama jilibka wax yar kor u qaadaya',
+          easingNote: 'Haddii samaynta la fududeeyay, heerka ugu sarreeya waa 3.',
+          table: [
+            ['1', 'ka yar 50', 'Neeftu si dhakhso ah ayay iigu gaabataa hawlaha maalinlaha ah'],
+            ['2', '50–69', 'Jaranjarada iyo socodka degdegga ah way i daaliyaan'],
+            ['3', '70–89', 'Si fiican ayaan ula qabsadaa nolol maalmeedka'],
+            ['4', '90–109', 'Waan u adkaysan karaa xitaa dadaal dheer'],
+            ['5', '110 ama ka badan', 'Adkaysi wanaagsan']
+          ]
+        },
+        vatsa: {
+          title: 'Murqaha caloosha',
+          sub: 'Kor-u-kac gaaban oo caloosha ah 30 ilbiriqsi',
+          steps: [
+            'Dhabarka u jiifso, jilbaha laab, cagahana dhulka dhig. Cagaha waxba ha ku tiirin.',
+            'Gacmuhu waxay si toosan dhulka ugu yaallaan bowdooyinka agtooda, faraha waxay u jeedaan cidhibyada.',
+            'Garbaha dhulka ka kor u qaad si farahaagu ay hore ugu siibtaan qiyaastii 8 sentimitir.',
+            'Garbaha dib ugu dhig dhulka. Inta dhaqdhaqaaqu socdo oo dhan, garkaagu yuusan taaban laabtaada.'
+          ],
+          tip: '30 ilbiriqsi gudahood samee inta ugu badan ee ku celin sax ah ee aad awooddo.',
+          inputLabel: 'Ku celin sax ah',
+          table: [
+            ['1', 'ka yar 8', 'Bartamaha jirku isla markiiba wuu daalaa'],
+            ['2', '8–13', 'Xoog aasaasi ah ayaa jira'],
+            ['3', '14–19', 'Wuu ku filan yahay baahiyaha nolol maalmeedka'],
+            ['4', '20–25', 'Adkaysi wanaagsan oo bartamaha jirka ah'],
+            ['5', '26 ama ka badan', 'Bartamaha jirka oo xooggan']
+          ]
+        },
+        ylavartalo: {
+          title: 'Jirka sare',
+          sub: 'Riixitaan 30 ilbiriqsi',
+          levels: [
+            'Gacmaha derbiga saaran',
+            'Gacmaha miiska jikada saaran',
+            'Gacmaha cidhifka kursiga ama sofada saaran',
+            'Jilbaha dhulka saaran',
+            'Faraha cagaha dhulka saaran'
+          ],
+          levelPrompt: 'Dooro heerka aad ku samayn karto ugu yaraan 5, laakiin ugu badnaan 20 ku celin oo sax ah.',
+          steps: [
+            'Gacmaha dhig wax yar ka ballaaran garbaha, faraha hore u jeedi.',
+            'Bartamaha jirka ka dhig mid toosan oo deggan inta dhaqdhaqaaqu socdo oo dhan.',
+            'Marka aad hoos u degto, laabtaadu waxay u soo dhowaataa dusha; marka aad kor u kacdo, suxulladaadu si buuxda ayay u toosaan.'
+          ],
+          tip: 'Marka ku celintu kuu fududaato, u gudub heerka xiga. Xitaa haddii tirada ku celintu markaas hoos u dhacdo, jirdhiskaagu wuu hagaagay.',
+          inputLabel: 'Ku celin sax ah',
+          table: [
+            ['Heerka 1–2 (derbi ama miiska jikada)', '1', '2'],
+            ['Heerka 3 (kursi ama sofa)', '2', '3'],
+            ['Heerka 4 (jilbaha dhulka saaran)', '3', '4'],
+            ['Heerka 5 (faraha cagaha dhulka saaran)', '4', '5']
+          ],
+          tableHead: [
+            'Heerka riixitaanka',
+            'Ka yar 15 ku celin',
+            '15 ku celin ama ka badan'
+          ],
+          tableNote: 'Lambarrada shaxda waa heerarka tijaabada jirdhiska, cabbirka 1–5.'
+        },
+        alavartalo: {
+          title: 'Jirka hoose',
+          sub: 'Kursi ka kicid 30 ilbiriqsi',
+          steps: [
+            'Ku fadhiiso cidhifka hore ee kursiga, cagahaaguna si adag dhulka ha u saarnaadaan.',
+            'Gacmaha isku tallaab oo laabta saar.',
+            'Istaag adigoo si buuxda u toosan, kadibna si xakamaysan dib ugu fadhiiso.'
+          ],
+          tip: '30 ilbiriqsi gudahood samee inta ugu badan ee aad awooddo.',
+          inputLabel: 'Tirada kicitaanka',
+          easing: 'Gacmaha ayaan isku caawiyay (waxaan ka riixay bowdooyinka ama gacan-tiirsiga kursiga)',
+          easingNote: 'Haddii aad gacmaha isku caawisay, heerku waa 1 iyadoon loo eegin tirada ku celinta. Tan qor si marka xigta natiijada loo isbarbardhigi karo.',
+          table: [
+            ['1', 'ka yar 10', 'Kicitaanku wuxuu u baahan yahay dadaal'],
+            ['2', '10–13', 'Waan awoodaa, laakiin bowdooyinka ayaan ka dareemaa'],
+            ['3', '14–17', 'Xoog ku filan oo jirka hoose ah'],
+            ['4', '18–21', 'Adkaysi wanaagsan oo jirka hoose ah'],
+            ['5', '22 ama ka badan', 'Jirka hoose oo xooggan']
+          ]
+        }
+      }
+    },
+    sv: {
+      ui: {
+        docTitle: 'Kartläggning av fysisk prestationsförmåga · 3K',
+        docDescription: 'Verktyg för självskattning av fysisk prestationsförmåga',
+        language: 'Språk',
+        eyebrow: 'Fysisk prestationsförmåga',
+        title: 'Kartläggning: <em>Fystest</em>',
+        intro: 'Om du vill kan du göra en kartläggning av din fysiska form. Testet är gjort för att utföras hemma utan särskild utrustning och passar alla, oavsett hur vältränad du är.',
+        meta: [
+          '<strong>4</strong> tester',
+          '<strong>15</strong> minuter',
+          '<strong>0</strong> redskap'
+        ],
+        contentsTitle: 'Testets innehåll',
+        contents: [
+          '<b>Kondition.</b> Marsch på stället i 2 minuter.',
+          '<b>Magmuskler.</b> Halv situp (curl-up) i 30 sekunder.',
+          '<b>Överkropp.</b> Armhävningar i 30 sekunder på din egen nivå.',
+          '<b>Underkropp.</b> Uppresningar från stol i 30 sekunder.'
+        ],
+        contentsNote: 'För varje test skriver du in antalet repetitioner, och appen räknar ut din nivå på en skala 1–5. Till sist ser du ditt resultat i ett diagram.',
+        needsTitle: 'Det här behöver du',
+        needs: [
+          'En stadig stol',
+          'Cirka två kvadratmeter fritt utrymme',
+          'En vägg eller en köksbänk för armhävningarna',
+          'En timer finns i den här appen, så du behöver ingen separat klocka'
+        ],
+        needsNote: 'Du behöver ingen pulsmätare eller andra apparater.',
+        safetyTitle: 'Säkerhet',
+        safety: [
+          'Avbryt testet direkt om du får ont i bröstet, känner dig yr eller mår mycket illa.',
+          'Gör inte testet om du har feber eller en akut skada.',
+          'Om du har en känd hjärtsjukdom, prata först med din vårdgivare.',
+          'Värm upp några minuter innan du börjar, till exempel genom att gå på stället och rulla med axlarna.',
+          'Vila mellan testerna tills andningen har lugnat sig.'
+        ],
+        start: 'Starta kartläggningen →',
+        chooseLevel: 'Välj din nivå',
+        instructions: 'Så gör du',
+        recordResult: 'Skriv in ditt resultat',
+        referenceValues: 'Referensvärden',
+        tableHead: [
+          'Nivå',
+          'Repetitioner',
+          'Beskrivning'
+        ],
+        timer: 'Timer',
+        timerGetReady: 'Gör dig redo',
+        timerGo: 'Kör nu!',
+        timerDone: 'Klart',
+        timerTimeUp: 'Tiden är ute!',
+        timerStart: 'Starta timern',
+        timerCancel: 'Avbryt',
+        timerStop: 'Stoppa',
+        timerReset: 'Nollställ timern',
+        prev: '← Föregående',
+        next: 'Nästa test →',
+        showResults: 'Visa resultat →',
+        yourLevel: 'Din nivå i fystestet: <strong>{n} / 5</strong>',
+        reps: {
+          one: '{n} repetition',
+          other: '{n} repetitioner'
+        },
+        levelAndReps: 'nivå {level}, {reps}',
+        eased: '{text}, lättare variant',
+        resultsEyebrow: 'Ditt resultat',
+        resultsTitle: 'Din <em>profil</em> för fysisk prestationsförmåga',
+        resultsSub: 'Varje axel visar nivån inom ett område på en skala 1–5. Ett högt värde betyder att området fungerar bra för dig i vardagen.',
+        resultsNote: '<strong>Så läser du ditt resultat.</strong> Referensvärdena är ungefärliga och inte medicinska. De är gjorda för hela den vuxna befolkningen, så de tar inte hänsyn till din ålder eller bakgrund. Använd dem som en grov utgångspunkt, inte som ett betyg.<br /><br />Det verkliga värdet av ett test som du gör hemma är att se din egen förändring. Gör testet igen om 8–12 veckor med samma instruktioner och jämför framför allt antalet repetitioner med förra gången.',
+        saveNote: 'Vi sparar inte dina svar, så jag rekommenderar att du laddar ner bilden till din egen enhet.',
+        download: 'Spara bild ↓',
+        restart: 'Börja om',
+        datasetLabel: 'Ditt resultat',
+        tooltip: 'Nivå {n} / 5'
+      },
+      tests: {
+        kestavyys: {
+          title: 'Kondition',
+          sub: 'Marsch på stället i 2 minuter',
+          steps: [
+            'Stå med rak hållning och fötterna höftbrett isär.',
+            'Marschera på stället så raskt du orkar i två minuter. Lyft knät ungefär till höfthöjd.',
+            'Du kan svänga med armarna eller ta stöd mot en vägg eller en stolsrygg.',
+            'Räkna bara lyften med höger knä.'
+          ],
+          tip: '',
+          inputLabel: 'Lyft med höger knä',
+          easing: 'Jag marscherade sittande eller med lågt knälyft',
+          easingNote: 'Med en lättare variant är nivån högst 3.',
+          table: [
+            ['1', 'under 50', 'Jag blir snabbt andfådd av vardagliga ansträngningar'],
+            ['2', '50–69', 'Trappor och rask promenad känns jobbiga'],
+            ['3', '70–89', 'Jag klarar vardagen bra'],
+            ['4', '90–109', 'Jag orkar även längre ansträngningar'],
+            ['5', '110 eller fler', 'God kondition']
+          ]
+        },
+        vatsa: {
+          title: 'Magmuskler',
+          sub: 'Halv situp (curl-up) i 30 sekunder',
+          steps: [
+            'Ligg på rygg med böjda knän och fotsulorna i golvet. Haka inte fast fötterna under något.',
+            'Armarna ligger raka på golvet längs låren, med fingrarna mot hälarna.',
+            'Lyft axlarna från golvet så att fingrarna glider cirka 8 centimeter framåt.',
+            'Sänk axlarna ner igen. Håll hakan borta från bröstet under hela rörelsen.'
+          ],
+          tip: 'Gör så många korrekta repetitioner som du kan på 30 sekunder.',
+          inputLabel: 'Korrekta repetitioner',
+          table: [
+            ['1', 'under 8', 'Bålen tröttnar direkt'],
+            ['2', '8–13', 'Grundstyrkan finns'],
+            ['3', '14–19', 'Räcker för vardagens behov'],
+            ['4', '20–25', 'God uthållighet i bålen'],
+            ['5', '26 eller fler', 'Stark bål']
+          ]
+        },
+        ylavartalo: {
+          title: 'Överkropp',
+          sub: 'Armhävningar i 30 sekunder',
+          levels: [
+            'Händerna mot väggen',
+            'Händerna på köksbänken',
+            'Händerna på kanten av en stol eller soffa',
+            'Knäna i golvet',
+            'Tårna i golvet'
+          ],
+          levelPrompt: 'Välj den nivå där du klarar minst 5 men högst 20 korrekta repetitioner.',
+          steps: [
+            'Placera händerna lite bredare än axlarna, med fingrarna pekande framåt.',
+            'Håll bålen rak och stabil under hela rörelsen.',
+            'I det nedre läget närmar sig bröstkorgen underlaget, i det övre läget sträcker du ut armbågarna helt.'
+          ],
+          tip: 'När repetitionerna börjar gå lätt kan du gå vidare till nästa nivå. Även om antalet repetitioner då minskar har din form blivit bättre.',
+          inputLabel: 'Korrekta repetitioner',
+          table: [
+            ['Nivå 1–2 (vägg eller köksbänk)', '1', '2'],
+            ['Nivå 3 (stol eller soffa)', '2', '3'],
+            ['Nivå 4 (knäna i golvet)', '3', '4'],
+            ['Nivå 5 (tårna i golvet)', '4', '5']
+          ],
+          tableHead: [
+            'Armhävningsnivå',
+            'Under 15 repetitioner',
+            '15 repetitioner eller fler'
+          ],
+          tableNote: 'Siffrorna i tabellen är nivåer i fystestet på en skala 1–5.'
+        },
+        alavartalo: {
+          title: 'Underkropp',
+          sub: 'Uppresningar från stol i 30 sekunder',
+          steps: [
+            'Sitt på stolens framkant med fotsulorna stadigt i golvet.',
+            'Håll armarna i kors över bröstet.',
+            'Res dig upp tills du står helt rak och sätt dig sedan kontrollerat ner igen.'
+          ],
+          tip: 'Gör så många repetitioner som du kan på 30 sekunder.',
+          inputLabel: 'Uppresningar',
+          easing: 'Jag tog hjälp av händerna (tryckte mot låren eller armstöden)',
+          easingNote: 'Om du tog hjälp av händerna är nivån 1, oavsett antalet repetitioner. Skriv upp det, så att du kan jämföra rättvist nästa gång.',
+          table: [
+            ['1', 'under 10', 'Det kräver ansträngning att resa sig'],
+            ['2', '10–13', 'Det går, men det känns i låren'],
+            ['3', '14–17', 'Tillräcklig styrka i underkroppen'],
+            ['4', '18–21', 'God uthållighet i underkroppen'],
+            ['5', '22 eller fler', 'Stark underkropp']
+          ]
+        }
+      }
+    },
+    ru: {
+      ui: {
+        docTitle: 'Оценка физической формы · 3K',
+        docDescription: 'Инструмент самооценки физической формы',
+        language: 'Язык',
+        eyebrow: 'Физическая форма',
+        title: 'Оценка: <em>Тест физической формы</em>',
+        intro: 'При желании вы можете оценить свою физическую форму. Тест рассчитан на выполнение дома без специального оборудования и подходит для любого уровня подготовки.',
+        meta: [
+          '<strong>4</strong> теста',
+          '<strong>15</strong> минут',
+          '<strong>0</strong> тренажёров'
+        ],
+        contentsTitle: 'Что входит в тест',
+        contents: [
+          '<b>Выносливость.</b> Марш на месте — 2 минуты.',
+          '<b>Мышцы живота.</b> Частичные скручивания — 30 секунд.',
+          '<b>Верхняя часть тела.</b> Отжимания на подходящем вам уровне — 30 секунд.',
+          '<b>Нижняя часть тела.</b> Вставания со стула — 30 секунд.'
+        ],
+        contentsNote: 'В каждом тесте записывается количество повторений, и приложение определяет по нему ваш уровень по шкале 1–5. В конце вы увидите свои результаты в виде диаграммы.',
+        needsTitle: 'Что вам понадобится',
+        needs: [
+          'Устойчивый стул',
+          'Около двух квадратных метров свободного места',
+          'Стена или кухонная столешница для отжиманий',
+          'Таймер есть в этом приложении, отдельные часы не нужны'
+        ],
+        needsNote: 'Пульсометр или другие устройства не нужны.',
+        safetyTitle: 'Безопасность',
+        safety: [
+          'Сразу прекратите тест, если почувствуете боль в груди, головокружение или сильную тошноту.',
+          'Не выполняйте тест при повышенной температуре или острой травме.',
+          'Если у вас есть известное заболевание сердца, сначала проконсультируйтесь с лечащим врачом.',
+          'Перед началом разомнитесь несколько минут, например пройдитесь на месте и сделайте круговые движения плечами.',
+          'Между тестами делайте перерыв, пока дыхание не восстановится.'
+        ],
+        start: 'Начать оценку →',
+        chooseLevel: 'Выберите свой уровень',
+        instructions: 'Как выполнять',
+        recordResult: 'Запишите свой результат',
+        referenceValues: 'Ориентировочные значения',
+        tableHead: [
+          'Уровень',
+          'Повторения',
+          'Описание'
+        ],
+        timer: 'Таймер',
+        timerGetReady: 'Приготовьтесь',
+        timerGo: 'Выполняйте!',
+        timerDone: 'Готово',
+        timerTimeUp: 'Время вышло!',
+        timerStart: 'Запустить таймер',
+        timerCancel: 'Отмена',
+        timerStop: 'Остановить',
+        timerReset: 'Сбросить таймер',
+        prev: '← Предыдущий',
+        next: 'Следующий тест →',
+        showResults: 'Показать результаты →',
+        yourLevel: 'Ваш уровень в тесте: <strong>{n} / 5</strong>',
+        reps: {
+          one: '{n} повторение',
+          few: '{n} повторения',
+          many: '{n} повторений',
+          other: '{n} повторения'
+        },
+        levelAndReps: 'уровень {level}, {reps}',
+        eased: '{text}, облегчённый вариант',
+        resultsEyebrow: 'Ваши результаты',
+        resultsTitle: 'Ваш <em>профиль</em> физической формы',
+        resultsSub: 'Каждая ось показывает уровень в одной из областей по шкале 1–5. Высокое значение означает, что эта сторона вашей формы хорошо помогает вам в повседневной жизни.',
+        resultsNote: '<strong>Как читать результаты.</strong> Ориентировочные значения дают лишь общее представление и не являются медицинскими. Они составлены для всего взрослого населения, поэтому не учитывают ваш возраст и индивидуальные особенности. Используйте их как приблизительную отправную точку, а не как отметку.<br /><br />Настоящая ценность домашнего теста — в ваших собственных изменениях. Пройдите тест снова через 8–12 недель по тем же инструкциям и сравните прежде всего количество повторений с прошлым разом.',
+        saveNote: 'Мы не сохраняем ваши ответы, поэтому рекомендую скачать это изображение на своё устройство.',
+        download: 'Сохранить изображение ↓',
+        restart: 'Начать заново',
+        datasetLabel: 'Ваши результаты',
+        tooltip: 'Уровень {n} / 5'
+      },
+      tests: {
+        kestavyys: {
+          title: 'Выносливость',
+          sub: 'Марш на месте — 2 минуты',
+          steps: [
+            'Встаньте прямо, ноги на ширине таза.',
+            'Маршируйте на месте в самом бодром темпе, какой можете выдержать, в течение двух минут. Поднимайте колено примерно до уровня таза.',
+            'Можно двигать руками в такт или держаться за стену или спинку стула.',
+            'Считайте только подъёмы правого колена.'
+          ],
+          tip: '',
+          inputLabel: 'Подъёмы правого колена',
+          easing: 'Марш выполнен сидя или с невысоким подъёмом колена',
+          easingNote: 'При облегчённом выполнении уровень — не выше 3.',
+          table: [
+            ['1', 'менее 50', 'Быстро задыхаюсь при повседневных нагрузках'],
+            ['2', '50–69', 'Лестница и быстрая ходьба ощутимо утомляют'],
+            ['3', '70–89', 'Хорошо справляюсь с повседневными делами'],
+            ['4', '90–109', 'Выдерживаю и более длительные нагрузки'],
+            ['5', '110 или больше', 'Хорошая выносливость']
+          ]
+        },
+        vatsa: {
+          title: 'Мышцы живота',
+          sub: 'Частичные скручивания — 30 секунд',
+          steps: [
+            'Лягте на спину, согните ноги в коленях, стопы поставьте на пол. Ноги ничем не фиксируйте.',
+            'Прямые руки лежат на полу вдоль бёдер, пальцы направлены к пяткам.',
+            'Оторвите плечи от пола так, чтобы пальцы скользнули вперёд примерно на 8 сантиметров.',
+            'Опустите плечи обратно. Во время всего движения не прижимайте подбородок к груди.'
+          ],
+          tip: 'За 30 секунд сделайте столько правильных повторений, сколько сможете.',
+          inputLabel: 'Правильные повторения',
+          table: [
+            ['1', 'менее 8', 'Мышцы корпуса сразу устают'],
+            ['2', '8–13', 'Базовая сила есть'],
+            ['3', '14–19', 'Достаточно для повседневных задач'],
+            ['4', '20–25', 'Хорошая выносливость мышц корпуса'],
+            ['5', '26 или больше', 'Сильные мышцы корпуса']
+          ]
+        },
+        ylavartalo: {
+          title: 'Верхняя часть тела',
+          sub: 'Отжимания — 30 секунд',
+          levels: [
+            'Руки упираются в стену',
+            'Руки на кухонной столешнице',
+            'Руки на краю стула или дивана',
+            'Колени на полу',
+            'Носки на полу'
+          ],
+          levelPrompt: 'Выберите уровень, на котором вы можете сделать не менее 5, но не более 20 правильных повторений.',
+          steps: [
+            'Поставьте руки чуть шире плеч, пальцы направлены вперёд.',
+            'Держите корпус прямым и устойчивым на протяжении всего движения.',
+            'В нижней точке грудь приближается к опоре, в верхней — руки полностью выпрямляются в локтях.'
+          ],
+          tip: 'Когда повторения начнут даваться легко, переходите на следующий уровень. Даже если количество повторений при этом уменьшится, ваша форма всё равно стала лучше.',
+          inputLabel: 'Правильные повторения',
+          table: [
+            ['Уровень 1–2 (стена или столешница)', '1', '2'],
+            ['Уровень 3 (стул или диван)', '2', '3'],
+            ['Уровень 4 (колени на полу)', '3', '4'],
+            ['Уровень 5 (носки на полу)', '4', '5']
+          ],
+          tableHead: [
+            'Уровень отжиманий',
+            'Менее 15 повторений',
+            '15 повторений или больше'
+          ],
+          tableNote: 'Числа в таблице — это уровни теста по шкале 1–5.'
+        },
+        alavartalo: {
+          title: 'Нижняя часть тела',
+          sub: 'Вставания со стула — 30 секунд',
+          steps: [
+            'Сядьте ближе к переднему краю стула, стопы твёрдо стоят на полу.',
+            'Руки скрещены на груди.',
+            'Встаньте, полностью выпрямившись, и плавно, под контролем сядьте обратно.'
+          ],
+          tip: 'За 30 секунд сделайте столько повторений, сколько сможете.',
+          inputLabel: 'Вставания',
+          easing: 'Вставания выполнены с помощью рук (с опорой на бёдра или подлокотники)',
+          easingNote: 'Если вы помогали себе руками, уровень — 1 независимо от количества повторений. Запишите это, чтобы в следующий раз результаты можно было сравнить.',
+          table: [
+            ['1', 'менее 10', 'Вставание требует усилий'],
+            ['2', '10–13', 'Получается, но чувствуется в бёдрах'],
+            ['3', '14–17', 'Достаточная сила нижней части тела'],
+            ['4', '18–21', 'Хорошая выносливость нижней части тела'],
+            ['5', '22 или больше', 'Сильная нижняя часть тела']
+          ]
+        }
+      }
+    },
+    uk: {
+      ui: {
+        docTitle: 'Оцінювання фізичної форми · 3K',
+        docDescription: 'Інструмент самооцінювання фізичної форми',
+        language: 'Мова',
+        eyebrow: 'Фізична форма',
+        title: 'Оцінювання: <em>Фітнес-тест</em>',
+        intro: 'За бажанням ви можете самостійно оцінити свою фізичну форму. Тест розроблено для виконання вдома без спеціального обладнання, і він підходить для будь-якого рівня підготовки.',
+        meta: [
+          '<strong>4</strong> тести',
+          '<strong>15</strong> хвилин',
+          '<strong>0</strong> обладнання'
+        ],
+        contentsTitle: 'Зміст тесту',
+        contents: [
+          '<b>Витривалість.</b> Марш на місці 2 хвилини.',
+          '<b>М’язи живота.</b> Часткові скручування 30 секунд.',
+          '<b>Верхня частина тіла.</b> Віджимання 30 секунд на вашому рівні.',
+          '<b>Нижня частина тіла.</b> Вставання зі стільця 30 секунд.'
+        ],
+        contentsNote: 'Для кожного тесту записується кількість повторень, і застосунок визначає за нею ваш рівень за шкалою 1–5. Наприкінці ви побачите свої результати у вигляді діаграми.',
+        needsTitle: 'Що вам знадобиться',
+        needs: [
+          'Стійкий стілець',
+          'Приблизно два квадратні метри вільного простору',
+          'Стіна або кухонна стільниця для віджимань',
+          'Таймер є в цьому застосунку, окремий годинник не потрібен'
+        ],
+        needsNote: 'Пульсометр чи інші пристрої не потрібні.',
+        safetyTitle: 'Безпека',
+        safety: [
+          'Негайно припиніть тест, якщо відчуваєте біль у грудях, запаморочення або сильну нудоту.',
+          'Не виконуйте тест, якщо у вас підвищена температура або гостра травма.',
+          'Якщо у вас діагностовано захворювання серця, спершу порадьтеся зі своїм лікарем.',
+          'Перед початком розімніться кілька хвилин, наприклад походіть на місці та покрутіть плечима.',
+          'Між тестами робіть перерву, доки дихання не відновиться.'
+        ],
+        start: 'Почати оцінювання →',
+        chooseLevel: 'Оберіть свій рівень',
+        instructions: 'Як виконувати',
+        recordResult: 'Запишіть свій результат',
+        referenceValues: 'Орієнтовні значення',
+        tableHead: [
+          'Рівень',
+          'Повторення',
+          'Опис'
+        ],
+        timer: 'Таймер',
+        timerGetReady: 'Приготуйтеся',
+        timerGo: 'Виконуйте зараз',
+        timerDone: 'Готово',
+        timerTimeUp: 'Час вийшов!',
+        timerStart: 'Запустити таймер',
+        timerCancel: 'Скасувати',
+        timerStop: 'Зупинити',
+        timerReset: 'Скинути таймер',
+        prev: '← Попередній',
+        next: 'Наступний тест →',
+        showResults: 'Показати результати →',
+        yourLevel: 'Ваш рівень у фітнес-тесті: <strong>{n} / 5</strong>',
+        reps: {
+          one: '{n} повторення',
+          few: '{n} повторення',
+          many: '{n} повторень',
+          other: '{n} повторення'
+        },
+        levelAndReps: 'рівень {level}, {reps}',
+        eased: '{text}, полегшений варіант',
+        resultsEyebrow: 'Ваші результати',
+        resultsTitle: '<em>Профіль</em> вашої фізичної форми',
+        resultsSub: 'Кожна вісь показує рівень однієї складової за шкалою 1–5. Високе значення означає, що ця складова добре служить вам у повсякденні.',
+        resultsNote: '<strong>Як читати результати.</strong> Орієнтовні значення приблизні, а не медичні. Їх розроблено для всього дорослого населення, тож вони не враховують ваш вік чи особисті обставини. Використовуйте їх як приблизну відправну точку, а не як оцінку.<br /><br />Справжня цінність домашнього тесту — це ваші власні зміни. Повторіть тест через 8–12 тижнів за тими самими інструкціями й насамперед порівняйте кількість повторень із попереднім разом.',
+        saveNote: 'Ми не зберігаємо ваших відповідей, тому радимо завантажити це зображення на свій пристрій.',
+        download: 'Зберегти зображення ↓',
+        restart: 'Почати спочатку',
+        datasetLabel: 'Ваші результати',
+        tooltip: 'Рівень {n} / 5'
+      },
+      tests: {
+        kestavyys: {
+          title: 'Витривалість',
+          sub: 'Марш на місці 2 хвилини',
+          steps: [
+            'Станьте рівно, ноги на ширині стегон.',
+            'Крокуйте на місці так енергійно, як можете, протягом двох хвилин. Піднімайте коліно приблизно до висоти стегна.',
+            'Можете розмахувати руками в такт або триматися за стіну чи спинку стільця.',
+            'Рахуйте лише підйоми правого коліна.'
+          ],
+          tip: '',
+          inputLabel: 'Підйоми правого коліна',
+          easing: 'Марш сидячи або з низьким підйомом колін',
+          easingNote: 'За полегшеного виконання рівень становить не більше 3.',
+          table: [
+            ['1', 'менше 50', 'Швидко задихаюся від повсякденних навантажень'],
+            ['2', '50–69', 'Сходи та швидка ходьба даються взнаки'],
+            ['3', '70–89', 'Добре справляюся з повсякденними справами'],
+            ['4', '90–109', 'Витримую й тривалі навантаження'],
+            ['5', '110 або більше', 'Добра витривалість']
+          ]
+        },
+        vatsa: {
+          title: 'М’язи живота',
+          sub: 'Часткові скручування 30 секунд',
+          steps: [
+            'Ляжте на спину, коліна зігнуті, стопи на підлозі. Ноги нічим не фіксуйте.',
+            'Руки випрямлені на підлозі вздовж стегон, пальці спрямовані до п’ят.',
+            'Відірвіть плечі від підлоги так, щоб пальці ковзнули вперед приблизно на 8 сантиметрів.',
+            'Опустіть плечі назад. Протягом усього руху не притискайте підборіддя до грудей.'
+          ],
+          tip: 'За 30 секунд виконайте стільки правильних повторень, скільки зможете.',
+          inputLabel: 'Правильні повторення',
+          table: [
+            ['1', 'менше 8', 'М’язи корпусу втомлюються одразу'],
+            ['2', '8–13', 'Базова сила є'],
+            ['3', '14–19', 'Достатньо для повсякденних потреб'],
+            ['4', '20–25', 'Добра витривалість м’язів корпусу'],
+            ['5', '26 або більше', 'Сильні м’язи корпусу']
+          ]
+        },
+        ylavartalo: {
+          title: 'Верхня частина тіла',
+          sub: 'Віджимання 30 секунд',
+          levels: [
+            'Руки на стіні',
+            'Руки на кухонній стільниці',
+            'Руки на краю стільця чи дивана',
+            'Коліна на підлозі',
+            'Пальці ніг на підлозі'
+          ],
+          levelPrompt: 'Оберіть рівень, на якому ви можете виконати щонайменше 5, але не більше 20 правильних повторень.',
+          steps: [
+            'Поставте руки трохи ширше за плечі, пальці спрямовані вперед.',
+            'Протягом усього руху тримайте корпус рівним і стабільним.',
+            'У нижній точці грудна клітка наближається до опори, у верхній — лікті повністю випрямляються.'
+          ],
+          tip: 'Коли повторення почнуть даватися легко, переходьте на наступний рівень. Навіть якщо кількість повторень при цьому зменшиться, ваша форма покращилася.',
+          inputLabel: 'Правильні повторення',
+          table: [
+            ['Рівень 1–2 (стіна або стільниця)', '1', '2'],
+            ['Рівень 3 (стілець або диван)', '2', '3'],
+            ['Рівень 4 (коліна на підлозі)', '3', '4'],
+            ['Рівень 5 (пальці ніг на підлозі)', '4', '5']
+          ],
+          tableHead: ['Рівень віджимань', 'Менше 15 повторень', '15 повторень або більше'],
+          tableNote: 'Числа в таблиці — це рівні фітнес-тесту за шкалою 1–5.'
+        },
+        alavartalo: {
+          title: 'Нижня частина тіла',
+          sub: 'Вставання зі стільця 30 секунд',
+          steps: [
+            'Сядьте на передній край стільця, стопи стійко на підлозі.',
+            'Руки схрещені на грудях.',
+            'Встаньте, повністю випрямившись, і контрольовано сядьте назад.'
+          ],
+          tip: 'За 30 секунд виконайте стільки повторень, скільки зможете.',
+          inputLabel: 'Вставання',
+          easing: 'З опорою на руки (відштовхуючись від стегон або підлокітників)',
+          easingNote: 'Якщо ви допомагали собі руками, рівень — 1 незалежно від кількості повторень. Запишіть це, щоб наступного разу результати можна було порівняти.',
+          table: [
+            ['1', 'менше 10', 'Вставання потребує зусиль'],
+            ['2', '10–13', 'Вдається, але відчувається в стегнах'],
+            ['3', '14–17', 'Достатня сила нижньої частини тіла'],
+            ['4', '18–21', 'Добра витривалість нижньої частини тіла'],
+            ['5', '22 або більше', 'Сильна нижня частина тіла']
+          ]
+        }
+      }
+    },
+    ar: {
+      ui: {
+        docTitle: 'تقييم الأداء البدني · 3K',
+        docDescription: 'أداة التقييم الذاتي للأداء البدني',
+        language: 'اللغة',
+        eyebrow: 'الأداء البدني',
+        title: 'تقييم: <em>اختبار اللياقة</em>',
+        intro: 'يمكنك، إن رغبت، إجراء تقييم للياقتك البدنية. صُمّم الاختبار ليُجرى في المنزل دون أي أدوات خاصة، وهو مناسب لجميع مستويات اللياقة.',
+        meta: [
+          '<strong>4</strong> اختبارات',
+          '<strong>15</strong> دقيقة',
+          '<strong>0</strong> أدوات'
+        ],
+        contentsTitle: 'محتوى الاختبار',
+        contents: [
+          '<b>لياقة التحمّل.</b> المشي في المكان لمدة دقيقتين.',
+          '<b>عضلات البطن.</b> تمرين البطن الجزئي (الكرنش) لمدة 30 ثانية.',
+          '<b>الجزء العلوي من الجسم.</b> تمرين الضغط لمدة 30 ثانية حسب مستواك.',
+          '<b>الجزء السفلي من الجسم.</b> النهوض من الكرسي لمدة 30 ثانية.'
+        ],
+        contentsNote: 'يُسجَّل عدد التكرارات في كل اختبار، ويحسب التطبيق منه مستواك على مقياس 1–5. وفي النهاية ترى نتائجك في رسم بياني.',
+        needsTitle: 'ما تحتاج إليه',
+        needs: [
+          'كرسي ثابت',
+          'مساحة خالية تبلغ نحو مترين مربعين',
+          'جدار أو سطح عمل في المطبخ لتمرين الضغط',
+          'المؤقت موجود في هذا التطبيق، فلا حاجة إلى ساعة منفصلة'
+        ],
+        needsNote: 'لا حاجة إلى جهاز لقياس النبض أو أي أجهزة أخرى.',
+        safetyTitle: 'السلامة',
+        safety: [
+          'أوقف الاختبار فورًا إذا شعرت بألم في الصدر أو دوار أو غثيان شديد.',
+          'لا تُجرِ الاختبار إذا كنت مصابًا بالحمّى أو بإصابة حادّة.',
+          'إذا كنت تعاني من مرض معروف في القلب، فاستشر طبيبك أو الجهة التي تتابع علاجك أولًا.',
+          'قم بالإحماء لبضع دقائق قبل البدء، مثلًا بالمشي في المكان وتدوير الكتفين.',
+          'خذ استراحة بين الاختبارات حتى يستقرّ تنفّسك.'
+        ],
+        start: 'ابدأ التقييم ←',
+        chooseLevel: 'اختر مستواك',
+        instructions: 'طريقة الأداء',
+        recordResult: 'سجّل نتيجتك',
+        referenceValues: 'القيم المرجعية',
+        tableHead: [
+          'المستوى',
+          'التكرارات',
+          'الوصف'
+        ],
+        timer: 'المؤقت',
+        timerGetReady: 'استعد',
+        timerGo: 'نفّذ الآن',
+        timerDone: 'تم',
+        timerTimeUp: 'انتهى الوقت!',
+        timerStart: 'شغّل المؤقت',
+        timerCancel: 'إلغاء',
+        timerStop: 'إيقاف',
+        timerReset: 'إعادة ضبط المؤقت',
+        prev: '→ السابق',
+        next: 'الاختبار التالي ←',
+        showResults: 'عرض النتائج ←',
+        yourLevel: 'مستواك في اختبار اللياقة: <strong>{n} / 5</strong>',
+        reps: {
+          zero: '{n} تكرار',
+          one: '{n} تكرار',
+          two: '{n} تكرار',
+          few: '{n} تكرارات',
+          many: '{n} تكرارًا',
+          other: '{n} تكرار'
+        },
+        levelAndReps: 'المستوى {level}، {reps}',
+        eased: '{text}، بأداء مخفّف',
+        resultsEyebrow: 'نتائجك',
+        resultsTitle: '<em>ملف</em> أدائك البدني',
+        resultsSub: 'يمثّل كل محور مستوى جانب واحد على مقياس 1–5. وتعني القيمة المرتفعة أن هذا الجانب يخدمك جيدًا في حياتك اليومية.',
+        resultsNote: '<strong>كيف تقرأ نتائجك.</strong> القيم المرجعية إرشادية وليست طبية. وقد وُضعت لعموم البالغين، لذا فهي لا تأخذ عمرك أو خلفيتك في الحسبان. استخدمها نقطةَ انطلاق تقريبية، لا درجةَ تقييم.<br /><br />القيمة الحقيقية للاختبار المنزلي هي التغيّر الذي تحقّقه أنت. أعد الاختبار بعد 8–12 أسبوعًا وفق التعليمات نفسها، وقارن أولًا عدد التكرارات بالمرة السابقة.',
+        saveNote: 'لا نحفظ إجاباتك، لذا أنصحك بتنزيل هذه الصورة على جهازك الخاص.',
+        download: 'احفظ الصورة ↓',
+        restart: 'ابدأ من جديد',
+        datasetLabel: 'نتائجك',
+        tooltip: 'المستوى {n} / 5'
+      },
+      tests: {
+        kestavyys: {
+          title: 'لياقة التحمّل',
+          sub: 'المشي في المكان لمدة دقيقتين',
+          steps: [
+            'قف منتصب القامة، وقدماك متباعدتان بعرض الحوض.',
+            'امشِ في مكانك بأسرع ما تستطيع لمدة دقيقتين. ارفع ركبتك إلى مستوى الحوض تقريبًا.',
+            'يمكنك تحريك ذراعيك مع المشي، أو الاستناد إلى الجدار أو إلى ظهر الكرسي.',
+            'احسب مرات رفع الركبة اليمنى فقط.'
+          ],
+          tip: '',
+          inputLabel: 'مرات رفع الركبة اليمنى',
+          easing: 'مشيت وأنا جالس أو برفع منخفض للركبتين',
+          easingNote: 'عند الأداء المخفّف يكون المستوى 3 كحدّ أقصى.',
+          table: [
+            ['1', 'أقل من 50', 'ألهث بسرعة مع المجهود اليومي'],
+            ['2', '50–69', 'أشعر بالتعب عند صعود الدرج والمشي السريع'],
+            ['3', '70–89', 'أتدبّر أمور حياتي اليومية جيدًا'],
+            ['4', '90–109', 'أستطيع تحمّل المجهود لفترات أطول'],
+            ['5', '110 أو أكثر', 'لياقة تحمّل جيدة']
+          ]
+        },
+        vatsa: {
+          title: 'عضلات البطن',
+          sub: 'تمرين البطن الجزئي (الكرنش) لمدة 30 ثانية',
+          steps: [
+            'استلقِ على ظهرك، مع ثني الركبتين ووضع القدمين على الأرض. لا تثبّت قدميك بأي شيء.',
+            'ذراعاك ممدودتان على الأرض بمحاذاة الفخذين، والأصابع متّجهة نحو الكعبين.',
+            'ارفع كتفيك عن الأرض بحيث تنزلق أصابعك نحو 8 سنتيمترات إلى الأمام.',
+            'أنزل كتفيك مرة أخرى. أبقِ ذقنك بعيدًا عن صدرك طوال الحركة.'
+          ],
+          tip: 'قم بأكبر عدد ممكن من التكرارات الصحيحة خلال 30 ثانية.',
+          inputLabel: 'التكرارات الصحيحة',
+          table: [
+            ['1', 'أقل من 8', 'تتعب عضلات الجذع بسرعة'],
+            ['2', '8–13', 'توجد قوة أساسية'],
+            ['3', '14–19', 'كافية لاحتياجات الحياة اليومية'],
+            ['4', '20–25', 'قدرة تحمّل جيدة لعضلات الجذع'],
+            ['5', '26 أو أكثر', 'جذع قوي']
+          ]
+        },
+        ylavartalo: {
+          title: 'الجزء العلوي من الجسم',
+          sub: 'تمرين الضغط لمدة 30 ثانية',
+          levels: [
+            'اليدان على الجدار',
+            'اليدان على سطح عمل المطبخ',
+            'اليدان على حافة كرسي أو أريكة',
+            'الركبتان على الأرض',
+            'أطراف القدمين على الأرض'
+          ],
+          levelPrompt: 'اختر المستوى الذي تستطيع فيه أداء 5 تكرارات صحيحة على الأقل و20 تكرارًا على الأكثر.',
+          steps: [
+            'ضع يديك بمسافة أعرض قليلًا من كتفيك، والأصابع متّجهة إلى الأمام.',
+            'حافظ على استقامة جذعك وثباته طوال الحركة.',
+            'في الوضع السفلي يقترب صدرك من السطح، وفي الوضع العلوي يستقيم مرفقاك تمامًا.'
+          ],
+          tip: 'عندما تصبح التكرارات سهلة، انتقل إلى المستوى التالي. وحتى إن انخفض عدد التكرارات حينها، فإن لياقتك قد تحسّنت.',
+          inputLabel: 'التكرارات الصحيحة',
+          table: [
+            ['المستوى 1–2 (الجدار أو سطح العمل)', '1', '2'],
+            ['المستوى 3 (كرسي أو أريكة)', '2', '3'],
+            ['المستوى 4 (الركبتان على الأرض)', '3', '4'],
+            ['المستوى 5 (أطراف القدمين على الأرض)', '4', '5']
+          ],
+          tableHead: ['مستوى تمرين الضغط', 'أقل من 15 تكرارًا', '15 تكرارًا أو أكثر'],
+          tableNote: 'الأرقام في الجدول هي مستويات اختبار اللياقة على مقياس 1–5.'
+        },
+        alavartalo: {
+          title: 'الجزء السفلي من الجسم',
+          sub: 'النهوض من الكرسي لمدة 30 ثانية',
+          steps: [
+            'اجلس على الحافة الأمامية للكرسي، وقدماك ثابتتان على الأرض.',
+            'ذراعاك متقاطعتان على صدرك.',
+            'انهض واقفًا حتى تستقيم تمامًا، ثم اجلس مرة أخرى بتحكّم.'
+          ],
+          tip: 'قم بأكبر عدد ممكن من التكرارات خلال 30 ثانية.',
+          inputLabel: 'مرات النهوض',
+          easing: 'استعنت بيديّ (دفعت من فخذيّ أو من مسندي الذراعين)',
+          easingNote: 'إذا استعنت بيديك، فمستواك هو 1 بغض النظر عن عدد التكرارات. دوّن ذلك حتى تكون المرة القادمة قابلة للمقارنة.',
+          table: [
+            ['1', 'أقل من 10', 'النهوض يتطلّب جهدًا'],
+            ['2', '10–13', 'أستطيع ذلك، لكنني أشعر به في فخذيّ'],
+            ['3', '14–17', 'قوة كافية في الجزء السفلي من الجسم'],
+            ['4', '18–21', 'قدرة تحمّل جيدة في الجزء السفلي من الجسم'],
+            ['5', '22 أو أكثر', 'جزء سفلي قوي من الجسم']
+          ]
+        }
+      }
+    }
+  };
+
+  // ============ Language ============
+  // Kielet aakkosjärjestyksessä omalla nimellään (latinalaiset, kyrilliset, arabia).
+  const LANGS = [
+    { code: 'de', name: 'Deutsch' },
+    { code: 'en', name: 'English' },
+    { code: 'es', name: 'Español' },
+    { code: 'fr', name: 'Français' },
+    { code: 'so', name: 'Soomaali' },
+    { code: 'fi', name: 'Suomi' },
+    { code: 'sv', name: 'Svenska' },
+    { code: 'ru', name: 'Русский' },
+    { code: 'uk', name: 'Українська' },
+    { code: 'ar', name: 'العربية', rtl: true }
+  ];
+  const DEFAULT_LANG = 'fi';
+  const LANG_STORAGE_KEY = '3k-kieli';
+
+  // Liput SVG-muodossa, koska emoji-liput eivät näy Windowsissa. {id} korvataan uniikilla tunnisteella.
+  const FLAGS = {
+    ar: '<rect width="30" height="20" fill="#006c35"/><path d="M7.5 9.4c.8-1.7 1.6.9 2.4-.5.6-1.1 1.2.2 1.8-.6M12.7 7.3v2.3M14.1 8.8c.7-1.3 1.5.9 2.3-.3.7-1 1.4.6 2.1-.4M19.7 7.1v2.5M21.1 9.2c.6-1.3 1.2.4 1.7-.6" fill="none" stroke="#fff" stroke-width=".8" stroke-linecap="round"/><path d="M8 13.6h12.4M20.4 12.5v2.2M20.4 13.6h1.8" fill="none" stroke="#fff" stroke-width=".9" stroke-linecap="round"/>',
+    de: '<rect width="30" height="20" fill="#ffce00"/><rect width="30" height="13.34" fill="#dd0000"/><rect width="30" height="6.67" fill="#000"/>',
+    en: '<clipPath id="{id}"><path d="M15,10h15v10zv10h-15zh-15v-10zv-10h15z"/></clipPath><rect width="30" height="20" fill="#012169"/><path d="M0,0L30,20M30,0L0,20" stroke="#fff" stroke-width="4"/><path d="M0,0L30,20M30,0L0,20" stroke="#c8102e" stroke-width="2.6" clip-path="url(#{id})"/><path d="M15,0v20M0,10h30" stroke="#fff" stroke-width="6.6"/><path d="M15,0v20M0,10h30" stroke="#c8102e" stroke-width="4"/>',
+    es: '<rect width="30" height="20" fill="#aa151b"/><rect y="5" width="30" height="10" fill="#f1bf00"/>',
+    fi: '<rect width="30" height="20" fill="#fff"/><rect x="8.2" width="5.4" height="20" fill="#002f6c"/><rect y="7.3" width="30" height="5.4" fill="#002f6c"/>',
+    fr: '<rect width="30" height="20" fill="#ef4135"/><rect width="20" height="20" fill="#fff"/><rect width="10" height="20" fill="#0055a4"/>',
+    ru: '<rect width="30" height="20" fill="#d52b1e"/><rect width="30" height="13.34" fill="#0039a6"/><rect width="30" height="6.67" fill="#fff"/>',
+    so: '<rect width="30" height="20" fill="#4189dd"/><polygon points="15.00,4.80 16.29,8.62 20.33,8.67 17.09,11.08 18.29,14.93 15.00,12.60 11.71,14.93 12.91,11.08 9.67,8.67 13.71,8.62" fill="#fff"/>',
+    sv: '<rect width="30" height="20" fill="#006aa7"/><rect x="9.4" width="3.8" height="20" fill="#fecc00"/><rect y="8.1" width="30" height="3.8" fill="#fecc00"/>',
+    uk: '<rect width="30" height="20" fill="#ffd700"/><rect width="30" height="10" fill="#0057b7"/>'
+  };
+
+  // Kieli valitaan: ?lang=xx osoitteessa, sitten aiempi valinta, muuten suomi.
+  function initialLang() {
+    try {
+      const fromUrl = new URLSearchParams(window.location.search).get('lang');
+      if (fromUrl && I18N[fromUrl]) return fromUrl;
+    } catch (e) {
+      // Upotuksessa osoitetta ei välttämättä voi lukea
+    }
+    try {
+      const saved = window.localStorage.getItem(LANG_STORAGE_KEY);
+      if (saved && I18N[saved]) return saved;
+    } catch (e) {
+      // localStorage voi olla estetty upotuksessa
+    }
+    return DEFAULT_LANG;
+  }
+
+  function langInfo(code) {
+    return LANGS.find(l => l.code === code);
+  }
+
+  function langDir() {
+    return langInfo(state.lang).rtl ? 'rtl' : 'ltr';
+  }
+
+  function ui() {
+    return I18N[state.lang].ui;
+  }
+
+  // Korvaa {avain}-paikkamerkit annetuilla arvoilla
+  function fmt(text, vars) {
+    return text.replace(/\{(\w+)\}/g, (m, key) => (key in vars ? vars[key] : m));
+  }
+
+  function applyLang() {
+    document.documentElement.lang = state.lang;
+    document.documentElement.dir = langDir();
+    document.title = ui().docTitle;
+    const desc = document.querySelector('meta[name="description"]');
+    if (desc) desc.setAttribute('content', ui().docDescription);
+  }
+
+  let flagSeq = 0;
+  function flagSvg(code) {
+    const id = 'flag-clip-' + (++flagSeq);
+    return `<span class="lang-flag"><svg viewBox="0 0 30 20" preserveAspectRatio="none" aria-hidden="true" focusable="false">${FLAGS[code].replace(/\{id\}/g, id)}</svg></span>`;
+  }
+
+  function renderLangSelector() {
+    const current = langInfo(state.lang);
+    const options = LANGS.map(l => `
+          <li>
+            <button type="button" class="lang-option" lang="${l.code}"${l.code === state.lang ? ' aria-current="true"' : ''} onclick="setLang('${l.code}')">
+              ${flagSvg(l.code)}<span>${l.name}</span>
+            </button>
+          </li>`).join('');
+    return `
+        <div class="lang" id="lang">
+          <button type="button" class="lang-toggle" id="lang-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="lang-menu" aria-label="${ui().language}: ${current.name}" onclick="toggleLangMenu()">
+            ${flagSvg(current.code)}
+            <span lang="${current.code}">${current.name}</span>
+            <svg class="lang-caret" viewBox="0 0 10 10" aria-hidden="true" focusable="false"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <ul class="lang-menu" id="lang-menu" aria-label="${ui().language}" hidden>${options}
+          </ul>
+        </div>
+    `;
+  }
+
+  function toggleLangMenu() {
+    const menu = $('lang-menu');
+    if (!menu) return;
+    if (menu.hidden) openLangMenu();
+    else closeLangMenu(false);
+  }
+
+  function openLangMenu() {
+    const menu = $('lang-menu');
+    const toggle = $('lang-toggle');
+    menu.hidden = false;
+    menu.style.maxHeight = '';
+    $('lang').classList.add('open');
+    toggle.setAttribute('aria-expanded', 'true');
+
+    // Avaa lista sinne, missä on enemmän tilaa (upotuksen korkeus voi olla rajattu)
+    const rect = toggle.getBoundingClientRect();
+    const spaceAbove = rect.top - 12;
+    const spaceBelow = window.innerHeight - rect.bottom - 12;
+    const openDown = spaceBelow >= menu.scrollHeight || spaceBelow > spaceAbove;
+    menu.classList.toggle('down', openDown);
+    menu.style.maxHeight = Math.max(160, openDown ? spaceBelow : spaceAbove) + 'px';
+
+    const selected = menu.querySelector('[aria-current="true"]') || menu.querySelector('.lang-option');
+    selected.focus({ preventScroll: true });
+  }
+
+  function closeLangMenu(returnFocus) {
+    const menu = $('lang-menu');
+    if (!menu || menu.hidden) return;
+    menu.hidden = true;
+    $('lang').classList.remove('open');
+    const toggle = $('lang-toggle');
+    toggle.setAttribute('aria-expanded', 'false');
+    if (returnFocus) toggle.focus();
+  }
+
+  function setLang(code) {
+    if (!I18N[code]) return;
+    state.lang = code;
+    try {
+      window.localStorage.setItem(LANG_STORAGE_KEY, code);
+    } catch (e) {
+      // Valinta toimii silti tämän sivun ajan
+    }
+    applyLang();
+    render();
+    const toggle = $('lang-toggle');
+    if (toggle) toggle.focus({ preventScroll: true });
+  }
+
+  // Sulje lista, kun klikataan tai siirrytään sen ulkopuolelle
+  document.addEventListener('click', (e) => {
+    const wrap = $('lang');
+    if (wrap && !wrap.contains(e.target)) closeLangMenu(false);
+  });
+  document.addEventListener('focusin', (e) => {
+    const wrap = $('lang');
+    if (wrap && !wrap.contains(e.target)) closeLangMenu(false);
+  });
+
+  // Näppäimistö: Esc sulkee, nuolet liikkuvat listassa
+  document.addEventListener('keydown', (e) => {
+    const menu = $('lang-menu');
+    if (!menu || menu.hidden) return;
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeLangMenu(true);
+      return;
+    }
+    const keys = ['ArrowDown', 'ArrowUp', 'Home', 'End'];
+    if (!keys.includes(e.key)) return;
+    e.preventDefault();
+    const items = Array.from(menu.querySelectorAll('.lang-option'));
+    const i = items.indexOf(document.activeElement);
+    let next = 0;
+    if (e.key === 'End') next = items.length - 1;
+    else if (e.key === 'ArrowDown') next = (i + 1) % items.length;
+    else if (e.key === 'ArrowUp') next = i <= 0 ? items.length - 1 : i - 1;
+    items[next].focus();
+  });
+
   // ============ State ============
   const state = {
     screen: 'welcome',      // 'welcome' | 'test' | 'results'
+    lang: initialLang(),
     currentTest: 0,
     results: {},            // id -> { raw, level, opt }
     draft: {},              // id -> { raw, level, easing }
@@ -893,6 +2813,26 @@
     return m + ':' + String(s).padStart(2, '0');
   }
 
+  // Yhdistää testin logiikan ja valitun kielen tekstit
+  function getTest(i) {
+    return Object.assign({}, TESTS[i], I18N[state.lang].tests[TESTS[i].id]);
+  }
+
+  function getTests() {
+    return TESTS.map((_, i) => getTest(i));
+  }
+
+  // Valitsee kielen mukaisen monikkomuodon, esim. "1 toisto" / "5 toistoa"
+  function plural(forms, n) {
+    let key = 'other';
+    try {
+      key = new Intl.PluralRules(state.lang).select(n);
+    } catch (e) {
+      // Vanha selain: käytetään yleismuotoa
+    }
+    return fmt(forms[key] || forms.other, { n });
+  }
+
   function getDraft(id) {
     if (!state.draft[id]) state.draft[id] = { raw: '', level: null, easing: false };
     return state.draft[id];
@@ -900,6 +2840,8 @@
 
   // ============ Welcome ============
   function renderWelcome() {
+    const t = ui();
+    const list = (items) => items.map(item => `<li>${item}</li>`).join('');
     $('app').innerHTML = `
       <div class="welcome">
         <svg class="welcome-bg" viewBox="0 0 200 200" aria-hidden="true">
@@ -912,52 +2854,37 @@
             <line x1="31" y1="140" x2="169" y2="60" />
           </g>
         </svg>
-        <div class="welcome-eyebrow">Fyysinen suorituskyky</div>
-        <h1>Kartoitus: <em>Kuntotesti</em></h1>
-        <p>Voit halutessasi tehdä itsellesi kuntokartoituksen. Testi on suunniteltu tehtäväksi kotona ilman erillisiä välineitä ja sopii kaikille kuntotasoille.</p>
+        <div class="welcome-eyebrow">${t.eyebrow}</div>
+        <h1>${t.title}</h1>
+        <p>${t.intro}</p>
         <div class="welcome-meta">
-          <span><strong>4</strong> testiä</span>
+          <span>${t.meta[0]}</span>
           <span class="welcome-meta-sep">·</span>
-          <span><strong>15</strong> minuuttia</span>
+          <span>${t.meta[1]}</span>
           <span class="welcome-meta-sep">·</span>
-          <span><strong>0</strong> välineitä</span>
+          <span>${t.meta[2]}</span>
         </div>
 
         <div class="info-card">
-          <div class="info-title">Testin sisältö</div>
-          <ul class="info-list numbered">
-            <li><b>Kestävyyskunto.</b> Paikallaanmarssi 2 minuuttia.</li>
-            <li><b>Vatsalihakset.</b> Osittainen rutistus 30 sekuntia.</li>
-            <li><b>Ylävartalo.</b> Punnerrus 30 sekuntia omalla tasollasi.</li>
-            <li><b>Alavartalo.</b> Tuolilta ylösnousu 30 sekuntia.</li>
-          </ul>
-          <p class="info-note">Jokaisesta testistä kirjataan toistomäärä, ja sovellus laskee siitä tasosi asteikolla 1–5. Lopuksi näet tuloksesi kaaviona.</p>
+          <div class="info-title">${t.contentsTitle}</div>
+          <ul class="info-list numbered">${list(t.contents)}</ul>
+          <p class="info-note">${t.contentsNote}</p>
         </div>
 
         <div class="info-card">
-          <div class="info-title">Mitä tarvitset</div>
-          <ul class="info-list">
-            <li>Tukevan tuolin</li>
-            <li>Noin kahden neliömetrin vapaan tilan</li>
-            <li>Seinän tai keittiön työtason punnerrusta varten</li>
-            <li>Ajastin löytyy tästä sovelluksesta, erillistä kelloa ei tarvita</li>
-          </ul>
-          <p class="info-note">Sykemittaria tai muita laitteita ei tarvita.</p>
+          <div class="info-title">${t.needsTitle}</div>
+          <ul class="info-list">${list(t.needs)}</ul>
+          <p class="info-note">${t.needsNote}</p>
         </div>
 
         <div class="info-card safety">
-          <div class="info-title">Turvallisuus</div>
-          <ul class="info-list">
-            <li>Keskeytä testi heti, jos tunnet rintakipua, huimausta tai voimakasta pahoinvointia.</li>
-            <li>Älä tee testiä kuumeisena tai akuutin vamman kanssa.</li>
-            <li>Jos sinulla on tiedossa oleva sydänsairaus, keskustele ensin hoitavan tahon kanssa.</li>
-            <li>Lämmittele muutama minuutti ennen aloitusta, esimerkiksi kävelemällä paikallaan ja pyörittelemällä olkapäitä.</li>
-            <li>Pidä testien välissä tauko, kunnes hengitys tasaantuu.</li>
-          </ul>
+          <div class="info-title">${t.safetyTitle}</div>
+          <ul class="info-list">${list(t.safety)}</ul>
         </div>
 
-        <div style="margin-top:20px">
-          <button class="btn-primary" onclick="startTests()">Aloita kartoitus →</button>
+        <div class="welcome-actions" dir="ltr" style="margin-top:20px">
+          ${renderLangSelector()}
+          <button class="btn-primary" dir="${langDir()}" onclick="startTests()">${t.start}</button>
         </div>
       </div>
     `;
@@ -974,7 +2901,7 @@
 
   // ============ Test screen ============
   function renderTest() {
-    const t = TESTS[state.currentTest];
+    const t = getTest(state.currentTest);
     const d = getDraft(t.id);
 
     const dots = TESTS.map((_, i) => {
@@ -997,7 +2924,7 @@
       }).join('');
       levelBlock = `
         <div class="block">
-          <div class="block-title">1. Valitse oma tasosi</div>
+          <div class="block-title">1. ${ui().chooseLevel}</div>
           <p style="font-size:14px;margin-bottom:12px">${t.levelPrompt}</p>
           <div class="level-grid">${opts}</div>
         </div>
@@ -1027,7 +2954,7 @@
           }
           return `<th>${h}</th>`;
         }).join('')
-      : '<th>Taso</th><th>Toistot</th><th>Kuvaus</th>';
+      : ui().tableHead.map(h => `<th>${h}</th>`).join('');
     const rows = t.table.map(r => {
       if (t.tableMatrix) {
         return `
@@ -1062,21 +2989,21 @@
         ${levelBlock}
 
         <div class="block">
-          <div class="block-title">${stepNum}. Suoritusohje</div>
+          <div class="block-title">${stepNum}. ${ui().instructions}</div>
           <ul class="info-list numbered">${steps}</ul>
           ${t.tip ? `<p class="info-note">${t.tip}</p>` : ''}
         </div>
 
         <div class="timer-box" id="timer-box">
-          <div class="timer-label" id="timer-label">Ajastin</div>
+          <div class="timer-label" id="timer-label">${ui().timer}</div>
           <div class="timer-display" id="timer-display">${formatTime(t.duration)}</div>
           <div class="timer-btns" id="timer-btns">
-            <button class="btn-timer" onclick="startTimer()">Käynnistä ajastin</button>
+            <button class="btn-timer" onclick="startTimer()">${ui().timerStart}</button>
           </div>
         </div>
 
         <div class="block">
-          <div class="block-title">${stepNum + 1}. Kirjaa tuloksesi</div>
+          <div class="block-title">${stepNum + 1}. ${ui().recordResult}</div>
           <div class="input-row">
             <span class="input-label">${t.inputLabel}</span>
             <input class="num-input" type="number" inputmode="numeric" min="0" max="999"
@@ -1088,7 +3015,7 @@
         </div>
 
         <div class="block">
-          <div class="block-title">Viitearvot</div>
+          <div class="block-title">${ui().referenceValues}</div>
           <table class="ref-table">
             <thead><tr>${headCells}</tr></thead>
             <tbody>${rows}</tbody>
@@ -1099,10 +3026,10 @@
 
         <div class="nav-row">
           ${state.currentTest > 0
-            ? '<button class="btn-secondary" onclick="prevTest()">← Edellinen</button>'
+            ? `<button class="btn-secondary" onclick="prevTest()">${ui().prev}</button>`
             : '<span></span>'}
           <button class="btn-primary" id="next-btn" onclick="nextTest()" ${canProceedNow() ? '' : 'disabled'}>
-            ${state.currentTest === TESTS.length - 1 ? 'Näytä tulokset →' : 'Seuraava testi →'}
+            ${state.currentTest === TESTS.length - 1 ? ui().showResults : ui().next}
           </button>
         </div>
       </div>
@@ -1111,11 +3038,11 @@
 
   function renderLevelBadge(t, d) {
     if (d.level === null) return '';
-    return `<div class="level-badge">Kuntotestin tasosi: <strong>${d.level} / 5</strong></div>`;
+    return `<div class="level-badge">${fmt(ui().yourLevel, { n: d.level })}</div>`;
   }
 
   function recalcLevel() {
-    const t = TESTS[state.currentTest];
+    const t = getTest(state.currentTest);
     const d = getDraft(t.id);
 
     let ready = true;
@@ -1139,7 +3066,7 @@
   }
 
   function canProceedNow() {
-    const t = TESTS[state.currentTest];
+    const t = getTest(state.currentTest);
     const d = getDraft(t.id);
     if (d.raw === '') return false;
     if (isNaN(Number(d.raw))) return false;
@@ -1151,21 +3078,21 @@
   }
 
   function setRaw(val) {
-    const t = TESTS[state.currentTest];
+    const t = getTest(state.currentTest);
     const d = getDraft(t.id);
     d.raw = val;
     recalcLevel();
   }
 
   function toggleEasing(checked) {
-    const t = TESTS[state.currentTest];
+    const t = getTest(state.currentTest);
     const d = getDraft(t.id);
     d.easing = checked;
     recalcLevel();
   }
 
   function selectLevel(n) {
-    const t = TESTS[state.currentTest];
+    const t = getTest(state.currentTest);
     const d = getDraft(t.id);
     d.levelChoice = n;
     d.level = null;
@@ -1197,34 +3124,34 @@
 
     if (timer.phase === 'lead') {
       box.classList.add('running');
-      label.textContent = 'Valmistaudu';
+      label.textContent = ui().timerGetReady;
       display.textContent = timer.leadRemaining;
-      btns.innerHTML = '<button class="btn-timer ghost" onclick="resetTimer()">Peruuta</button>';
+      btns.innerHTML = '<button class="btn-timer ghost" onclick="resetTimer()">' + ui().timerCancel + '</button>';
       return;
     }
     if (timer.phase === 'run') {
       box.classList.add('running');
-      label.textContent = 'Suorita nyt';
+      label.textContent = ui().timerGo;
       display.textContent = formatTime(timer.remaining);
-      btns.innerHTML = '<button class="btn-timer ghost" onclick="resetTimer()">Pysäytä</button>';
+      btns.innerHTML = '<button class="btn-timer ghost" onclick="resetTimer()">' + ui().timerStop + '</button>';
       return;
     }
     if (timer.phase === 'done') {
       box.classList.add('finished');
-      label.textContent = 'Valmis';
-      display.textContent = 'Aika!';
-      btns.innerHTML = '<button class="btn-timer ghost" onclick="resetTimer()">Nollaa ajastin</button>';
+      label.textContent = ui().timerDone;
+      display.textContent = ui().timerTimeUp;
+      btns.innerHTML = '<button class="btn-timer ghost" onclick="resetTimer()">' + ui().timerReset + '</button>';
       return;
     }
     // idle
-    const t = TESTS[state.currentTest];
-    label.textContent = 'Ajastin';
+    const t = getTest(state.currentTest);
+    label.textContent = ui().timer;
     display.textContent = formatTime(t.duration);
-    btns.innerHTML = '<button class="btn-timer" onclick="startTimer()">Käynnistä ajastin</button>';
+    btns.innerHTML = '<button class="btn-timer" onclick="startTimer()">' + ui().timerStart + '</button>';
   }
 
   function startTimer() {
-    const t = TESTS[state.currentTest];
+    const t = getTest(state.currentTest);
     stopTimerInterval();
     timer.phase = 'lead';
     timer.leadRemaining = 3;
@@ -1273,7 +3200,7 @@
 
   // ============ Navigation ============
   function nextTest() {
-    const t = TESTS[state.currentTest];
+    const t = getTest(state.currentTest);
     const d = getDraft(t.id);
     if (!canProceedNow()) return;
 
@@ -1308,11 +3235,12 @@
 
   // ============ Results ============
   function renderResults() {
-    const cards = TESTS.map(t => {
+    const cards = getTests().map(t => {
       const r = state.results[t.id];
-      let rawText = r.raw + ' toistoa';
-      if (t.levels) rawText = 'taso ' + r.levelChoice + ', ' + r.raw + ' toistoa';
-      if (r.easing === true) rawText += ', kevennetty';
+      const reps = plural(ui().reps, r.raw);
+      let rawText = reps;
+      if (t.levels) rawText = fmt(ui().levelAndReps, { level: r.levelChoice, reps });
+      if (r.easing === true) rawText = fmt(ui().eased, { text: rawText });
       return `
         <div class="score-card">
           <span class="score-label">
@@ -1326,9 +3254,9 @@
 
     $('app').innerHTML = `
       <div class="results">
-        <div class="results-eyebrow">Tuloksesi</div>
-        <h2>Fyysisen suorituskykysi <em>profiili</em></h2>
-        <p class="results-sub">Jokainen akseli kuvaa yhden osa-alueen tasoa asteikolla 1–5. Korkea arvo tarkoittaa, että osa-alue palvelee sinua arjessa hyvin.</p>
+        <div class="results-eyebrow">${ui().resultsEyebrow}</div>
+        <h2>${ui().resultsTitle}</h2>
+        <p class="results-sub">${ui().resultsSub}</p>
         <div class="chart-container">
           <div class="chart-wrap">
             <canvas id="radarChart"></canvas>
@@ -1337,15 +3265,13 @@
         <div class="scores">${cards}</div>
 
         <div class="results-note">
-          <strong>Näin luet tuloksesi.</strong> Viitearvot ovat suuntaa antavia, eivät lääketieteellisiä. Ne on tehty koko aikuisväestölle, joten ne eivät huomioi ikääsi tai taustaasi. Käytä niitä karkeana lähtöpisteenä, älä arvosanana.
-          <br /><br />
-          Kotona tehdyn testin todellinen arvo on oma muutoksesi. Tee testi uudelleen 8–12 viikon kuluttua samoilla ohjeilla ja vertaa ensisijaisesti toistomääriä edelliseen kertaan.
+          ${ui().resultsNote}
         </div>
 
-        <p class="save-note">Emme tallenna vastauksiasi, suosittelen että lataat tästä kuvan omalle laitteellesi.</p>
+        <p class="save-note">${ui().saveNote}</p>
         <div class="actions">
-          <button class="btn-primary" onclick="downloadChart()">Tallenna kuva ↓</button>
-          <button class="btn-secondary" onclick="restart()">Aloita alusta</button>
+          <button class="btn-primary" onclick="downloadChart()">${ui().download}</button>
+          <button class="btn-secondary" onclick="restart()">${ui().restart}</button>
         </div>
       </div>
     `;
@@ -1357,15 +3283,15 @@
     const canvas = $('radarChart');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    const labels = TESTS.map(t => t.title);
-    const data = TESTS.map(t => state.results[t.id].level);
+    const labels = getTests().map(t => t.title);
+    const data = getTests().map(t => state.results[t.id].level);
 
     state.chartInstance = new Chart(ctx, {
       type: 'radar',
       data: {
         labels,
         datasets: [{
-          label: 'Tuloksesi',
+          label: ui().datasetLabel,
           data,
           backgroundColor: 'rgba(163, 217, 197, 0.42)',
           borderColor: '#0c2543',
@@ -1390,7 +3316,7 @@
             bodyFont: { family: 'Geist', size: 13 },
             displayColors: false,
             callbacks: {
-              label: (item) => `Taso ${item.formattedValue} / 5`
+              label: (item) => fmt(ui().tooltip, { n: item.formattedValue })
             }
           }
         },
@@ -1472,7 +3398,10 @@
   window.prevTest = prevTest;
   window.downloadChart = downloadChart;
   window.restart = restart;
+  window.toggleLangMenu = toggleLangMenu;
+  window.setLang = setLang;
 
+  applyLang();
   render();
 </script>
 </body>

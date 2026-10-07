@@ -377,7 +377,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     padding: 10px 14px;
-    text-align: left;
+    text-align: start;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -418,6 +418,120 @@
     animation: fadeIn 420ms 440ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
+  /* ============ Language selector ============ */
+  .welcome-actions {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+  .lang {
+    position: relative;
+    justify-self: start;
+    text-align: left;
+  }
+  .lang-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: var(--navy);
+    border: 1px solid var(--border);
+    padding: 9px 12px 9px 10px;
+    font-family: 'Geist', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+  .lang-toggle:hover,
+  .lang.open .lang-toggle {
+    border-color: var(--navy);
+    background: var(--card-bg);
+  }
+  .lang-flag {
+    flex: 0 0 auto;
+    display: inline-block;
+    width: 21px;
+    height: 14px;
+    border-radius: 3px;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(12, 37, 67, 0.14);
+  }
+  .lang-flag svg { display: block; width: 100%; height: 100%; }
+  .lang-caret {
+    width: 10px;
+    height: 10px;
+    transition: transform var(--transition);
+  }
+  .lang.open .lang-caret { transform: rotate(180deg); }
+  .lang-menu {
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 8px);
+    z-index: 20;
+    min-width: 190px;
+    overflow-y: auto;
+    list-style: none;
+    background: var(--container-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 12px 32px rgba(12, 37, 67, 0.18);
+    padding: 6px;
+    animation: fadeIn 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .lang-menu.down {
+    top: calc(100% + 8px);
+    bottom: auto;
+  }
+  .lang-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 7px 10px;
+    font-family: 'Geist', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.3;
+    color: var(--navy);
+    text-align: left;
+    cursor: pointer;
+    transition: background 160ms ease;
+  }
+  .lang-option:hover,
+  .lang-option:focus-visible {
+    background: var(--blue-soft);
+    outline: none;
+  }
+  .lang-option[aria-current="true"] {
+    background: #e0eff9;
+    font-weight: 500;
+  }
+  .lang-option[aria-current="true"]::after {
+    content: '';
+    width: 5px;
+    height: 9px;
+    margin: -3px 4px 0 auto;
+    border: solid var(--navy);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  @media (max-width: 540px) {
+    /* Kapealla näytöllä nappi siirtyy tarvittaessa valitsimen yläpuolelle */
+    .welcome-actions {
+      display: flex;
+      flex-wrap: wrap-reverse;
+      gap: 10px;
+    }
+    .welcome-actions .btn-primary { flex: 1 1 auto; }
+  }
+
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
@@ -448,65 +562,977 @@
 <div class="container" id="app"></div>
 
 <script>
-  // ============ Data ============
-  const CATEGORIES = [
-    {
-      title: 'Fyysinen aktiivisuus',
-      description: 'Kestävyyskunto, lihasvoima ja arjen liikkuminen.',
-      questions: [
-        'Koen kestävyyskuntoni olevan hyvällä tasolla ikäluokkaani suhteutettuna.',
-        'Arjen askareet ja liikkuminen eivät saa minua hengästymään niin, että se haittaisi toimintaani.',
-        'Harrastan rasittavaa tai reipasta, sykettä nostavaa, kestävyysliikuntaa viikoittain.',
-        'Harrastan lihaskuntoharjoittelua vähintään kerran viikossa.',
-        'Lihasvoimani riittävät erinomaisesti arjen haasteista selviytymiseen.',
-        'Olen tyytyväinen tasapainooni ja koordinaatiokykyyni.',
-        'Arkeni on aktiivista ja hyötyliikuntaa tulee luonnostaan runsaasti.'
+  // ============ Translations ============
+  // Jokaisella kielellä: ui = käyttöliittymän tekstit, categories = kategoriat ja kysymykset.
+  const I18N = {
+    fi: {
+      ui: {
+        docTitle: 'Energisyyskartoitus · 3K',
+        docDescription: 'Energisyyden itsearviointityökalu',
+        eyebrow: 'Energiaa itsesi johtamiseen',
+        title: 'Kartoitus: <em>Energisyys</em>',
+        intro: 'Tässä osiossa kartoitetaan energisyyttäsi neljän kategorian kautta: fyysinen aktiivisuus, uni, ravinto ja psyykkinen kuormitus. Vastaa rehellisesti, kukaan ei näe yksittäisiä vastauksiasi.',
+        resultsTitle: 'Energisyytesi <em>profiili</em>',
+        language: 'Kieli',
+        metaCategories: '{n} kategoriaa',
+        metaQuestions: '{n} kysymystä',
+        metaMinutes: '{n} minuuttia',
+        start: 'Aloita kartoitus →',
+        answerAria: 'Vastaus {n}',
+        scaleMin: 'Täysin eri mieltä',
+        scaleMax: 'Täysin samaa mieltä',
+        resultsEyebrow: 'Tuloksesi',
+        resultsSub: 'Jokainen akseli kuvaa yhden kategorian tilannetta asteikolla 1–7. Korkea arvo tarkoittaa, että koet osa-alueen olevan elämässäsi hyvässä tilassa.',
+        saveNote: 'Emme tallenna vastauksiasi, suosittelen että lataat tästä kuvan omalle laitteellesi.',
+        download: 'Tallenna kuva ↓',
+        restart: 'Aloita alusta',
+        datasetLabel: 'Vastauksesi'
+      },
+      categories: [
+        {
+          title: 'Fyysinen aktiivisuus',
+          description: 'Kestävyyskunto, lihasvoima ja arjen liikkuminen.',
+          questions: [
+            'Koen kestävyyskuntoni olevan hyvällä tasolla ikäluokkaani suhteutettuna.',
+            'Arjen askareet ja liikkuminen eivät saa minua hengästymään niin, että se haittaisi toimintaani.',
+            'Harrastan rasittavaa tai reipasta, sykettä nostavaa, kestävyysliikuntaa viikoittain.',
+            'Harrastan lihaskuntoharjoittelua vähintään kerran viikossa.',
+            'Lihasvoimani riittävät erinomaisesti arjen haasteista selviytymiseen.',
+            'Olen tyytyväinen tasapainooni ja koordinaatiokykyyni.',
+            'Arkeni on aktiivista ja hyötyliikuntaa tulee luonnostaan runsaasti.'
+          ]
+        },
+        {
+          title: 'Uni',
+          description: 'Unen riittävyys, laatu ja palautuminen.',
+          questions: [
+            'Nukun riittävästi, keskimäärin noin 7–8 tuntia yössä.',
+            'Minun on helppo rauhoittua unille valveillaolojakson päätteeksi.',
+            'Tunnen itseni virkeäksi valveillaoloaikaan.',
+            'Olen energisimmilläni silloin, kun minun pitää saada asioita aikaan.',
+            'Nukahdan ilman tarvetta lääkkeelliselle tuelle.',
+            'Uneni on pääsääntöisesti yhtäjaksoista ja rauhallista.',
+            'Herättyäni koen oloni palautuneeksi.'
+          ]
+        },
+        {
+          title: 'Ravinto',
+          description: 'Ruokailurytmi ja suhde syömiseen.',
+          questions: [
+            'Syön säännöllisen aamupalan päivittäin.',
+            'En herää nälkäisenä kesken unien.',
+            'Syön vähintään kolme ateriaa päivässä.',
+            'Ateriavälini ovat sopivat, eikä nälkäni pääse kertymään liian suureksi aterioiden välillä.',
+            'Syön kasviksia, marjoja tai hedelmiä lähes jokaisella aterialla.',
+            'Suhteeni ruokaan on joustava ja rento (ei kieltoja tai tiukkoja sääntöjä).',
+            'Minun on helppo hallita näläntunnettani valveillaollessani.'
+          ]
+        },
+        {
+          title: 'Psyykkinen kuormitus',
+          description: 'Palautumiskyky ja mielen tasapaino arjessa.',
+          questions: [
+            'Minulla on riittävästi psyykkistä palautumiskykyä arjen yllätyksien kohtaamiseen.',
+            'Koen, että elämäni kokonaiskuormitus on hallinnassa.',
+            'Osaan jättää työasiat työpaikalle ja nauttia vapaa-ajastani.',
+            'Elämässäni on tällä hetkellä sopiva tasapaino ja mielenrauha.',
+            'Tunnen palautuvani työpäivän rasituksista unen ja vapaa-ajan avulla.',
+            'Pystyn päästämään irti asioiden murehtimisesta ja vatvomisesta.',
+            'Koen, että minulla on tilaa hengittää ja nauttia elämästä.'
+          ]
+        }
       ]
     },
-    {
-      title: 'Uni',
-      description: 'Unen riittävyys, laatu ja palautuminen.',
-      questions: [
-        'Nukun riittävästi, keskimäärin noin 7–8 tuntia yössä.',
-        'Minun on helppo rauhoittua unille valveillaolojakson päätteeksi.',
-        'Tunnen itseni virkeäksi valveillaoloaikaan.',
-        'Olen energisimmilläni silloin, kun minun pitää saada asioita aikaan.',
-        'Nukahdan ilman tarvetta lääkkeelliselle tuelle.',
-        'Uneni on pääsääntöisesti yhtäjaksoista ja rauhallista.',
-        'Herättyäni koen oloni palautuneeksi.'
+    de: {
+      ui: {
+        docTitle: 'Selbstcheck Energie · 3K',
+        docDescription: 'Tool zur Selbsteinschätzung der Energie',
+        eyebrow: 'Energie für deine Selbstführung',
+        title: 'Selbstcheck: <em>Energie</em>',
+        intro: 'In diesem Teil betrachten wir deine Energie anhand von vier Kategorien: körperliche Aktivität, Schlaf, Ernährung und psychische Belastung. Antworte ehrlich – niemand sieht deine einzelnen Antworten.',
+        resultsTitle: 'Deine Energie im <em>Profil</em>',
+        language: 'Sprache',
+        metaCategories: '{n} Kategorien',
+        metaQuestions: '{n} Fragen',
+        metaMinutes: '{n} Minuten',
+        start: 'Selbstcheck starten →',
+        answerAria: 'Antwort {n}',
+        scaleMin: 'Stimme überhaupt nicht zu',
+        scaleMax: 'Stimme voll und ganz zu',
+        resultsEyebrow: 'Deine Ergebnisse',
+        resultsSub: 'Jede Achse zeigt die Situation in einer Kategorie auf einer Skala von 1–7. Ein hoher Wert bedeutet, dass dieser Bereich in deinem Leben aus deiner Sicht gut aufgestellt ist.',
+        saveNote: 'Wir speichern deine Antworten nicht. Ich empfehle dir, dieses Bild auf dein eigenes Gerät herunterzuladen.',
+        download: 'Bild speichern ↓',
+        restart: 'Von vorne beginnen',
+        datasetLabel: 'Deine Antworten'
+      },
+      categories: [
+        {
+          title: 'Körperliche Aktivität',
+          description: 'Ausdauer, Muskelkraft und Bewegung im Alltag.',
+          questions: [
+            'Ich finde, meine Ausdauer ist für meine Altersgruppe gut.',
+            'Alltägliche Aufgaben und Wege bringen mich nicht so außer Atem, dass es mich einschränkt.',
+            'Ich mache jede Woche anstrengenden oder zügigen Ausdauersport, der den Puls erhöht.',
+            'Ich mache mindestens einmal pro Woche Krafttraining.',
+            'Meine Muskelkraft reicht problemlos aus, um die Anforderungen des Alltags zu bewältigen.',
+            'Ich bin mit meinem Gleichgewicht und meiner Koordination zufrieden.',
+            'Mein Alltag ist aktiv und ich bewege mich ganz selbstverständlich viel, zum Beispiel zu Fuß oder mit dem Fahrrad.'
+          ]
+        },
+        {
+          title: 'Schlaf',
+          description: 'Genug Schlaf, Schlafqualität und Erholung.',
+          questions: [
+            'Ich schlafe ausreichend, im Durchschnitt etwa 7–8 Stunden pro Nacht.',
+            'Am Ende des Tages fällt es mir leicht, zur Ruhe zu kommen und einzuschlafen.',
+            'Ich fühle mich tagsüber wach und frisch.',
+            'Ich habe dann die meiste Energie, wenn ich Dinge erledigen muss.',
+            'Ich schlafe ein, ohne Medikamente zu brauchen.',
+            'Mein Schlaf ist meistens durchgehend und ruhig.',
+            'Nach dem Aufwachen fühle ich mich erholt.'
+          ]
+        },
+        {
+          title: 'Ernährung',
+          description: 'Essrhythmus und Verhältnis zum Essen.',
+          questions: [
+            'Ich frühstücke jeden Tag.',
+            'Ich wache nachts nicht hungrig auf.',
+            'Ich esse mindestens drei Mahlzeiten am Tag.',
+            'Die Abstände zwischen meinen Mahlzeiten passen, und mein Hunger wird zwischendurch nicht zu groß.',
+            'Ich esse zu fast jeder Mahlzeit Gemüse, Beeren oder Obst.',
+            'Mein Verhältnis zum Essen ist flexibel und entspannt (keine Verbote oder strengen Regeln).',
+            'Tagsüber fällt es mir leicht, mein Hungergefühl im Griff zu behalten.'
+          ]
+        },
+        {
+          title: 'Psychische Belastung',
+          description: 'Erholungsfähigkeit und seelisches Gleichgewicht im Alltag.',
+          questions: [
+            'Ich kann mich psychisch gut genug erholen, um mit Überraschungen im Alltag umzugehen.',
+            'Ich habe das Gefühl, dass ich die Gesamtbelastung in meinem Leben im Griff habe.',
+            'Ich kann die Arbeit bei der Arbeit lassen und meine Freizeit genießen.',
+            'In meinem Leben gibt es zurzeit ein gutes Gleichgewicht und inneren Frieden.',
+            'Ich erhole mich durch Schlaf und Freizeit von den Belastungen des Arbeitstages.',
+            'Ich kann Sorgen und Grübeleien loslassen.',
+            'Ich habe das Gefühl, Raum zum Atmen zu haben und das Leben genießen zu können.'
+          ]
+        }
       ]
     },
-    {
-      title: 'Ravinto',
-      description: 'Ruokailurytmi ja suhde syömiseen.',
-      questions: [
-        'Syön säännöllisen aamupalan päivittäin.',
-        'En herää nälkäisenä kesken unien.',
-        'Syön vähintään kolme ateriaa päivässä.',
-        'Ateriavälini ovat sopivat, eikä nälkäni pääse kertymään liian suureksi aterioiden välillä.',
-        'Syön kasviksia, marjoja tai hedelmiä lähes jokaisella aterialla.',
-        'Suhteeni ruokaan on joustava ja rento (ei kieltoja tai tiukkoja sääntöjä).',
-        'Minun on helppo hallita näläntunnettani valveillaollessani.'
+    en: {
+      ui: {
+        docTitle: 'Energy Assessment · 3K',
+        docDescription: 'A self-assessment tool for your energy levels',
+        eyebrow: 'Energy for self-leadership',
+        title: 'Assessment: <em>Energy</em>',
+        intro: 'This section looks at your energy levels through four categories: physical activity, sleep, nutrition and mental strain. Answer honestly – no one will see your individual answers.',
+        resultsTitle: 'Your energy <em>profile</em>',
+        language: 'Language',
+        metaCategories: '{n} categories',
+        metaQuestions: '{n} questions',
+        metaMinutes: '{n} minutes',
+        start: 'Start the assessment →',
+        answerAria: 'Answer {n}',
+        scaleMin: 'Strongly disagree',
+        scaleMax: 'Strongly agree',
+        resultsEyebrow: 'Your results',
+        resultsSub: 'Each axis shows the situation in one category on a scale of 1–7. A high score means you feel this area of your life is in good shape.',
+        saveNote: 'We don\'t store your answers; I recommend downloading this image to your own device.',
+        download: 'Save image ↓',
+        restart: 'Start over',
+        datasetLabel: 'Your answers'
+      },
+      categories: [
+        {
+          title: 'Physical activity',
+          description: 'Endurance fitness, muscle strength and everyday movement.',
+          questions: [
+            'I feel my endurance fitness is good for my age group.',
+            'Everyday chores and getting around don\'t leave me so out of breath that it gets in my way.',
+            'Every week, I do strenuous or brisk endurance exercise that raises my heart rate.',
+            'I do strength training at least once a week.',
+            'My muscle strength is more than enough to handle everyday challenges.',
+            'I am happy with my balance and coordination.',
+            'My everyday life is active, and I naturally get plenty of exercise just from daily activities.'
+          ]
+        },
+        {
+          title: 'Sleep',
+          description: 'Getting enough sleep, sleep quality and recovery.',
+          questions: [
+            'I get enough sleep – on average about 7–8 hours a night.',
+            'I find it easy to wind down for sleep at the end of the day.',
+            'I feel alert during my waking hours.',
+            'I have the most energy when I need to get things done.',
+            'I fall asleep without needing medication.',
+            'My sleep is mostly unbroken and peaceful.',
+            'I feel rested when I wake up.'
+          ]
+        },
+        {
+          title: 'Nutrition',
+          description: 'Your eating rhythm and your relationship with food.',
+          questions: [
+            'I eat breakfast regularly every day.',
+            'I don\'t wake up hungry in the middle of the night.',
+            'I eat at least three meals a day.',
+            'The gaps between my meals are about right, and I don\'t get too hungry between meals.',
+            'I eat vegetables, berries or fruit with almost every meal.',
+            'My relationship with food is flexible and relaxed (no bans or strict rules).',
+            'I find it easy to manage my hunger during my waking hours.'
+          ]
+        },
+        {
+          title: 'Mental strain',
+          description: 'Your ability to recover and your mental balance in everyday life.',
+          questions: [
+            'I recover well enough mentally to cope with life\'s everyday surprises.',
+            'I feel that the overall load in my life is under control.',
+            'I can leave work matters at work and enjoy my free time.',
+            'My life currently has the right balance and peace of mind.',
+            'I feel that sleep and free time help me recover from the strain of the working day.',
+            'I am able to let go of worrying and overthinking.',
+            'I feel I have room to breathe and enjoy life.'
+          ]
+        }
       ]
     },
-    {
-      title: 'Psyykkinen kuormitus',
-      description: 'Palautumiskyky ja mielen tasapaino arjessa.',
-      questions: [
-        'Minulla on riittävästi psyykkistä palautumiskykyä arjen yllätyksien kohtaamiseen.',
-        'Koen, että elämäni kokonaiskuormitus on hallinnassa.',
-        'Osaan jättää työasiat työpaikalle ja nauttia vapaa-ajastani.',
-        'Elämässäni on tällä hetkellä sopiva tasapaino ja mielenrauha.',
-        'Tunnen palautuvani työpäivän rasituksista unen ja vapaa-ajan avulla.',
-        'Pystyn päästämään irti asioiden murehtimisesta ja vatvomisesta.',
-        'Koen, että minulla on tilaa hengittää ja nauttia elämästä.'
+    es: {
+      ui: {
+        docTitle: 'Evaluación de la energía · 3K',
+        docDescription: 'Herramienta de autoevaluación de la energía',
+        eyebrow: 'Energía para el autoliderazgo',
+        title: 'Evaluación: <em>Energía</em>',
+        intro: 'En esta sección se evalúa tu energía a través de cuatro categorías: actividad física, sueño, alimentación y carga mental. Responde con sinceridad: nadie verá tus respuestas individuales.',
+        resultsTitle: 'Tu <em>perfil</em> de energía',
+        language: 'Idioma',
+        metaCategories: '{n} categorías',
+        metaQuestions: '{n} preguntas',
+        metaMinutes: '{n} minutos',
+        start: 'Comenzar la evaluación →',
+        answerAria: 'Respuesta {n}',
+        scaleMin: 'Totalmente en desacuerdo',
+        scaleMax: 'Totalmente de acuerdo',
+        resultsEyebrow: 'Tus resultados',
+        resultsSub: 'Cada eje muestra la situación de una categoría en una escala de 1–7. Un valor alto significa que sientes que esa área de tu vida está en buen estado.',
+        saveNote: 'No guardamos tus respuestas; te recomiendo que descargues esta imagen en tu propio dispositivo.',
+        download: 'Guardar imagen ↓',
+        restart: 'Empezar de nuevo',
+        datasetLabel: 'Tus respuestas'
+      },
+      categories: [
+        {
+          title: 'Actividad física',
+          description: 'Resistencia aeróbica, fuerza muscular y movimiento en el día a día.',
+          questions: [
+            'Siento que mi resistencia aeróbica está en un buen nivel para mi edad.',
+            'Las tareas cotidianas y moverme no me dejan tan sin aliento que me impida hacer mis cosas.',
+            'Cada semana hago ejercicio aeróbico intenso o moderado que me acelera el pulso.',
+            'Hago entrenamiento de fuerza al menos una vez por semana.',
+            'Mi fuerza muscular es más que suficiente para afrontar las exigencias del día a día.',
+            'Mi equilibrio y mi capacidad de coordinación me parecen buenos.',
+            'Llevo una vida activa y me muevo mucho de forma natural en mis tareas diarias.'
+          ]
+        },
+        {
+          title: 'Sueño',
+          description: 'Cantidad y calidad del sueño, y recuperación.',
+          questions: [
+            'Duermo lo suficiente, de media unas 7–8 horas por noche.',
+            'Me resulta fácil relajarme para dormir al final del día.',
+            'Me siento con energía durante mis horas de vigilia.',
+            'Tengo más energía justo cuando necesito sacar cosas adelante.',
+            'Me duermo sin necesidad de ayuda de medicamentos.',
+            'Por lo general, mi sueño es continuo y tranquilo.',
+            'Al despertarme, siento que he descansado y me he recuperado.'
+          ]
+        },
+        {
+          title: 'Alimentación',
+          description: 'Ritmo de comidas y relación con la comida.',
+          questions: [
+            'Desayuno todos los días.',
+            'No me despierto con hambre en mitad de la noche.',
+            'Hago al menos tres comidas al día.',
+            'El tiempo entre comidas es adecuado y no llego a pasar demasiada hambre entre ellas.',
+            'Como verduras, frutas o bayas en casi todas las comidas.',
+            'Mi relación con la comida es flexible y relajada (sin prohibiciones ni reglas estrictas).',
+            'Me resulta fácil controlar la sensación de hambre durante el día.'
+          ]
+        },
+        {
+          title: 'Carga mental',
+          description: 'Capacidad de recuperación y equilibrio mental en el día a día.',
+          questions: [
+            'Tengo suficiente capacidad de recuperación mental para afrontar los imprevistos del día a día.',
+            'Siento que la carga total de mi vida está bajo control.',
+            'Sé dejar los asuntos del trabajo en el trabajo y disfrutar de mi tiempo libre.',
+            'En este momento hay en mi vida un equilibrio adecuado y paz interior.',
+            'Siento que me recupero del esfuerzo de la jornada laboral gracias al sueño y al tiempo libre.',
+            'Soy capaz de dejar de preocuparme y de darle vueltas a las cosas.',
+            'Siento que tengo espacio para respirar y disfrutar de la vida.'
+          ]
+        }
+      ]
+    },
+    fr: {
+      ui: {
+        docTitle: 'Bilan d’énergie · 3K',
+        docDescription: 'Outil d’auto-évaluation de l’énergie',
+        eyebrow: 'De l’énergie pour le leadership de soi',
+        title: 'Bilan : <em>Énergie</em>',
+        intro: 'Cette section fait le point sur votre énergie à travers quatre catégories : activité physique, sommeil, alimentation et charge psychologique. Répondez honnêtement : personne ne verra vos réponses individuelles.',
+        resultsTitle: 'Votre <em>profil</em> d’énergie',
+        language: 'Langue',
+        metaCategories: '{n} catégories',
+        metaQuestions: '{n} questions',
+        metaMinutes: '{n} minutes',
+        start: 'Commencer le bilan →',
+        answerAria: 'Réponse {n}',
+        scaleMin: 'Pas du tout d’accord',
+        scaleMax: 'Tout à fait d’accord',
+        resultsEyebrow: 'Vos résultats',
+        resultsSub: 'Chaque axe représente la situation d’une catégorie sur une échelle de 1 à 7. Une valeur élevée signifie que vous estimez que ce domaine se porte bien dans votre vie.',
+        saveNote: 'Nous n’enregistrons pas vos réponses : je vous recommande de télécharger cette image sur votre propre appareil.',
+        download: 'Enregistrer l’image ↓',
+        restart: 'Recommencer',
+        datasetLabel: 'Vos réponses'
+      },
+      categories: [
+        {
+          title: 'Activité physique',
+          description: 'Endurance, force musculaire et mouvement au quotidien.',
+          questions: [
+            'J’estime avoir une bonne endurance par rapport aux personnes de mon âge.',
+            'Les tâches et les déplacements du quotidien ne m’essoufflent pas au point de me gêner.',
+            'Chaque semaine, je pratique une activité d’endurance modérée ou intense qui fait monter mon rythme cardiaque.',
+            'Je fais du renforcement musculaire au moins une fois par semaine.',
+            'Ma force musculaire me permet largement de faire face aux exigences du quotidien.',
+            'Mon équilibre et ma coordination me satisfont.',
+            'Mon quotidien est actif : je bouge naturellement beaucoup au fil de mes activités.'
+          ]
+        },
+        {
+          title: 'Sommeil',
+          description: 'Quantité et qualité du sommeil, et récupération.',
+          questions: [
+            'Je dors suffisamment, en moyenne environ 7 à 8 heures par nuit.',
+            'Il m’est facile de m’apaiser pour dormir à la fin de la journée.',
+            'Je me sens alerte pendant mes heures d’éveil.',
+            'C’est quand je dois accomplir des choses que j’ai le plus d’énergie.',
+            'Je m’endors sans avoir besoin de médicaments.',
+            'Mon sommeil est généralement continu et paisible.',
+            'Au réveil, j’ai le sentiment d’avoir bien récupéré.'
+          ]
+        },
+        {
+          title: 'Alimentation',
+          description: 'Rythme des repas et rapport à la nourriture.',
+          questions: [
+            'Je prends un petit-déjeuner tous les jours.',
+            'La faim ne me réveille pas pendant la nuit.',
+            'Je mange au moins trois repas par jour.',
+            'L’intervalle entre mes repas me convient, et ma faim ne devient pas trop forte entre deux repas.',
+            'Je mange des légumes, des baies ou des fruits à presque chaque repas.',
+            'Mon rapport à la nourriture est souple et détendu (pas d’interdits ni de règles strictes).',
+            'Il m’est facile de gérer ma sensation de faim pendant la journée.'
+          ]
+        },
+        {
+          title: 'Charge psychologique',
+          description: 'Capacité de récupération et équilibre mental au quotidien.',
+          questions: [
+            'J’ai une capacité de récupération psychologique suffisante pour faire face aux imprévus du quotidien.',
+            'J’ai le sentiment de maîtriser la charge globale de ma vie.',
+            'Je sais laisser le travail au travail et profiter de mon temps libre.',
+            'Ma vie offre en ce moment un bon équilibre et une tranquillité d’esprit.',
+            'Je sens que le sommeil et le temps libre me permettent de récupérer de la fatigue de mes journées de travail.',
+            'Je suis capable d’arrêter de me faire du souci et de ressasser les choses.',
+            'J’ai le sentiment d’avoir de l’espace pour respirer et profiter de la vie.'
+          ]
+        }
+      ]
+    },
+    so: {
+      ui: {
+        docTitle: 'Qiimaynta tamarta · 3K',
+        docDescription: 'Qalabka is-qiimaynta tamarta',
+        eyebrow: 'Tamar aad naftaada ku hoggaamiso',
+        title: 'Qiimayn: <em>Tamarta</em>',
+        intro: 'Halkan waxaa lagu qiimaynayaa tamartaada iyadoo loo marayo afar qaybood: dhaqdhaqaaqa jirka, hurdada, nafaqada iyo culayska maskaxda. Su\'aalaha si daacad ah uga jawaab, qofna ma arki doono jawaabahaaga gaarka ah.',
+        resultsTitle: '<em>Sawirka guud</em> ee tamartaada',
+        language: 'Luqadda',
+        metaCategories: '{n} qaybood',
+        metaQuestions: '{n} su\'aalood',
+        metaMinutes: '{n} daqiiqo',
+        start: 'Bilow qiimaynta →',
+        answerAria: 'Jawaab {n}',
+        scaleMin: 'Gabi ahaanba kuma raacsani',
+        scaleMax: 'Gabi ahaanba waan ku raacsanahay',
+        resultsEyebrow: 'Natiijadaada',
+        resultsSub: 'Dhidib kastaa wuxuu muujinayaa xaaladda hal qayb, iyadoo la adeegsanayo cabbir 1–7 ah. Qiime sare wuxuu ka dhigan yahay inaad dareemayso in qaybtani ay noloshaada ku jirto xaalad wanaagsan.',
+        saveNote: 'Jawaabahaaga ma kaydinno; waxaan kugula talinayaa inaad sawirkan ku soo dejiso qalabkaaga.',
+        download: 'Kaydi sawirka ↓',
+        restart: 'Dib u bilow',
+        datasetLabel: 'Jawaabahaaga'
+      },
+      categories: [
+        {
+          title: 'Dhaqdhaqaaqa jirka',
+          description: 'Adkaysiga jirka, xoogga murqaha iyo dhaqdhaqaaqa maalinlaha ah.',
+          questions: [
+            'Waxaan dareemaa in adkaysiga jirkaygu heer wanaagsan yahay marka loo eego dadka da\'dayda ah.',
+            'Hawlaha maalinlaha ah iyo socodku neefta iima gaabiyaan ilaa ay hawlahayga carqaladeeyaan.',
+            'Toddobaad kasta waxaan sameeyaa jimicsi adkaysi oo adag ama firfircoon, kaas oo kor u qaada garaaca wadnaha.',
+            'Ugu yaraan hal mar toddobaadkii waxaan sameeyaa jimicsiga xoogga murqaha.',
+            'Xoogga murqahaygu aad buu ugu filan yahay inaan la tacaalo caqabadaha nolol maalmeedka.',
+            'Waan ku qanacsanahay dheellitirkayga iyo isku-duwidda dhaqdhaqaaqayga.',
+            'Nolol maalmeedkaygu waa firfircoon yahay, waxaanan si dabiici ah u helaa dhaqdhaqaaq badan (tusaale, socod iyo hawlaha guriga).'
+          ]
+        },
+        {
+          title: 'Hurdada',
+          description: 'Ku filnaanshaha hurdada, tayadeeda iyo soo kabashada.',
+          questions: [
+            'Waxaan helaa hurdo ku filan, celcelis ahaan qiyaastii 7–8 saacadood habeenkii.',
+            'Way igu fudud tahay inaan dego oo aan u diyaar garoobo hurdada marka maalintu dhammaato.',
+            'Waxaan dareemaa firfircooni inta aan soo jeedo.',
+            'Tamarta ugu badan waxaan leeyahay marka ay tahay inaan wax qabto.',
+            'Waan seexdaa anigoon u baahnayn daawo hurdo.',
+            'Hurdadaydu inta badan waa mid aan kala go\'in oo degan.',
+            'Marka aan toosto waxaan dareemaa inaan si fiican u nastay.'
+          ]
+        },
+        {
+          title: 'Nafaqada',
+          description: 'Nidaamka waqtiyada cuntada iyo xiriirka aad la leedahay cuntada.',
+          questions: [
+            'Maalin kasta si joogto ah ayaan quraac u cunaa.',
+            'Hurdada dhexdeeda kama tooso anigoo gaajaysan.',
+            'Maalintii waxaan cunaa ugu yaraan saddex cunto.',
+            'Waqtiga u dhexeeya cuntooyinkaygu waa habboon yahay, gaajaduna aad iigama badato inta u dhexeysa cuntooyinka.',
+            'Ku dhawaad cunto kasta waxaan cunaa khudaar, miro yaryar ama furuud.',
+            'Xiriirka aan la leeyahay cuntadu waa mid dabacsan oo degan (ma jiraan mamnuucid ama sharciyo adag).',
+            'Way igu fudud tahay inaan xakameeyo dareenka gaajada inta aan soo jeedo.'
+          ]
+        },
+        {
+          title: 'Culayska maskaxda',
+          description: 'Awoodda soo kabashada iyo dheellitirka maskaxda ee nolol maalmeedka.',
+          questions: [
+            'Waxaan leeyahay awood maskaxeed oo ku filan si aan ula tacaalo waxyaabaha lama filaanka ah ee nolol maalmeedka.',
+            'Waxaan dareemaa in culayska guud ee noloshaydu uu gacantayda ku jiro.',
+            'Waan awoodaa inaan arrimaha shaqada shaqada uga tago oo aan ku raaxaysto waqtigayga firaaqada.',
+            'Hadda noloshaydu waxay leedahay dheellitir habboon iyo xasilooni maskaxeed.',
+            'Waxaan dareemaa inaan ka soo kabsado daalka maalinta shaqada anigoo ku nasanaya hurdo iyo waqti firaaqo ah.',
+            'Waan awoodaa inaan iska daayo walwalka iyo ka fikirka joogtada ah ee arrimaha.',
+            'Waxaan dareemaa inaan haysto meel aan ku neefsado oo aan ku raaxaysto nolosha.'
+          ]
+        }
+      ]
+    },
+    sv: {
+      ui: {
+        docTitle: 'Kartläggning av energi · 3K',
+        docDescription: 'Verktyg för självskattning av energi',
+        eyebrow: 'Energi för att leda dig själv',
+        title: 'Kartläggning: <em>Energi</em>',
+        intro: 'I den här delen kartläggs din energi utifrån fyra kategorier: fysisk aktivitet, sömn, kost och psykisk belastning. Svara ärligt – ingen ser dina enskilda svar.',
+        resultsTitle: 'Din <em>profil</em> för energi',
+        language: 'Språk',
+        metaCategories: '{n} kategorier',
+        metaQuestions: '{n} frågor',
+        metaMinutes: '{n} minuter',
+        start: 'Starta kartläggningen →',
+        answerAria: 'Svar {n}',
+        scaleMin: 'Instämmer inte alls',
+        scaleMax: 'Instämmer helt',
+        resultsEyebrow: 'Ditt resultat',
+        resultsSub: 'Varje axel visar läget inom en kategori på en skala 1–7. Ett högt värde betyder att du upplever att det här området fungerar bra i ditt liv.',
+        saveNote: 'Vi sparar inte dina svar, så jag rekommenderar att du laddar ner bilden till din egen enhet.',
+        download: 'Spara bild ↓',
+        restart: 'Börja om',
+        datasetLabel: 'Dina svar'
+      },
+      categories: [
+        {
+          title: 'Fysisk aktivitet',
+          description: 'Kondition, muskelstyrka och rörelse i vardagen.',
+          questions: [
+            'Jag upplever att min kondition är god jämfört med andra i min ålder.',
+            'Vardagssysslor och att röra mig gör mig inte så andfådd att det hindrar mig i det jag gör.',
+            'Varje vecka tränar jag ansträngande eller rask konditionsträning som höjer pulsen.',
+            'Jag styrketränar minst en gång i veckan.',
+            'Min muskelstyrka räcker utmärkt för att klara vardagens utmaningar.',
+            'Jag är nöjd med min balans och koordination.',
+            'Min vardag är aktiv och jag rör mig naturligt mycket i vardagen.'
+          ]
+        },
+        {
+          title: 'Sömn',
+          description: 'Tillräckligt med sömn, sömnkvalitet och återhämtning.',
+          questions: [
+            'Jag sover tillräckligt, i genomsnitt cirka 7–8 timmar per natt.',
+            'Det är lätt för mig att varva ner inför sömnen när min vakna tid är slut.',
+            'Jag känner mig pigg när jag är vaken.',
+            'Jag har som mest energi när jag behöver få saker gjorda.',
+            'Jag somnar utan att behöva hjälp av läkemedel.',
+            'Min sömn är oftast sammanhängande och lugn.',
+            'När jag vaknar känner jag mig utvilad.'
+          ]
+        },
+        {
+          title: 'Kost',
+          description: 'Måltidsrytm och förhållande till mat.',
+          questions: [
+            'Jag äter frukost regelbundet varje dag.',
+            'Jag vaknar inte hungrig mitt i natten.',
+            'Jag äter minst tre måltider om dagen.',
+            'Jag har lagom långt mellan måltiderna, så att hungern inte hinner bli för stor.',
+            'Jag äter grönsaker, bär eller frukt till nästan varje måltid.',
+            'Mitt förhållande till mat är flexibelt och avslappnat (inga förbud eller strikta regler).',
+            'Det är lätt för mig att hantera min hungerkänsla när jag är vaken.'
+          ]
+        },
+        {
+          title: 'Psykisk belastning',
+          description: 'Förmåga att återhämta dig och mental balans i vardagen.',
+          questions: [
+            'Jag har tillräcklig psykisk återhämtningsförmåga för att möta vardagens överraskningar.',
+            'Jag upplever att den totala belastningen i mitt liv är under kontroll.',
+            'Jag kan lämna jobbet på jobbet och njuta av min fritid.',
+            'Just nu har jag en lagom balans och sinnesro i mitt liv.',
+            'Jag känner att jag återhämtar mig från arbetsdagens påfrestningar med hjälp av sömn och fritid.',
+            'Jag kan släppa oro och ältande.',
+            'Jag känner att jag har utrymme att andas och njuta av livet.'
+          ]
+        }
+      ]
+    },
+    ru: {
+      ui: {
+        docTitle: 'Оценка энергичности · 3K',
+        docDescription: 'Инструмент самооценки энергичности',
+        eyebrow: 'Энергия для управления собой',
+        title: 'Оценка: <em>Энергичность</em>',
+        intro: 'В этом разделе оценивается ваша энергичность по четырём категориям: физическая активность, сон, питание и психологическая нагрузка. Отвечайте честно: никто не увидит ваших отдельных ответов.',
+        resultsTitle: 'Ваш <em>профиль</em> энергичности',
+        language: 'Язык',
+        metaCategories: '{n} категории',
+        metaQuestions: '{n} вопросов',
+        metaMinutes: '{n} минут',
+        start: 'Начать оценку →',
+        answerAria: 'Ответ {n}',
+        scaleMin: 'Полностью не согласен(-на)',
+        scaleMax: 'Полностью согласен(-на)',
+        resultsEyebrow: 'Ваши результаты',
+        resultsSub: 'Каждая ось показывает ситуацию в одной из категорий по шкале 1–7. Высокое значение означает, что, по вашим ощущениям, в этой сфере жизни у вас всё хорошо.',
+        saveNote: 'Мы не сохраняем ваши ответы, поэтому рекомендую скачать это изображение на своё устройство.',
+        download: 'Сохранить изображение ↓',
+        restart: 'Начать заново',
+        datasetLabel: 'Ваши ответы'
+      },
+      categories: [
+        {
+          title: 'Физическая активность',
+          description: 'Выносливость, мышечная сила и движение в повседневной жизни.',
+          questions: [
+            'Я считаю, что моя выносливость на хорошем уровне для моего возраста.',
+            'Повседневные дела и передвижение не вызывают у меня такой одышки, которая мешала бы мне.',
+            'Каждую неделю я занимаюсь интенсивной или бодрой нагрузкой на выносливость, которая повышает пульс.',
+            'Я делаю силовые упражнения не реже одного раза в неделю.',
+            'Моей мышечной силы с запасом хватает, чтобы справляться с повседневными задачами.',
+            'Меня устраивают моё чувство равновесия и координация.',
+            'Мои будни активны: в течение дня я естественным образом много двигаюсь (хожу пешком, занимаюсь домашними делами и т. п.).'
+          ]
+        },
+        {
+          title: 'Сон',
+          description: 'Достаточность и качество сна, восстановление.',
+          questions: [
+            'Я сплю достаточно — в среднем около 7–8 часов за ночь.',
+            'В конце дня мне легко успокоиться и настроиться на сон.',
+            'В течение дня я чувствую себя бодро.',
+            'Больше всего энергии у меня тогда, когда нужно делать дела.',
+            'Я засыпаю без помощи лекарств.',
+            'Мой сон, как правило, непрерывный и спокойный.',
+            'После пробуждения я чувствую, что силы восстановились.'
+          ]
+        },
+        {
+          title: 'Питание',
+          description: 'Режим питания и отношение к еде.',
+          questions: [
+            'Я завтракаю каждый день.',
+            'Я не просыпаюсь ночью от голода.',
+            'Я ем не меньше трёх раз в день.',
+            'Промежутки между приёмами пищи у меня подходящие, и я не успеваю сильно проголодаться.',
+            'Почти при каждом приёме пищи я ем овощи, ягоды или фрукты.',
+            'Моё отношение к еде гибкое и спокойное (без запретов и строгих правил).',
+            'В течение дня мне легко контролировать чувство голода.'
+          ]
+        },
+        {
+          title: 'Психологическая нагрузка',
+          description: 'Способность восстанавливаться и душевное равновесие в повседневной жизни.',
+          questions: [
+            'У меня достаточно психологической устойчивости, чтобы справляться с неожиданностями повседневной жизни.',
+            'Я чувствую, что общая нагрузка в моей жизни под контролем.',
+            'Я умею оставлять рабочие дела на работе и наслаждаться свободным временем.',
+            'Сейчас в моей жизни есть подходящий баланс и душевный покой.',
+            'Сон и свободное время помогают мне восстановиться после рабочего дня.',
+            'Я могу перестать переживать и без конца прокручивать проблемы в голове.',
+            'Я чувствую, что у меня есть возможность свободно дышать и радоваться жизни.'
+          ]
+        }
+      ]
+    },
+    uk: {
+      ui: {
+        docTitle: 'Оцінювання енергійності · 3K',
+        docDescription: 'Інструмент самооцінювання енергійності',
+        eyebrow: 'Енергія для керування собою',
+        title: 'Оцінювання: <em>Енергійність</em>',
+        intro: 'У цьому розділі ви оціните свою енергійність за чотирма категоріями: фізична активність, сон, харчування та психічне навантаження. Відповідайте чесно: ніхто не бачить ваших окремих відповідей.',
+        resultsTitle: '<em>Профіль</em> вашої енергійності',
+        language: 'Мова',
+        metaCategories: '{n} категорії',
+        metaQuestions: '{n} запитань',
+        metaMinutes: '{n} хвилин',
+        start: 'Почати оцінювання →',
+        answerAria: 'Відповідь {n}',
+        scaleMin: 'Зовсім не погоджуюся',
+        scaleMax: 'Повністю погоджуюся',
+        resultsEyebrow: 'Ваші результати',
+        resultsSub: 'Кожна вісь показує стан однієї категорії за шкалою 1–7. Високе значення означає, що, на вашу думку, ця сфера вашого життя в доброму стані.',
+        saveNote: 'Ми не зберігаємо ваших відповідей, тому радимо завантажити це зображення на свій пристрій.',
+        download: 'Зберегти зображення ↓',
+        restart: 'Почати спочатку',
+        datasetLabel: 'Ваші відповіді'
+      },
+      categories: [
+        {
+          title: 'Фізична активність',
+          description: 'Витривалість, м’язова сила та рух у повсякденні.',
+          questions: [
+            'Я вважаю, що моя витривалість на доброму рівні як для моєї вікової групи.',
+            'Повсякденні справи й пересування не викликають у мене такої задишки, яка заважала б мені діяти.',
+            'Щотижня я займаюся інтенсивними або енергійними вправами на витривалість, які прискорюють пульс.',
+            'Я виконую силові тренування щонайменше раз на тиждень.',
+            'Моєї м’язової сили з запасом вистачає на повсякденні завдання.',
+            'Мене влаштовують моя рівновага та координація.',
+            'Моє повсякдення активне, і корисного руху в ньому природно багато.'
+          ]
+        },
+        {
+          title: 'Сон',
+          description: 'Достатність і якість сну та відновлення.',
+          questions: [
+            'Я сплю достатньо, у середньому приблизно 7–8 годин на ніч.',
+            'Наприкінці дня мені легко заспокоїтися перед сном.',
+            'Протягом дня я почуваюся бадьоро.',
+            'Найбільше енергії в мене саме тоді, коли мені потрібно виконувати справи.',
+            'Я засинаю без допомоги ліків.',
+            'Зазвичай мій сон безперервний і спокійний.',
+            'Після сну я відчуваю, що мої сили відновилися.'
+          ]
+        },
+        {
+          title: 'Харчування',
+          description: 'Режим харчування та ставлення до їжі.',
+          questions: [
+            'Я щодня регулярно снідаю.',
+            'Я не прокидаюся вночі від голоду.',
+            'Я їм щонайменше тричі на день.',
+            'Перерви між прийомами їжі в мене відповідні, тож я не встигаю надто зголодніти.',
+            'Майже під час кожного прийому їжі я їм овочі, ягоди або фрукти.',
+            'Моє ставлення до їжі гнучке й невимушене (без заборон і суворих правил).',
+            'Протягом дня мені легко контролювати відчуття голоду.'
+          ]
+        },
+        {
+          title: 'Психічне навантаження',
+          description: 'Здатність відновлюватися та душевна рівновага в повсякденні.',
+          questions: [
+            'У мене достатньо психологічних сил для відновлення, щоб справлятися з несподіванками повсякдення.',
+            'Я відчуваю, що загальне навантаження в моєму житті під контролем.',
+            'Я вмію залишати робочі справи на роботі й насолоджуватися вільним часом.',
+            'Зараз у моєму житті є належний баланс і душевний спокій.',
+            'Я відчуваю, що сон і вільний час допомагають мені відновитися після робочого дня.',
+            'Я вмію відпускати тривоги й не прокручувати думки знову і знову.',
+            'Я відчуваю, що маю простір, щоб дихати й насолоджуватися життям.'
+          ]
+        }
+      ]
+    },
+    ar: {
+      ui: {
+        docTitle: 'تقييم الحيوية · 3K',
+        docDescription: 'أداة التقييم الذاتي للحيوية',
+        eyebrow: 'طاقة لقيادة ذاتك',
+        title: 'تقييم: <em>الحيوية</em>',
+        intro: 'يقيّم هذا القسم حيويتك من خلال أربع فئات: النشاط البدني، والنوم، والتغذية، والعبء النفسي. أجب بصدق، فلن يرى أحد إجاباتك الفردية.',
+        resultsTitle: '<em>ملف</em> حيويتك',
+        language: 'اللغة',
+        metaCategories: '{n} فئات',
+        metaQuestions: '{n} سؤالًا',
+        metaMinutes: '{n} دقائق',
+        start: 'ابدأ التقييم ←',
+        answerAria: 'الإجابة {n}',
+        scaleMin: 'لا أوافق إطلاقًا',
+        scaleMax: 'أوافق تمامًا',
+        resultsEyebrow: 'نتائجك',
+        resultsSub: 'يمثّل كل محور وضع فئة واحدة على مقياس 1–7. وتعني القيمة المرتفعة أنك ترى أن هذا الجانب من حياتك في حالة جيدة.',
+        saveNote: 'لا نحفظ إجاباتك، لذا أنصحك بتنزيل هذه الصورة على جهازك الخاص.',
+        download: 'احفظ الصورة ↓',
+        restart: 'ابدأ من جديد',
+        datasetLabel: 'إجاباتك'
+      },
+      categories: [
+        {
+          title: 'النشاط البدني',
+          description: 'لياقة التحمّل، وقوة العضلات، والحركة في الحياة اليومية.',
+          questions: [
+            'أشعر أن لياقة التحمّل لديّ في مستوى جيد مقارنةً بمن هم في مثل عمري.',
+            'لا تجعلني الأعمال اليومية والتنقّل ألهث إلى حدّ يعيق نشاطي.',
+            'أمارس كل أسبوع تمارين تحمّل شاقة أو نشطة ترفع نبض القلب.',
+            'أمارس تمارين تقوية العضلات مرة واحدة على الأقل في الأسبوع.',
+            'قوة عضلاتي كافية تمامًا لمواجهة متطلبات الحياة اليومية.',
+            'أنا راضٍ عن توازني وعن قدرتي على التناسق الحركي.',
+            'حياتي اليومية نشطة، وأتحرّك كثيرًا بشكل طبيعي أثناء مهامي اليومية.'
+          ]
+        },
+        {
+          title: 'النوم',
+          description: 'كفاية النوم وجودته والتعافي.',
+          questions: [
+            'أنام بما يكفي، بمعدل 7–8 ساعات تقريبًا في الليلة.',
+            'من السهل عليّ أن أهدأ وأستعدّ للنوم في نهاية اليوم.',
+            'أشعر بالنشاط واليقظة خلال ساعات استيقاظي.',
+            'أكون في قمة طاقتي عندما أحتاج إلى إنجاز الأمور.',
+            'أنام دون الحاجة إلى مساعدة دوائية.',
+            'نومي في الغالب متواصل وهادئ.',
+            'عندما أستيقظ أشعر أنني استعدت طاقتي.'
+          ]
+        },
+        {
+          title: 'التغذية',
+          description: 'إيقاع الوجبات والعلاقة مع الطعام.',
+          questions: [
+            'أتناول وجبة الإفطار بانتظام كل يوم.',
+            'لا أستيقظ جائعًا في منتصف الليل.',
+            'أتناول ثلاث وجبات على الأقل في اليوم.',
+            'الفترات بين وجباتي مناسبة، ولا يشتدّ جوعي كثيرًا بين الوجبات.',
+            'آكل الخضروات أو التوت أو الفاكهة في كل وجبة تقريبًا.',
+            'علاقتي بالطعام مرنة ومريحة (بلا محظورات أو قواعد صارمة).',
+            'من السهل عليّ التحكّم في شعوري بالجوع خلال ساعات استيقاظي.'
+          ]
+        },
+        {
+          title: 'العبء النفسي',
+          description: 'القدرة على التعافي والتوازن النفسي في الحياة اليومية.',
+          questions: [
+            'لديّ قدرة نفسية كافية على التعافي لمواجهة مفاجآت الحياة اليومية.',
+            'أشعر أن العبء الكلي في حياتي تحت السيطرة.',
+            'أستطيع ترك أمور العمل في مكان العمل والاستمتاع بوقت فراغي.',
+            'يوجد في حياتي حاليًا توازن مناسب وراحة بال.',
+            'أشعر أنني أتعافى من إرهاق يوم العمل بفضل النوم ووقت الفراغ.',
+            'أستطيع التوقّف عن القلق والإفراط في التفكير في الأمور.',
+            'أشعر أن لديّ مساحة لأتنفّس وأستمتع بالحياة.'
+          ]
+        }
       ]
     }
+  };
+
+  // ============ Language ============
+  // Kielet aakkosjärjestyksessä omalla nimellään (latinalaiset, kyrilliset, arabia).
+  const LANGS = [
+    { code: 'de', name: 'Deutsch' },
+    { code: 'en', name: 'English' },
+    { code: 'es', name: 'Español' },
+    { code: 'fr', name: 'Français' },
+    { code: 'so', name: 'Soomaali' },
+    { code: 'fi', name: 'Suomi' },
+    { code: 'sv', name: 'Svenska' },
+    { code: 'ru', name: 'Русский' },
+    { code: 'uk', name: 'Українська' },
+    { code: 'ar', name: 'العربية', rtl: true }
   ];
+  const DEFAULT_LANG = 'fi';
+  const LANG_STORAGE_KEY = '3k-kieli';
+
+  // Liput SVG-muodossa, koska emoji-liput eivät näy Windowsissa. {id} korvataan uniikilla tunnisteella.
+  const FLAGS = {
+    ar: '<rect width="30" height="20" fill="#006c35"/><path d="M7.5 9.4c.8-1.7 1.6.9 2.4-.5.6-1.1 1.2.2 1.8-.6M12.7 7.3v2.3M14.1 8.8c.7-1.3 1.5.9 2.3-.3.7-1 1.4.6 2.1-.4M19.7 7.1v2.5M21.1 9.2c.6-1.3 1.2.4 1.7-.6" fill="none" stroke="#fff" stroke-width=".8" stroke-linecap="round"/><path d="M8 13.6h12.4M20.4 12.5v2.2M20.4 13.6h1.8" fill="none" stroke="#fff" stroke-width=".9" stroke-linecap="round"/>',
+    de: '<rect width="30" height="20" fill="#ffce00"/><rect width="30" height="13.34" fill="#dd0000"/><rect width="30" height="6.67" fill="#000"/>',
+    en: '<clipPath id="{id}"><path d="M15,10h15v10zv10h-15zh-15v-10zv-10h15z"/></clipPath><rect width="30" height="20" fill="#012169"/><path d="M0,0L30,20M30,0L0,20" stroke="#fff" stroke-width="4"/><path d="M0,0L30,20M30,0L0,20" stroke="#c8102e" stroke-width="2.6" clip-path="url(#{id})"/><path d="M15,0v20M0,10h30" stroke="#fff" stroke-width="6.6"/><path d="M15,0v20M0,10h30" stroke="#c8102e" stroke-width="4"/>',
+    es: '<rect width="30" height="20" fill="#aa151b"/><rect y="5" width="30" height="10" fill="#f1bf00"/>',
+    fi: '<rect width="30" height="20" fill="#fff"/><rect x="8.2" width="5.4" height="20" fill="#002f6c"/><rect y="7.3" width="30" height="5.4" fill="#002f6c"/>',
+    fr: '<rect width="30" height="20" fill="#ef4135"/><rect width="20" height="20" fill="#fff"/><rect width="10" height="20" fill="#0055a4"/>',
+    ru: '<rect width="30" height="20" fill="#d52b1e"/><rect width="30" height="13.34" fill="#0039a6"/><rect width="30" height="6.67" fill="#fff"/>',
+    so: '<rect width="30" height="20" fill="#4189dd"/><polygon points="15.00,4.80 16.29,8.62 20.33,8.67 17.09,11.08 18.29,14.93 15.00,12.60 11.71,14.93 12.91,11.08 9.67,8.67 13.71,8.62" fill="#fff"/>',
+    sv: '<rect width="30" height="20" fill="#006aa7"/><rect x="9.4" width="3.8" height="20" fill="#fecc00"/><rect y="8.1" width="30" height="3.8" fill="#fecc00"/>',
+    uk: '<rect width="30" height="20" fill="#ffd700"/><rect width="30" height="10" fill="#0057b7"/>'
+  };
+
+  // Kieli valitaan: ?lang=xx osoitteessa, sitten aiempi valinta, muuten suomi.
+  function initialLang() {
+    try {
+      const fromUrl = new URLSearchParams(window.location.search).get('lang');
+      if (fromUrl && I18N[fromUrl]) return fromUrl;
+    } catch (e) {
+      // Upotuksessa osoitetta ei välttämättä voi lukea
+    }
+    try {
+      const saved = window.localStorage.getItem(LANG_STORAGE_KEY);
+      if (saved && I18N[saved]) return saved;
+    } catch (e) {
+      // localStorage voi olla estetty upotuksessa
+    }
+    return DEFAULT_LANG;
+  }
+
+  function langInfo(code) {
+    return LANGS.find(l => l.code === code);
+  }
+
+  function langDir() {
+    return langInfo(state.lang).rtl ? 'rtl' : 'ltr';
+  }
+
+  function ui() {
+    return I18N[state.lang].ui;
+  }
+
+  // Korvaa {avain}-paikkamerkit annetuilla arvoilla
+  function fmt(text, vars) {
+    return text.replace(/\{(\w+)\}/g, (m, key) => (key in vars ? vars[key] : m));
+  }
+
+  function applyLang() {
+    document.documentElement.lang = state.lang;
+    document.documentElement.dir = langDir();
+    document.title = ui().docTitle;
+    const desc = document.querySelector('meta[name="description"]');
+    if (desc) desc.setAttribute('content', ui().docDescription);
+  }
+
+  let flagSeq = 0;
+  function flagSvg(code) {
+    const id = 'flag-clip-' + (++flagSeq);
+    return `<span class="lang-flag"><svg viewBox="0 0 30 20" preserveAspectRatio="none" aria-hidden="true" focusable="false">${FLAGS[code].replace(/\{id\}/g, id)}</svg></span>`;
+  }
+
+  function renderLangSelector() {
+    const current = langInfo(state.lang);
+    const options = LANGS.map(l => `
+          <li>
+            <button type="button" class="lang-option" lang="${l.code}"${l.code === state.lang ? ' aria-current="true"' : ''} onclick="setLang('${l.code}')">
+              ${flagSvg(l.code)}<span>${l.name}</span>
+            </button>
+          </li>`).join('');
+    return `
+        <div class="lang" id="lang">
+          <button type="button" class="lang-toggle" id="lang-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="lang-menu" aria-label="${ui().language}: ${current.name}" onclick="toggleLangMenu()">
+            ${flagSvg(current.code)}
+            <span lang="${current.code}">${current.name}</span>
+            <svg class="lang-caret" viewBox="0 0 10 10" aria-hidden="true" focusable="false"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <ul class="lang-menu" id="lang-menu" aria-label="${ui().language}" hidden>${options}
+          </ul>
+        </div>
+    `;
+  }
+
+  function toggleLangMenu() {
+    const menu = $('lang-menu');
+    if (!menu) return;
+    if (menu.hidden) openLangMenu();
+    else closeLangMenu(false);
+  }
+
+  function openLangMenu() {
+    const menu = $('lang-menu');
+    const toggle = $('lang-toggle');
+    menu.hidden = false;
+    menu.style.maxHeight = '';
+    $('lang').classList.add('open');
+    toggle.setAttribute('aria-expanded', 'true');
+
+    // Avaa lista sinne, missä on enemmän tilaa (upotuksen korkeus voi olla rajattu)
+    const rect = toggle.getBoundingClientRect();
+    const spaceAbove = rect.top - 12;
+    const spaceBelow = window.innerHeight - rect.bottom - 12;
+    const openDown = spaceBelow >= menu.scrollHeight || spaceBelow > spaceAbove;
+    menu.classList.toggle('down', openDown);
+    menu.style.maxHeight = Math.max(160, openDown ? spaceBelow : spaceAbove) + 'px';
+
+    const selected = menu.querySelector('[aria-current="true"]') || menu.querySelector('.lang-option');
+    selected.focus({ preventScroll: true });
+  }
+
+  function closeLangMenu(returnFocus) {
+    const menu = $('lang-menu');
+    if (!menu || menu.hidden) return;
+    menu.hidden = true;
+    $('lang').classList.remove('open');
+    const toggle = $('lang-toggle');
+    toggle.setAttribute('aria-expanded', 'false');
+    if (returnFocus) toggle.focus();
+  }
+
+  function setLang(code) {
+    if (!I18N[code]) return;
+    state.lang = code;
+    try {
+      window.localStorage.setItem(LANG_STORAGE_KEY, code);
+    } catch (e) {
+      // Valinta toimii silti tämän sivun ajan
+    }
+    applyLang();
+    render();
+    const toggle = $('lang-toggle');
+    if (toggle) toggle.focus({ preventScroll: true });
+  }
+
+  // Sulje lista, kun klikataan tai siirrytään sen ulkopuolelle
+  document.addEventListener('click', (e) => {
+    const wrap = $('lang');
+    if (wrap && !wrap.contains(e.target)) closeLangMenu(false);
+  });
+  document.addEventListener('focusin', (e) => {
+    const wrap = $('lang');
+    if (wrap && !wrap.contains(e.target)) closeLangMenu(false);
+  });
+
+  // Näppäimistö: Esc sulkee, nuolet liikkuvat listassa
+  document.addEventListener('keydown', (e) => {
+    const menu = $('lang-menu');
+    if (!menu || menu.hidden) return;
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeLangMenu(true);
+      return;
+    }
+    const keys = ['ArrowDown', 'ArrowUp', 'Home', 'End'];
+    if (!keys.includes(e.key)) return;
+    e.preventDefault();
+    const items = Array.from(menu.querySelectorAll('.lang-option'));
+    const i = items.indexOf(document.activeElement);
+    let next = 0;
+    if (e.key === 'End') next = items.length - 1;
+    else if (e.key === 'ArrowDown') next = (i + 1) % items.length;
+    else if (e.key === 'ArrowUp') next = i <= 0 ? items.length - 1 : i - 1;
+    items[next].focus();
+  });
 
   // ============ State ============
   const state = {
     screen: 'welcome',
+    lang: initialLang(),
     currentCategory: 0,
     answers: {},
     chartInstance: null
@@ -517,8 +1543,12 @@
   const $ = (id) => document.getElementById(id);
   const answerKey = (c, q) => `${c}-${q}`;
 
+  function categories() {
+    return I18N[state.lang].categories;
+  }
+
   function isCategoryComplete(catIdx) {
-    const qLen = CATEGORIES[catIdx].questions.length;
+    const qLen = categories()[catIdx].questions.length;
     for (let q = 0; q < qLen; q++) {
       if (state.answers[answerKey(catIdx, q)] === undefined) return false;
     }
@@ -526,7 +1556,7 @@
   }
 
   function categoryAverage(catIdx) {
-    const qLen = CATEGORIES[catIdx].questions.length;
+    const qLen = categories()[catIdx].questions.length;
     let sum = 0;
     for (let q = 0; q < qLen; q++) sum += state.answers[answerKey(catIdx, q)] ?? 0;
     return sum / qLen;
@@ -538,7 +1568,8 @@
 
   // ============ Welcome ============
   function renderWelcome() {
-    const totalQuestions = CATEGORIES.reduce((acc, c) => acc + c.questions.length, 0);
+    const t = ui();
+    const totalQuestions = categories().reduce((acc, c) => acc + c.questions.length, 0);
     $('app').innerHTML = `
       <div class="welcome">
         <svg class="welcome-bg" viewBox="0 0 200 200" aria-hidden="true">
@@ -551,17 +1582,20 @@
             <line x1="31" y1="140" x2="169" y2="60" />
           </g>
         </svg>
-        <div class="welcome-eyebrow">Energiaa itsesi johtamiseen</div>
-        <h1>Kartoitus: <em>Energisyys</em></h1>
-        <p>Tässä osiossa kartoitetaan energisyyttäsi neljän kategorian kautta: fyysinen aktiivisuus, uni, ravinto ja psyykkinen kuormitus. Vastaa rehellisesti, kukaan ei näe yksittäisiä vastauksiasi.</p>
+        <div class="welcome-eyebrow">${t.eyebrow}</div>
+        <h1>${t.title}</h1>
+        <p>${t.intro}</p>
         <div class="welcome-meta">
-          <span><strong>${CATEGORIES.length}</strong> kategoriaa</span>
+          <span>${fmt(t.metaCategories, { n: `<strong>${categories().length}</strong>` })}</span>
           <span class="welcome-meta-sep">·</span>
-          <span><strong>${totalQuestions}</strong> kysymystä</span>
+          <span>${fmt(t.metaQuestions, { n: `<strong>${totalQuestions}</strong>` })}</span>
           <span class="welcome-meta-sep">·</span>
-          <span><strong>6</strong> minuuttia</span>
+          <span>${fmt(t.metaMinutes, { n: '<strong>6</strong>' })}</span>
         </div>
-        <button class="btn-primary" onclick="startQuestionnaire()">Aloita kartoitus →</button>
+        <div class="welcome-actions" dir="ltr">
+          ${renderLangSelector()}
+          <button class="btn-primary" dir="${langDir()}" onclick="startQuestionnaire()">${t.start}</button>
+        </div>
       </div>
     `;
   }
@@ -576,8 +1610,8 @@
 
   // ============ Questionnaire ============
   function renderQuestionnaire() {
-    const cat = CATEGORIES[state.currentCategory];
-    const dots = CATEGORIES.map((_, i) => {
+    const cat = categories()[state.currentCategory];
+    const dots = categories().map((_, i) => {
       let cls = 'q-progress-dot';
       if (i < state.currentCategory) cls += ' done';
       else if (i === state.currentCategory) cls += ' current';
@@ -588,7 +1622,7 @@
       <div class="q-header">
         <div class="q-counter">
           ${String(state.currentCategory + 1).padStart(2, '0')}
-          <span>/ ${String(CATEGORIES.length).padStart(2, '0')}</span>
+          <span>/ ${String(categories().length).padStart(2, '0')}</span>
         </div>
         <div class="q-progress">${dots}</div>
       </div>
@@ -608,15 +1642,15 @@
     let buttons = '';
     for (let v = 1; v <= 7; v++) {
       const sel = v === selected ? 'selected' : '';
-      buttons += `<button class="q-button ${sel}" onclick="setAnswer(${catIdx}, ${qIdx}, ${v})" aria-label="Vastaus ${v}">${v}</button>`;
+      buttons += `<button class="q-button ${sel}" onclick="setAnswer(${catIdx}, ${qIdx}, ${v})" aria-label="${fmt(ui().answerAria, { n: v })}">${v}</button>`;
     }
     return `
       <div class="q-item ${answered ? 'answered' : ''}" id="q-${catIdx}-${qIdx}">
         <div class="q-text">${text}</div>
         <div class="q-scale">${buttons}</div>
         <div class="q-scale-labels">
-          <span>Täysin eri mieltä</span>
-          <span>Täysin samaa mieltä</span>
+          <span>${ui().scaleMin}</span>
+          <span>${ui().scaleMax}</span>
         </div>
       </div>
     `;
@@ -628,7 +1662,7 @@
     const qEl = $(`q-${catIdx}-${qIdx}`);
     if (qEl) {
       const wrapper = document.createElement('div');
-      wrapper.innerHTML = renderQuestion(catIdx, qIdx, CATEGORIES[catIdx].questions[qIdx]);
+      wrapper.innerHTML = renderQuestion(catIdx, qIdx, categories()[catIdx].questions[qIdx]);
       qEl.replaceWith(wrapper.firstElementChild);
     }
 
@@ -636,7 +1670,7 @@
     if (isCategoryComplete(catIdx)) {
       advanceTimeout = setTimeout(() => {
         advanceTimeout = null;
-        if (catIdx + 1 < CATEGORIES.length) {
+        if (catIdx + 1 < categories().length) {
           state.currentCategory = catIdx + 1;
           render();
           scrollToTop();
@@ -651,7 +1685,7 @@
 
   // ============ Results ============
   function renderResults() {
-    const cats = CATEGORIES.map((c, i) => ({
+    const cats = categories().map((c, i) => ({
       title: c.title,
       avg: categoryAverage(i)
     }));
@@ -664,19 +1698,19 @@
 
     $('app').innerHTML = `
       <div class="results">
-        <div class="results-eyebrow">Tuloksesi</div>
-        <h2>Energisyytesi <em>profiili</em></h2>
-        <p class="results-sub">Jokainen akseli kuvaa yhden kategorian tilannetta asteikolla 1–7. Korkea arvo tarkoittaa, että koet osa-alueen olevan elämässäsi hyvässä tilassa.</p>
+        <div class="results-eyebrow">${ui().resultsEyebrow}</div>
+        <h2>${ui().resultsTitle}</h2>
+        <p class="results-sub">${ui().resultsSub}</p>
         <div class="chart-container">
           <div class="chart-wrap">
             <canvas id="radarChart"></canvas>
           </div>
         </div>
         <div class="scores">${scoreCards}</div>
-        <p class="save-note">Emme tallenna vastauksiasi, suosittelen että lataat tästä kuvan omalle laitteellesi.</p>
+        <p class="save-note">${ui().saveNote}</p>
         <div class="actions">
-          <button class="btn-primary" onclick="downloadChart()">Tallenna kuva ↓</button>
-          <button class="btn-secondary" onclick="restart()">Aloita alusta</button>
+          <button class="btn-primary" onclick="downloadChart()">${ui().download}</button>
+          <button class="btn-secondary" onclick="restart()">${ui().restart}</button>
         </div>
       </div>
     `;
@@ -688,15 +1722,15 @@
     const canvas = $('radarChart');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    const labels = CATEGORIES.map(c => c.title);
-    const data = CATEGORIES.map((_, i) => categoryAverage(i));
+    const labels = categories().map(c => c.title);
+    const data = categories().map((_, i) => categoryAverage(i));
 
     state.chartInstance = new Chart(ctx, {
       type: 'radar',
       data: {
         labels,
         datasets: [{
-          label: 'Vastauksesi',
+          label: ui().datasetLabel,
           data,
           backgroundColor: 'rgba(163, 217, 197, 0.42)',
           borderColor: '#0c2543',
@@ -791,7 +1825,10 @@
   window.setAnswer = setAnswer;
   window.downloadChart = downloadChart;
   window.restart = restart;
+  window.toggleLangMenu = toggleLangMenu;
+  window.setLang = setLang;
 
+  applyLang();
   render();
 </script>
 </body>

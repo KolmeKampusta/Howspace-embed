@@ -377,7 +377,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     padding: 10px 14px;
-    text-align: left;
+    text-align: start;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -418,6 +418,120 @@
     animation: fadeIn 420ms 440ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
+  /* ============ Language selector ============ */
+  .welcome-actions {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+  .lang {
+    position: relative;
+    justify-self: start;
+    text-align: left;
+  }
+  .lang-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: var(--navy);
+    border: 1px solid var(--border);
+    padding: 9px 12px 9px 10px;
+    font-family: 'Geist', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+  .lang-toggle:hover,
+  .lang.open .lang-toggle {
+    border-color: var(--navy);
+    background: var(--card-bg);
+  }
+  .lang-flag {
+    flex: 0 0 auto;
+    display: inline-block;
+    width: 21px;
+    height: 14px;
+    border-radius: 3px;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(12, 37, 67, 0.14);
+  }
+  .lang-flag svg { display: block; width: 100%; height: 100%; }
+  .lang-caret {
+    width: 10px;
+    height: 10px;
+    transition: transform var(--transition);
+  }
+  .lang.open .lang-caret { transform: rotate(180deg); }
+  .lang-menu {
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 8px);
+    z-index: 20;
+    min-width: 190px;
+    overflow-y: auto;
+    list-style: none;
+    background: var(--container-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 12px 32px rgba(12, 37, 67, 0.18);
+    padding: 6px;
+    animation: fadeIn 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .lang-menu.down {
+    top: calc(100% + 8px);
+    bottom: auto;
+  }
+  .lang-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 7px 10px;
+    font-family: 'Geist', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.3;
+    color: var(--navy);
+    text-align: left;
+    cursor: pointer;
+    transition: background 160ms ease;
+  }
+  .lang-option:hover,
+  .lang-option:focus-visible {
+    background: var(--blue-soft);
+    outline: none;
+  }
+  .lang-option[aria-current="true"] {
+    background: #e0eff9;
+    font-weight: 500;
+  }
+  .lang-option[aria-current="true"]::after {
+    content: '';
+    width: 5px;
+    height: 9px;
+    margin: -3px 4px 0 auto;
+    border: solid var(--navy);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  @media (max-width: 540px) {
+    /* Kapealla näytöllä nappi siirtyy tarvittaessa valitsimen yläpuolelle */
+    .welcome-actions {
+      display: flex;
+      flex-wrap: wrap-reverse;
+      gap: 10px;
+    }
+    .welcome-actions .btn-primary { flex: 1 1 auto; }
+  }
+
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
@@ -448,65 +562,977 @@
 <div class="container" id="app"></div>
 
 <script>
-  // ============ Data ============
-  const CATEGORIES = [
-    {
-      title: 'Sitoutuminen',
-      description: 'Tavoitteen henkilökohtainen merkitys ja sitoutumisen aste.',
-      questions: [
-        'Tavoitteeni on minulle henkilökohtaisesti merkityksellinen.',
-        'Olen valmis asettamaan tavoitteeni tärkeysjärjestyksessä korkealle.',
-        'Tavoitteen saavuttaminen tuntuu kutsuvalta ja innostavalta.',
-        'Olen valmis näkemään vaivaa tämän tavoitteen eteen.',
-        'Olen sitoutunut tavoitteeni eteen ponnisteluun myös alkuinnostuksen jälkeen.',
-        'Tavoitteen saavuttaminen on linjassa omien arvojeni kanssa.',
-        'Koen vahvaa sisäistä halua viedä tavoitteeni maaliin.'
+  // ============ Translations ============
+  // Jokaisella kielellä: ui = käyttöliittymän tekstit, categories = kategoriat ja kysymykset.
+  const I18N = {
+    fi: {
+      ui: {
+        docTitle: 'Tavoitteenasettelukartoitus · 3K',
+        docDescription: 'Tavoitteenasettelun itsearviointityökalu',
+        eyebrow: 'Tavoitteet rantakuntoon',
+        title: 'Kartoitus: <em>Tavoitteenasettelu</em>',
+        intro: 'Tässä osiossa kartoitetaan tavoitteenasetteluasi neljän kategorian kautta: sitoutuminen, kyvykkyys, kuormittavuus ja motivaatio. Vastaa rehellisesti, kukaan ei näe yksittäisiä vastauksiasi.',
+        resultsTitle: 'Tavoitteenasettelusi <em>profiili</em>',
+        language: 'Kieli',
+        metaCategories: '{n} kategoriaa',
+        metaQuestions: '{n} kysymystä',
+        metaMinutes: '{n} minuuttia',
+        start: 'Aloita kartoitus →',
+        answerAria: 'Vastaus {n}',
+        scaleMin: 'Täysin eri mieltä',
+        scaleMax: 'Täysin samaa mieltä',
+        resultsEyebrow: 'Tuloksesi',
+        resultsSub: 'Jokainen akseli kuvaa yhden kategorian tilannetta asteikolla 1–7. Korkea arvo tarkoittaa, että koet osa-alueen olevan elämässäsi hyvässä tilassa.',
+        saveNote: 'Emme tallenna vastauksiasi, suosittelen että lataat tästä kuvan omalle laitteellesi.',
+        download: 'Tallenna kuva ↓',
+        restart: 'Aloita alusta',
+        datasetLabel: 'Vastauksesi'
+      },
+      categories: [
+        {
+          title: 'Sitoutuminen',
+          description: 'Tavoitteen henkilökohtainen merkitys ja sitoutumisen aste.',
+          questions: [
+            'Tavoitteeni on minulle henkilökohtaisesti merkityksellinen.',
+            'Olen valmis asettamaan tavoitteeni tärkeysjärjestyksessä korkealle.',
+            'Tavoitteen saavuttaminen tuntuu kutsuvalta ja innostavalta.',
+            'Olen valmis näkemään vaivaa tämän tavoitteen eteen.',
+            'Olen sitoutunut tavoitteeni eteen ponnisteluun myös alkuinnostuksen jälkeen.',
+            'Tavoitteen saavuttaminen on linjassa omien arvojeni kanssa.',
+            'Koen vahvaa sisäistä halua viedä tavoitteeni maaliin.'
+          ]
+        },
+        {
+          title: 'Kyvykkyys',
+          description: 'Usko omaan osaamiseen ja kykyyn edetä tavoitteessa.',
+          questions: [
+            'Minulla on tarvittavat perustiedot ja -taidot tavoitteeni edistämiseksi.',
+            'Pystyn oppimaan uutta, jos tavoite sitä edellyttää.',
+            'Tavoitteeni haastaa minua sopivasti, mutta ei tunnu ylivoimaiselta.',
+            'Tiedän tarkalleen, mikä on ensimmäinen askeleeni kohti tavoitetta.',
+            'Uskon, että pystyn vaikuttamaan lopputulokseen omalla toiminnallani.',
+            'Pystyn pitämään kiinni suunnitelmastani haastavinakin päivinä.',
+            'Luotan siihen, että pystyn ylittämään eteen tulevat esteet tai hidasteet.'
+          ]
+        },
+        {
+          title: 'Kuormittavuus',
+          description: 'Tavoitteen herättämät tunteet ja sen vaatima kuormitus.',
+          questions: [
+            'Tavoite tuntuu innostavalta haasteelta, ei raskaalta taakalta.',
+            'Minulla on riittävästi voimavaroja edistää tavoitettani.',
+            'Tavoitteen ajatteleminen herättää minussa pääosin positiivisia tunteita.',
+            'Tavoitteen edistäminen ei aiheuta minulle liiallista stressiä.',
+            'Nautin prosessista ja matkasta kohti tavoitetta.',
+            'Tavoitteen eteen tehtävä työ antaa minulle enemmän kuin se ottaa.',
+            'Koen, että hallitsen tavoitteeseen liittyvät paineet hyvin.'
+          ]
+        },
+        {
+          title: 'Motivaatio',
+          description: 'Sisäisen motivaation ja innostuksen lähde.',
+          questions: [
+            'Haluan edistää tätä tavoitetta puhtaasti omasta tahdostani.',
+            'Tavoitteen eteen ponnistelu tuntuu palkitsevalta.',
+            'Olen aidosti kiinnostunut asioista, joita tavoitteen saavuttaminen mahdollistaa.',
+            'Suhtaudun mahdollisiin takapakkeihin oppimiskokemuksina.',
+            'Koen, että tavoitteen eteen tehty työ on merkityksellistä.',
+            'Tavoittelen päämäärää itseäni varten, en miellyttääkseni muita.',
+            'Innostukseni tavoitetta kohtaan kumpuaa sisältäpäin.'
+          ]
+        }
       ]
     },
-    {
-      title: 'Kyvykkyys',
-      description: 'Usko omaan osaamiseen ja kykyyn edetä tavoitteessa.',
-      questions: [
-        'Minulla on tarvittavat perustiedot ja -taidot tavoitteeni edistämiseksi.',
-        'Pystyn oppimaan uutta, jos tavoite sitä edellyttää.',
-        'Tavoitteeni haastaa minua sopivasti, mutta ei tunnu ylivoimaiselta.',
-        'Tiedän tarkalleen, mikä on ensimmäinen askeleeni kohti tavoitetta.',
-        'Uskon, että pystyn vaikuttamaan lopputulokseen omalla toiminnallani.',
-        'Pystyn pitämään kiinni suunnitelmastani haastavinakin päivinä.',
-        'Luotan siihen, että pystyn ylittämään eteen tulevat esteet tai hidasteet.'
+    de: {
+      ui: {
+        docTitle: 'Selbstcheck Zielsetzung · 3K',
+        docDescription: 'Tool zur Selbsteinschätzung der Zielsetzung',
+        eyebrow: 'Ziele in Topform',
+        title: 'Selbstcheck: <em>Zielsetzung</em>',
+        intro: 'In diesem Teil betrachten wir deine Zielsetzung anhand von vier Kategorien: Engagement, Fähigkeiten, Belastung und Motivation. Antworte ehrlich – niemand sieht deine einzelnen Antworten.',
+        resultsTitle: 'Deine Zielsetzung im <em>Profil</em>',
+        language: 'Sprache',
+        metaCategories: '{n} Kategorien',
+        metaQuestions: '{n} Fragen',
+        metaMinutes: '{n} Minuten',
+        start: 'Selbstcheck starten →',
+        answerAria: 'Antwort {n}',
+        scaleMin: 'Stimme überhaupt nicht zu',
+        scaleMax: 'Stimme voll und ganz zu',
+        resultsEyebrow: 'Deine Ergebnisse',
+        resultsSub: 'Jede Achse zeigt die Situation in einer Kategorie auf einer Skala von 1–7. Ein hoher Wert bedeutet, dass dieser Bereich in deinem Leben aus deiner Sicht gut aufgestellt ist.',
+        saveNote: 'Wir speichern deine Antworten nicht. Ich empfehle dir, dieses Bild auf dein eigenes Gerät herunterzuladen.',
+        download: 'Bild speichern ↓',
+        restart: 'Von vorne beginnen',
+        datasetLabel: 'Deine Antworten'
+      },
+      categories: [
+        {
+          title: 'Engagement',
+          description: 'Die persönliche Bedeutung des Ziels und wie stark du dich dafür einsetzt.',
+          questions: [
+            'Mein Ziel hat für mich persönlich eine große Bedeutung.',
+            'Ich bin bereit, meinem Ziel eine hohe Priorität zu geben.',
+            'Der Gedanke, das Ziel zu erreichen, ist verlockend und begeistert mich.',
+            'Ich bin bereit, mich für dieses Ziel anzustrengen.',
+            'Ich bin entschlossen, mich auch nach der ersten Begeisterung für mein Ziel einzusetzen.',
+            'Das Erreichen des Ziels passt zu meinen eigenen Werten.',
+            'Ich spüre einen starken inneren Wunsch, mein Ziel zu erreichen.'
+          ]
+        },
+        {
+          title: 'Fähigkeiten',
+          description: 'Vertrauen in das eigene Können und darin, beim Ziel voranzukommen.',
+          questions: [
+            'Ich habe das nötige Grundwissen und die nötigen Grundfertigkeiten, um mein Ziel voranzubringen.',
+            'Ich kann Neues lernen, wenn das Ziel es erfordert.',
+            'Mein Ziel fordert mich genau richtig heraus, fühlt sich aber nicht unerreichbar an.',
+            'Ich weiß genau, was mein erster Schritt in Richtung Ziel ist.',
+            'Ich glaube, dass ich das Ergebnis durch mein eigenes Handeln beeinflussen kann.',
+            'Ich kann auch an schwierigen Tagen an meinem Plan festhalten.',
+            'Ich vertraue darauf, dass ich Hindernisse und Stolpersteine auf meinem Weg überwinden kann.'
+          ]
+        },
+        {
+          title: 'Belastung',
+          description: 'Die Gefühle, die das Ziel auslöst, und die Belastung, die es mit sich bringt.',
+          questions: [
+            'Das Ziel fühlt sich wie eine spannende Herausforderung an, nicht wie eine schwere Last.',
+            'Ich habe genug Kraftreserven, um mein Ziel voranzubringen.',
+            'Wenn ich an das Ziel denke, habe ich überwiegend positive Gefühle.',
+            'Die Arbeit an meinem Ziel verursacht mir keinen übermäßigen Stress.',
+            'Ich genieße den Prozess und den Weg zum Ziel.',
+            'Die Arbeit für mein Ziel gibt mir mehr, als sie mir nimmt.',
+            'Ich habe das Gefühl, dass ich mit dem Druck rund um mein Ziel gut umgehe.'
+          ]
+        },
+        {
+          title: 'Motivation',
+          description: 'Woher die innere Motivation und Begeisterung kommen.',
+          questions: [
+            'Ich will dieses Ziel ganz aus eigenem Antrieb voranbringen.',
+            'Die Anstrengung für mein Ziel fühlt sich lohnend an.',
+            'Ich interessiere mich wirklich für die Dinge, die das Erreichen des Ziels möglich macht.',
+            'Ich sehe mögliche Rückschläge als Lernerfahrungen.',
+            'Ich habe das Gefühl, dass die Arbeit für mein Ziel sinnvoll ist.',
+            'Ich verfolge mein Ziel für mich selbst, nicht um anderen zu gefallen.',
+            'Meine Begeisterung für das Ziel kommt von innen.'
+          ]
+        }
       ]
     },
-    {
-      title: 'Kuormittavuus',
-      description: 'Tavoitteen herättämät tunteet ja sen vaatima kuormitus.',
-      questions: [
-        'Tavoite tuntuu innostavalta haasteelta, ei raskaalta taakalta.',
-        'Minulla on riittävästi voimavaroja edistää tavoitettani.',
-        'Tavoitteen ajatteleminen herättää minussa pääosin positiivisia tunteita.',
-        'Tavoitteen edistäminen ei aiheuta minulle liiallista stressiä.',
-        'Nautin prosessista ja matkasta kohti tavoitetta.',
-        'Tavoitteen eteen tehtävä työ antaa minulle enemmän kuin se ottaa.',
-        'Koen, että hallitsen tavoitteeseen liittyvät paineet hyvin.'
+    en: {
+      ui: {
+        docTitle: 'Goal Setting Assessment · 3K',
+        docDescription: 'A self-assessment tool for goal setting',
+        eyebrow: 'Get your goals in shape',
+        title: 'Assessment: <em>Goal setting</em>',
+        intro: 'This section looks at your goal setting through four categories: commitment, capability, strain and motivation. Answer honestly – no one will see your individual answers.',
+        resultsTitle: 'Your goal-setting <em>profile</em>',
+        language: 'Language',
+        metaCategories: '{n} categories',
+        metaQuestions: '{n} questions',
+        metaMinutes: '{n} minutes',
+        start: 'Start the assessment →',
+        answerAria: 'Answer {n}',
+        scaleMin: 'Strongly disagree',
+        scaleMax: 'Strongly agree',
+        resultsEyebrow: 'Your results',
+        resultsSub: 'Each axis shows the situation in one category on a scale of 1–7. A high score means you feel this area of your life is in good shape.',
+        saveNote: 'We don\'t store your answers; I recommend downloading this image to your own device.',
+        download: 'Save image ↓',
+        restart: 'Start over',
+        datasetLabel: 'Your answers'
+      },
+      categories: [
+        {
+          title: 'Commitment',
+          description: 'How personally meaningful your goal is and how committed you are to it.',
+          questions: [
+            'My goal is personally meaningful to me.',
+            'I am willing to make my goal a high priority.',
+            'Reaching my goal feels inviting and exciting.',
+            'I am willing to put in the effort for this goal.',
+            'I am committed to working hard for my goal, even after the initial excitement wears off.',
+            'Reaching my goal is in line with my own values.',
+            'I feel a strong inner desire to see my goal through.'
+          ]
+        },
+        {
+          title: 'Capability',
+          description: 'Belief in your own skills and your ability to make progress towards your goal.',
+          questions: [
+            'I have the basic knowledge and skills I need to work towards my goal.',
+            'I can learn new things if my goal requires it.',
+            'My goal challenges me just enough, but doesn\'t feel overwhelming.',
+            'I know exactly what my first step towards my goal is.',
+            'I believe I can influence the outcome through my own actions.',
+            'I can stick to my plan, even on difficult days.',
+            'I trust that I can overcome any obstacles or delays that come my way.'
+          ]
+        },
+        {
+          title: 'Strain',
+          description: 'The feelings your goal brings up and the strain it puts on you.',
+          questions: [
+            'My goal feels like an exciting challenge, not a heavy burden.',
+            'I have enough energy and resources to work towards my goal.',
+            'Thinking about my goal brings up mostly positive feelings.',
+            'Working towards my goal doesn\'t cause me too much stress.',
+            'I enjoy the process and the journey towards my goal.',
+            'Working towards my goal gives me more than it takes.',
+            'I feel I handle the pressures related to my goal well.'
+          ]
+        },
+        {
+          title: 'Motivation',
+          description: 'The source of your inner motivation and enthusiasm.',
+          questions: [
+            'I want to work towards this goal purely because I choose to.',
+            'Working hard towards my goal feels rewarding.',
+            'I am genuinely interested in the things that reaching my goal will make possible.',
+            'I see possible setbacks as learning experiences.',
+            'I feel that the work I do towards my goal is meaningful.',
+            'I am pursuing this goal for myself, not to please others.',
+            'My enthusiasm for my goal comes from within.'
+          ]
+        }
       ]
     },
-    {
-      title: 'Motivaatio',
-      description: 'Sisäisen motivaation ja innostuksen lähde.',
-      questions: [
-        'Haluan edistää tätä tavoitetta puhtaasti omasta tahdostani.',
-        'Tavoitteen eteen ponnistelu tuntuu palkitsevalta.',
-        'Olen aidosti kiinnostunut asioista, joita tavoitteen saavuttaminen mahdollistaa.',
-        'Suhtaudun mahdollisiin takapakkeihin oppimiskokemuksina.',
-        'Koen, että tavoitteen eteen tehty työ on merkityksellistä.',
-        'Tavoittelen päämäärää itseäni varten, en miellyttääkseni muita.',
-        'Innostukseni tavoitetta kohtaan kumpuaa sisältäpäin.'
+    es: {
+      ui: {
+        docTitle: 'Evaluación del establecimiento de objetivos · 3K',
+        docDescription: 'Herramienta de autoevaluación del establecimiento de objetivos',
+        eyebrow: 'Pon tus objetivos en forma',
+        title: 'Evaluación: <em>Establecimiento de objetivos</em>',
+        intro: 'En esta sección se evalúa cómo estableces tus objetivos a través de cuatro categorías: compromiso, capacidad, carga y motivación. Responde con sinceridad: nadie verá tus respuestas individuales.',
+        resultsTitle: 'Tu <em>perfil</em> de establecimiento de objetivos',
+        language: 'Idioma',
+        metaCategories: '{n} categorías',
+        metaQuestions: '{n} preguntas',
+        metaMinutes: '{n} minutos',
+        start: 'Comenzar la evaluación →',
+        answerAria: 'Respuesta {n}',
+        scaleMin: 'Totalmente en desacuerdo',
+        scaleMax: 'Totalmente de acuerdo',
+        resultsEyebrow: 'Tus resultados',
+        resultsSub: 'Cada eje muestra la situación de una categoría en una escala de 1–7. Un valor alto significa que sientes que esa área de tu vida está en buen estado.',
+        saveNote: 'No guardamos tus respuestas; te recomiendo que descargues esta imagen en tu propio dispositivo.',
+        download: 'Guardar imagen ↓',
+        restart: 'Empezar de nuevo',
+        datasetLabel: 'Tus respuestas'
+      },
+      categories: [
+        {
+          title: 'Compromiso',
+          description: 'Significado personal del objetivo y grado de compromiso.',
+          questions: [
+            'Mi objetivo tiene un significado personal para mí.',
+            'Puedo dar a mi objetivo una prioridad alta.',
+            'Alcanzar el objetivo me resulta atractivo y estimulante.',
+            'Quiero dedicar esfuerzo a este objetivo.',
+            'Mantengo el compromiso de esforzarme por mi objetivo también cuando pasa el entusiasmo inicial.',
+            'Alcanzar el objetivo está en línea con mis propios valores.',
+            'Siento un fuerte deseo interior de llevar mi objetivo hasta el final.'
+          ]
+        },
+        {
+          title: 'Capacidad',
+          description: 'Confianza en las propias habilidades y en la capacidad de avanzar hacia el objetivo.',
+          questions: [
+            'Tengo los conocimientos y las habilidades básicas necesarias para avanzar hacia mi objetivo.',
+            'Puedo aprender cosas nuevas si el objetivo lo requiere.',
+            'Mi objetivo me supone un reto adecuado, pero no me parece imposible.',
+            'Sé exactamente cuál es mi primer paso hacia el objetivo.',
+            'Creo que puedo influir en el resultado con mis propias acciones.',
+            'Puedo mantener mi plan incluso en los días difíciles.',
+            'Confío en que puedo superar los obstáculos o retrasos que surjan.'
+          ]
+        },
+        {
+          title: 'Carga',
+          description: 'Emociones que despierta el objetivo y la carga que supone.',
+          questions: [
+            'El objetivo me parece un reto estimulante, no una carga pesada.',
+            'Tengo suficientes fuerzas y recursos para avanzar hacia mi objetivo.',
+            'Pensar en el objetivo me despierta sobre todo emociones positivas.',
+            'Avanzar hacia el objetivo no me causa un estrés excesivo.',
+            'Disfruto del proceso y del camino hacia el objetivo.',
+            'El trabajo por el objetivo me da más de lo que me quita.',
+            'Siento que manejo bien la presión relacionada con el objetivo.'
+          ]
+        },
+        {
+          title: 'Motivación',
+          description: 'Fuente de la motivación interior y del entusiasmo.',
+          questions: [
+            'Quiero avanzar hacia este objetivo únicamente por voluntad propia.',
+            'Esforzarme por el objetivo me resulta gratificante.',
+            'Me interesan de verdad las cosas que alcanzar el objetivo hace posibles.',
+            'Veo los posibles retrocesos como experiencias de aprendizaje.',
+            'Siento que el trabajo que hago por el objetivo tiene sentido.',
+            'Persigo esta meta por mí, no para agradar a los demás.',
+            'Mi entusiasmo por el objetivo nace de dentro.'
+          ]
+        }
+      ]
+    },
+    fr: {
+      ui: {
+        docTitle: 'Bilan de définition d’objectifs · 3K',
+        docDescription: 'Outil d’auto-évaluation de la définition d’objectifs',
+        eyebrow: 'Mettez vos objectifs en forme',
+        title: 'Bilan : <em>Définition d’objectifs</em>',
+        intro: 'Cette section fait le point sur votre façon de définir vos objectifs à travers quatre catégories : engagement, capacités, charge ressentie et motivation. Répondez honnêtement : personne ne verra vos réponses individuelles.',
+        resultsTitle: 'Votre <em>profil</em> de définition d’objectifs',
+        language: 'Langue',
+        metaCategories: '{n} catégories',
+        metaQuestions: '{n} questions',
+        metaMinutes: '{n} minutes',
+        start: 'Commencer le bilan →',
+        answerAria: 'Réponse {n}',
+        scaleMin: 'Pas du tout d’accord',
+        scaleMax: 'Tout à fait d’accord',
+        resultsEyebrow: 'Vos résultats',
+        resultsSub: 'Chaque axe représente la situation d’une catégorie sur une échelle de 1 à 7. Une valeur élevée signifie que vous estimez que ce domaine se porte bien dans votre vie.',
+        saveNote: 'Nous n’enregistrons pas vos réponses : je vous recommande de télécharger cette image sur votre propre appareil.',
+        download: 'Enregistrer l’image ↓',
+        restart: 'Recommencer',
+        datasetLabel: 'Vos réponses'
+      },
+      categories: [
+        {
+          title: 'Engagement',
+          description: 'Importance personnelle de l’objectif et degré d’engagement.',
+          questions: [
+            'Mon objectif a du sens pour moi personnellement.',
+            'J’accepte de placer mon objectif en haut de mes priorités.',
+            'Atteindre l’objectif me paraît attirant et enthousiasmant.',
+            'J’ai la volonté de faire des efforts pour cet objectif.',
+            'Je m’engage à poursuivre mes efforts pour mon objectif, même une fois l’enthousiasme du début passé.',
+            'Atteindre cet objectif est en accord avec mes propres valeurs.',
+            'Je ressens un fort désir intérieur de mener mon objectif à bien.'
+          ]
+        },
+        {
+          title: 'Capacités',
+          description: 'Confiance en ses compétences et en sa capacité à progresser vers l’objectif.',
+          questions: [
+            'J’ai les connaissances et les compétences de base nécessaires pour faire avancer mon objectif.',
+            'Je suis capable d’apprendre de nouvelles choses si l’objectif l’exige.',
+            'Mon objectif représente pour moi un défi à ma mesure, sans paraître insurmontable.',
+            'Je sais exactement quelle est ma première étape vers l’objectif.',
+            'Je crois pouvoir influencer le résultat par mes propres actions.',
+            'Je suis capable de m’en tenir à mon plan, même les jours difficiles.',
+            'J’ai confiance en ma capacité à surmonter les obstacles ou les freins qui se présenteront.'
+          ]
+        },
+        {
+          title: 'Charge ressentie',
+          description: 'Émotions suscitées par l’objectif et charge qu’il représente.',
+          questions: [
+            'L’objectif me semble être un défi stimulant, et non un fardeau pesant.',
+            'J’ai suffisamment de ressources pour faire avancer mon objectif.',
+            'Penser à mon objectif suscite en moi surtout des émotions positives.',
+            'Faire avancer mon objectif ne me cause pas de stress excessif.',
+            'J’apprécie le processus et le chemin vers l’objectif.',
+            'Le travail pour mon objectif m’apporte plus qu’il ne me coûte.',
+            'J’ai le sentiment de bien gérer la pression liée à mon objectif.'
+          ]
+        },
+        {
+          title: 'Motivation',
+          description: 'Sources de motivation intérieure et d’enthousiasme.',
+          questions: [
+            'Je veux faire avancer cet objectif uniquement par ma propre volonté.',
+            'Faire des efforts pour cet objectif est gratifiant.',
+            'Je m’intéresse sincèrement à ce que l’atteinte de l’objectif rendra possible.',
+            'Je vois les éventuels revers comme des occasions d’apprendre.',
+            'J’ai le sentiment que le travail accompli pour mon objectif a du sens.',
+            'Je poursuis ce but pour moi-même, pas pour plaire aux autres.',
+            'Mon enthousiasme pour cet objectif vient de l’intérieur.'
+          ]
+        }
+      ]
+    },
+    so: {
+      ui: {
+        docTitle: 'Qiimaynta dejinta yoolka · 3K',
+        docDescription: 'Qalabka is-qiimaynta dejinta yoolka',
+        eyebrow: 'Yoolalkaaga geli qaab fiican',
+        title: 'Qiimayn: <em>Dejinta yoolka</em>',
+        intro: 'Halkan waxaa lagu qiimaynayaa sida aad u dejiso yoolalkaaga iyadoo loo marayo afar qaybood: ka go\'naanshaha, awoodda, culayska iyo dhiirrigelinta. Su\'aalaha si daacad ah uga jawaab, qofna ma arki doono jawaabahaaga gaarka ah.',
+        resultsTitle: '<em>Sawirka guud</em> ee dejinta yoolkaaga',
+        language: 'Luqadda',
+        metaCategories: '{n} qaybood',
+        metaQuestions: '{n} su\'aalood',
+        metaMinutes: '{n} daqiiqo',
+        start: 'Bilow qiimaynta →',
+        answerAria: 'Jawaab {n}',
+        scaleMin: 'Gabi ahaanba kuma raacsani',
+        scaleMax: 'Gabi ahaanba waan ku raacsanahay',
+        resultsEyebrow: 'Natiijadaada',
+        resultsSub: 'Dhidib kastaa wuxuu muujinayaa xaaladda hal qayb, iyadoo la adeegsanayo cabbir 1–7 ah. Qiime sare wuxuu ka dhigan yahay inaad dareemayso in qaybtani ay noloshaada ku jirto xaalad wanaagsan.',
+        saveNote: 'Jawaabahaaga ma kaydinno; waxaan kugula talinayaa inaad sawirkan ku soo dejiso qalabkaaga.',
+        download: 'Kaydi sawirka ↓',
+        restart: 'Dib u bilow',
+        datasetLabel: 'Jawaabahaaga'
+      },
+      categories: [
+        {
+          title: 'Ka go\'naanshaha',
+          description: 'Macnaha shakhsi ahaaneed ee yoolka iyo heerka aad uga go\'an tahay.',
+          questions: [
+            'Yoolkaygu macne weyn ayuu ii leeyahay shakhsi ahaan.',
+            'Diyaar ayaan u ahay inaan yoolkayga ka dhigo mudnaan sare.',
+            'Gaaridda yoolka waxay ii tahay wax i soo jiidanaya oo i xamaasadaynaya.',
+            'Diyaar ayaan u ahay inaan dadaal u galo yoolkan.',
+            'Waan ka go\'anahay inaan u dadaalo yoolkayga xitaa marka xamaasadda bilowgu dhammaato.',
+            'Gaaridda yoolku waxay la jaanqaadaysaa qiyamkayga.',
+            'Waxaan dareemaa rabitaan gudaha ah oo xooggan oo aan yoolkayga ku dhammaystiro.'
+          ]
+        },
+        {
+          title: 'Awoodda',
+          description: 'Rumaysashada aqoontaada iyo awooddaada aad ku horumarto yoolka.',
+          questions: [
+            'Waxaan haystaa aqoonta iyo xirfadaha aasaasiga ah ee loo baahan yahay horumarinta yoolkayga.',
+            'Waan awoodaa inaan wax cusub barto haddii yoolku u baahdo.',
+            'Yoolkaygu waa caqabad igu habboon, laakiin iima muuqdo mid aan awoodi karin.',
+            'Si sax ah ayaan u ogahay tallaabada ugu horreysa ee aan u qaadayo dhanka yoolka.',
+            'Waxaan rumaysanahay inaan ficilladayda saameyn ugu yeelan karo natiijada ugu dambeysa.',
+            'Waan awoodaa inaan ku dhego qorshahayga xitaa maalmaha adag.',
+            'Waan ku kalsoonahay inaan ka gudbi karo caqabadaha ama dib-u-dhacyada i soo wajaha.'
+          ]
+        },
+        {
+          title: 'Culayska',
+          description: 'Dareenka uu yoolku kugu abuuro iyo culayska uu kaa doonayo.',
+          questions: [
+            'Yoolku wuxuu ii yahay caqabad xiiso leh, ma aha culays culus.',
+            'Waxaan haystaa tamar iyo awood ku filan oo aan ku horumariyo yoolkayga.',
+            'Ka fikiridda yoolka waxay inta badan igu abuurtaa dareen wanaagsan.',
+            'Horumarinta yoolku iima keento walbahaar xad-dhaaf ah.',
+            'Waan ku raaxaystaa habka iyo safarka loo marayo yoolka.',
+            'Shaqada aan u qabto yoolka waxay i siisaa wax ka badan inta ay iga qaadato.',
+            'Waxaan dareemaa inaan si wanaagsan u maareeyo cadaadisyada la xiriira yoolka.'
+          ]
+        },
+        {
+          title: 'Dhiirrigelinta',
+          description: 'Isha dhiirrigelinta gudaha iyo xamaasadda.',
+          questions: [
+            'Waxaan rabaa inaan yoolkan horumariyo anigoo ka duulaya rabitaankayga oo keliya.',
+            'U dadaalidda yoolka waxay ii tahay wax abaalmarin leh.',
+            'Si dhab ah ayaan u xiiseeyaa waxyaabaha ay gaaridda yoolku suurtagelinayso.',
+            'Dib-u-dhacyada ka iman kara waxaan u arkaa fursado wax lagu barto.',
+            'Waxaan dareemaa in shaqada aan u qabtay yoolka ay macne leedahay.',
+            'Yoolka waxaan u raacaa naftayda darteed, ma aha si aan dadka kale uga farxiyo.',
+            'Xamaasaddayda ku aaddan yoolku waxay ka timaaddaa gudahayga.'
+          ]
+        }
+      ]
+    },
+    sv: {
+      ui: {
+        docTitle: 'Kartläggning av målsättning · 3K',
+        docDescription: 'Verktyg för självskattning av målsättning',
+        eyebrow: 'Målen i toppform',
+        title: 'Kartläggning: <em>Målsättning</em>',
+        intro: 'I den här delen kartläggs hur du sätter upp mål utifrån fyra kategorier: engagemang, förmåga, belastning och motivation. Svara ärligt – ingen ser dina enskilda svar.',
+        resultsTitle: 'Din <em>profil</em> för målsättning',
+        language: 'Språk',
+        metaCategories: '{n} kategorier',
+        metaQuestions: '{n} frågor',
+        metaMinutes: '{n} minuter',
+        start: 'Starta kartläggningen →',
+        answerAria: 'Svar {n}',
+        scaleMin: 'Instämmer inte alls',
+        scaleMax: 'Instämmer helt',
+        resultsEyebrow: 'Ditt resultat',
+        resultsSub: 'Varje axel visar läget inom en kategori på en skala 1–7. Ett högt värde betyder att du upplever att det här området fungerar bra i ditt liv.',
+        saveNote: 'Vi sparar inte dina svar, så jag rekommenderar att du laddar ner bilden till din egen enhet.',
+        download: 'Spara bild ↓',
+        restart: 'Börja om',
+        datasetLabel: 'Dina svar'
+      },
+      categories: [
+        {
+          title: 'Engagemang',
+          description: 'Hur personligt viktigt målet är för dig och hur engagerad du är.',
+          questions: [
+            'Mitt mål är personligt meningsfullt för mig.',
+            'Jag är beredd att prioritera mitt mål högt.',
+            'Att nå målet känns lockande och inspirerande.',
+            'Jag är beredd att anstränga mig för det här målet.',
+            'Jag är fast besluten att kämpa för mitt mål även när den första entusiasmen har lagt sig.',
+            'Att nå målet stämmer överens med mina egna värderingar.',
+            'Jag känner en stark inre vilja att nå ända fram med mitt mål.'
+          ]
+        },
+        {
+          title: 'Förmåga',
+          description: 'Tro på din egen kompetens och din förmåga att komma framåt mot målet.',
+          questions: [
+            'Jag har de grundläggande kunskaper och färdigheter som behövs för att komma framåt mot mitt mål.',
+            'Jag kan lära mig nya saker om målet kräver det.',
+            'Mitt mål utmanar mig lagom mycket, men det känns inte omöjligt.',
+            'Jag vet exakt vilket mitt första steg mot målet är.',
+            'Jag tror att jag kan påverka slutresultatet genom det jag gör.',
+            'Jag kan hålla fast vid min plan även under tuffa dagar.',
+            'Jag litar på att jag kan ta mig förbi de hinder eller förseningar som dyker upp.'
+          ]
+        },
+        {
+          title: 'Belastning',
+          description: 'Känslorna som målet väcker och hur mycket det belastar dig.',
+          questions: [
+            'Målet känns som en inspirerande utmaning, inte som en tung börda.',
+            'Jag har tillräckligt med krafter för att arbeta mot mitt mål.',
+            'När jag tänker på målet väcker det främst positiva känslor hos mig.',
+            'Att arbeta mot målet orsakar mig inte för mycket stress.',
+            'Jag njuter av processen och resan mot målet.',
+            'Arbetet för målet ger mig mer än det tar.',
+            'Jag känner att jag hanterar pressen kring målet bra.'
+          ]
+        },
+        {
+          title: 'Motivation',
+          description: 'Källan till din inre motivation och entusiasm.',
+          questions: [
+            'Jag vill arbeta mot det här målet helt och hållet av egen vilja.',
+            'Att anstränga mig för målet känns belönande.',
+            'Jag är genuint intresserad av det som blir möjligt när jag når målet.',
+            'Jag ser eventuella bakslag som tillfällen att lära mig.',
+            'Jag upplever att arbetet för målet är meningsfullt.',
+            'Jag strävar mot målet för min egen skull, inte för att göra andra nöjda.',
+            'Min entusiasm för målet kommer inifrån.'
+          ]
+        }
+      ]
+    },
+    ru: {
+      ui: {
+        docTitle: 'Оценка постановки целей · 3K',
+        docDescription: 'Инструмент самооценки постановки целей',
+        eyebrow: 'Приведите цели в форму',
+        title: 'Оценка: <em>Постановка целей</em>',
+        intro: 'В этом разделе оценивается то, как вы ставите цели, по четырём категориям: приверженность, способности, нагрузка и мотивация. Отвечайте честно: никто не увидит ваших отдельных ответов.',
+        resultsTitle: 'Ваш <em>профиль</em> постановки целей',
+        language: 'Язык',
+        metaCategories: '{n} категории',
+        metaQuestions: '{n} вопросов',
+        metaMinutes: '{n} минут',
+        start: 'Начать оценку →',
+        answerAria: 'Ответ {n}',
+        scaleMin: 'Полностью не согласен(-на)',
+        scaleMax: 'Полностью согласен(-на)',
+        resultsEyebrow: 'Ваши результаты',
+        resultsSub: 'Каждая ось показывает ситуацию в одной из категорий по шкале 1–7. Высокое значение означает, что, по вашим ощущениям, в этой сфере жизни у вас всё хорошо.',
+        saveNote: 'Мы не сохраняем ваши ответы, поэтому рекомендую скачать это изображение на своё устройство.',
+        download: 'Сохранить изображение ↓',
+        restart: 'Начать заново',
+        datasetLabel: 'Ваши ответы'
+      },
+      categories: [
+        {
+          title: 'Приверженность',
+          description: 'Личная значимость цели и степень приверженности ей.',
+          questions: [
+            'Моя цель имеет для меня личное значение.',
+            'Я хочу и могу сделать эту цель одним из главных приоритетов.',
+            'Достижение цели кажется мне привлекательным и вдохновляющим.',
+            'Я не пожалею сил ради этой цели.',
+            'Я буду продолжать трудиться ради цели и тогда, когда первый энтузиазм пройдёт.',
+            'Достижение цели соответствует моим ценностям.',
+            'Я чувствую сильное внутреннее желание довести свою цель до конца.'
+          ]
+        },
+        {
+          title: 'Способности',
+          description: 'Вера в свои умения и в способность продвигаться к цели.',
+          questions: [
+            'У меня есть базовые знания и навыки, необходимые для продвижения к цели.',
+            'Я могу научиться новому, если этого требует цель.',
+            'Моя цель для меня достаточно сложна, но не кажется непосильной.',
+            'Я точно знаю, каким будет мой первый шаг к цели.',
+            'Я верю, что могу своими действиями повлиять на результат.',
+            'Я могу придерживаться своего плана даже в трудные дни.',
+            'Я верю, что смогу преодолеть препятствия и задержки, которые встретятся на пути.'
+          ]
+        },
+        {
+          title: 'Нагрузка',
+          description: 'Чувства, которые вызывает цель, и нагрузка, которую она создаёт.',
+          questions: [
+            'Цель кажется мне вдохновляющим вызовом, а не тяжёлым бременем.',
+            'У меня достаточно сил, чтобы продвигаться к цели.',
+            'Мысли о цели вызывают у меня в основном положительные эмоции.',
+            'Движение к цели не вызывает у меня чрезмерного стресса.',
+            'Мне нравится сам процесс и путь к цели.',
+            'Работа над целью даёт мне больше, чем отнимает.',
+            'Я чувствую, что хорошо справляюсь с давлением, связанным с целью.'
+          ]
+        },
+        {
+          title: 'Мотивация',
+          description: 'Источник внутренней мотивации и воодушевления.',
+          questions: [
+            'Я хочу двигаться к этой цели исключительно по собственному желанию.',
+            'Усилия ради цели приносят мне удовлетворение.',
+            'Меня искренне интересует то, что станет возможным, когда я достигну цели.',
+            'Возможные неудачи я воспринимаю как опыт, на котором можно учиться.',
+            'Я чувствую, что работа ради цели имеет смысл.',
+            'Я стремлюсь к цели ради себя, а не для того, чтобы угодить другим.',
+            'Моё воодушевление по поводу цели идёт изнутри.'
+          ]
+        }
+      ]
+    },
+    uk: {
+      ui: {
+        docTitle: 'Оцінювання постановки цілей · 3K',
+        docDescription: 'Інструмент самооцінювання постановки цілей',
+        eyebrow: 'Приведіть свої цілі у форму',
+        title: 'Оцінювання: <em>Постановка цілей</em>',
+        intro: 'У цьому розділі ви оціните, як ставите собі цілі, за чотирма категоріями: відданість, спроможність, навантаження та мотивація. Відповідайте чесно: ніхто не бачить ваших окремих відповідей.',
+        resultsTitle: '<em>Профіль</em> вашої постановки цілей',
+        language: 'Мова',
+        metaCategories: '{n} категорії',
+        metaQuestions: '{n} запитань',
+        metaMinutes: '{n} хвилин',
+        start: 'Почати оцінювання →',
+        answerAria: 'Відповідь {n}',
+        scaleMin: 'Зовсім не погоджуюся',
+        scaleMax: 'Повністю погоджуюся',
+        resultsEyebrow: 'Ваші результати',
+        resultsSub: 'Кожна вісь показує стан однієї категорії за шкалою 1–7. Високе значення означає, що, на вашу думку, ця сфера вашого життя в доброму стані.',
+        saveNote: 'Ми не зберігаємо ваших відповідей, тому радимо завантажити це зображення на свій пристрій.',
+        download: 'Зберегти зображення ↓',
+        restart: 'Почати спочатку',
+        datasetLabel: 'Ваші відповіді'
+      },
+      categories: [
+        {
+          title: 'Відданість',
+          description: 'Особисте значення мети та ступінь відданості їй.',
+          questions: [
+            'Моя мета має для мене особисте значення.',
+            'Я хочу і можу поставити свою мету серед найвищих пріоритетів.',
+            'Досягнення мети видається мені привабливим і надихає мене.',
+            'Я не шкодую зусиль заради цієї мети.',
+            'Я маю намір працювати над метою й тоді, коли мине початковий запал.',
+            'Досягнення мети узгоджується з моїми власними цінностями.',
+            'Я відчуваю сильне внутрішнє бажання довести свою мету до кінця.'
+          ]
+        },
+        {
+          title: 'Спроможність',
+          description: 'Віра у власні вміння та здатність просуватися до мети.',
+          questions: [
+            'Я маю необхідні базові знання та навички, щоб просуватися до своєї мети.',
+            'Я можу навчитися нового, якщо цього вимагає мета.',
+            'Моя мета кидає мені посильний виклик, але не здається непідйомною.',
+            'Я точно знаю, яким буде мій перший крок до мети.',
+            'Я вірю, що своїми діями можу вплинути на результат.',
+            'Я можу дотримуватися свого плану навіть у складні дні.',
+            'Я вірю, що зможу подолати перешкоди чи труднощі, які трапляться на шляху.'
+          ]
+        },
+        {
+          title: 'Навантаження',
+          description: 'Емоції, які викликає мета, та навантаження, якого вона вимагає.',
+          questions: [
+            'Мета видається мені захопливим викликом, а не важким тягарем.',
+            'У мене достатньо ресурсів, щоб просуватися до своєї мети.',
+            'Думки про мету викликають у мене переважно позитивні емоції.',
+            'Робота над метою не завдає мені надмірного стресу.',
+            'Я насолоджуюся процесом і шляхом до мети.',
+            'Робота над метою дає мені більше, ніж забирає.',
+            'Я відчуваю, що добре справляюся з тиском, пов’язаним із метою.'
+          ]
+        },
+        {
+          title: 'Мотивація',
+          description: 'Джерело внутрішньої мотивації та натхнення.',
+          questions: [
+            'Я хочу рухатися до цієї мети суто з власної волі.',
+            'Зусилля, які я докладаю заради мети, приносять мені задоволення.',
+            'Мене щиро цікавить те, що стане можливим завдяки досягненню мети.',
+            'Можливі невдачі я сприймаю як досвід, на якому можна вчитися.',
+            'Я відчуваю, що робота над метою має сенс.',
+            'Я прагну мети заради себе, а не щоб догодити іншим.',
+            'Моє захоплення метою йде зсередини.'
+          ]
+        }
+      ]
+    },
+    ar: {
+      ui: {
+        docTitle: 'تقييم تحديد الأهداف · 3K',
+        docDescription: 'أداة التقييم الذاتي لتحديد الأهداف',
+        eyebrow: 'أهدافك في أفضل حالاتها',
+        title: 'تقييم: <em>تحديد الأهداف</em>',
+        intro: 'يقيّم هذا القسم طريقتك في تحديد الأهداف من خلال أربع فئات: الالتزام، والقدرة، والعبء، والدافعية. أجب بصدق، فلن يرى أحد إجاباتك الفردية.',
+        resultsTitle: '<em>ملف</em> تحديد أهدافك',
+        language: 'اللغة',
+        metaCategories: '{n} فئات',
+        metaQuestions: '{n} سؤالًا',
+        metaMinutes: '{n} دقائق',
+        start: 'ابدأ التقييم ←',
+        answerAria: 'الإجابة {n}',
+        scaleMin: 'لا أوافق إطلاقًا',
+        scaleMax: 'أوافق تمامًا',
+        resultsEyebrow: 'نتائجك',
+        resultsSub: 'يمثّل كل محور وضع فئة واحدة على مقياس 1–7. وتعني القيمة المرتفعة أنك ترى أن هذا الجانب من حياتك في حالة جيدة.',
+        saveNote: 'لا نحفظ إجاباتك، لذا أنصحك بتنزيل هذه الصورة على جهازك الخاص.',
+        download: 'احفظ الصورة ↓',
+        restart: 'ابدأ من جديد',
+        datasetLabel: 'إجاباتك'
+      },
+      categories: [
+        {
+          title: 'الالتزام',
+          description: 'الأهمية الشخصية للهدف ودرجة الالتزام به.',
+          questions: [
+            'هدفي يحمل معنى بالنسبة لي شخصيًا.',
+            'أنا مستعد لوضع هدفي في مرتبة عالية ضمن أولوياتي.',
+            'تحقيق الهدف يبدو جذّابًا ومثيرًا للحماس.',
+            'أنا مستعد لبذل الجهد من أجل هذا الهدف.',
+            'أنا ملتزم بالسعي نحو هدفي حتى بعد أن يخفت الحماس الأولي.',
+            'تحقيق الهدف منسجم مع قيمي.',
+            'أشعر برغبة داخلية قوية في تحقيق هدفي حتى النهاية.'
+          ]
+        },
+        {
+          title: 'القدرة',
+          description: 'الإيمان بمهاراتك وبقدرتك على التقدّم نحو الهدف.',
+          questions: [
+            'لديّ المعارف والمهارات الأساسية اللازمة للتقدّم نحو هدفي.',
+            'أستطيع تعلّم أشياء جديدة إذا تطلّب الهدف ذلك.',
+            'يتحدّاني هدفي بالقدر المناسب، لكنه لا يبدو فوق طاقتي.',
+            'أعرف بالضبط ما هي خطوتي الأولى نحو الهدف.',
+            'أؤمن بأنني أستطيع التأثير في النتيجة النهائية من خلال أفعالي.',
+            'أستطيع الالتزام بخطتي حتى في الأيام الصعبة.',
+            'أثق بأنني أستطيع تجاوز العقبات أو العوائق التي تعترض طريقي.'
+          ]
+        },
+        {
+          title: 'العبء',
+          description: 'المشاعر التي يثيرها الهدف والعبء الذي يتطلّبه.',
+          questions: [
+            'يبدو الهدف تحديًا محفّزًا، لا عبئًا ثقيلًا.',
+            'لديّ ما يكفي من الطاقة للتقدّم نحو هدفي.',
+            'التفكير في الهدف يثير فيّ مشاعر إيجابية في الغالب.',
+            'العمل على الهدف لا يسبّب لي ضغطًا مفرطًا.',
+            'أستمتع بالعملية وبالرحلة نحو الهدف.',
+            'العمل من أجل الهدف يمنحني أكثر مما يأخذ مني.',
+            'أشعر أنني أتعامل جيدًا مع الضغوط المرتبطة بالهدف.'
+          ]
+        },
+        {
+          title: 'الدافعية',
+          description: 'مصدر الدافع الداخلي والحماس.',
+          questions: [
+            'أريد التقدّم نحو هذا الهدف بمحض إرادتي.',
+            'أشعر أن بذل الجهد من أجل الهدف أمر مُجزٍ.',
+            'أنا مهتم حقًا بالأمور التي يتيحها تحقيق الهدف.',
+            'أتعامل مع الانتكاسات المحتملة على أنها تجارب للتعلّم.',
+            'أشعر أن العمل الذي أبذله من أجل الهدف ذو معنى.',
+            'أسعى إلى هدفي من أجل نفسي، لا لإرضاء الآخرين.',
+            'ينبع حماسي تجاه الهدف من داخلي.'
+          ]
+        }
       ]
     }
+  };
+
+  // ============ Language ============
+  // Kielet aakkosjärjestyksessä omalla nimellään (latinalaiset, kyrilliset, arabia).
+  const LANGS = [
+    { code: 'de', name: 'Deutsch' },
+    { code: 'en', name: 'English' },
+    { code: 'es', name: 'Español' },
+    { code: 'fr', name: 'Français' },
+    { code: 'so', name: 'Soomaali' },
+    { code: 'fi', name: 'Suomi' },
+    { code: 'sv', name: 'Svenska' },
+    { code: 'ru', name: 'Русский' },
+    { code: 'uk', name: 'Українська' },
+    { code: 'ar', name: 'العربية', rtl: true }
   ];
+  const DEFAULT_LANG = 'fi';
+  const LANG_STORAGE_KEY = '3k-kieli';
+
+  // Liput SVG-muodossa, koska emoji-liput eivät näy Windowsissa. {id} korvataan uniikilla tunnisteella.
+  const FLAGS = {
+    ar: '<rect width="30" height="20" fill="#006c35"/><path d="M7.5 9.4c.8-1.7 1.6.9 2.4-.5.6-1.1 1.2.2 1.8-.6M12.7 7.3v2.3M14.1 8.8c.7-1.3 1.5.9 2.3-.3.7-1 1.4.6 2.1-.4M19.7 7.1v2.5M21.1 9.2c.6-1.3 1.2.4 1.7-.6" fill="none" stroke="#fff" stroke-width=".8" stroke-linecap="round"/><path d="M8 13.6h12.4M20.4 12.5v2.2M20.4 13.6h1.8" fill="none" stroke="#fff" stroke-width=".9" stroke-linecap="round"/>',
+    de: '<rect width="30" height="20" fill="#ffce00"/><rect width="30" height="13.34" fill="#dd0000"/><rect width="30" height="6.67" fill="#000"/>',
+    en: '<clipPath id="{id}"><path d="M15,10h15v10zv10h-15zh-15v-10zv-10h15z"/></clipPath><rect width="30" height="20" fill="#012169"/><path d="M0,0L30,20M30,0L0,20" stroke="#fff" stroke-width="4"/><path d="M0,0L30,20M30,0L0,20" stroke="#c8102e" stroke-width="2.6" clip-path="url(#{id})"/><path d="M15,0v20M0,10h30" stroke="#fff" stroke-width="6.6"/><path d="M15,0v20M0,10h30" stroke="#c8102e" stroke-width="4"/>',
+    es: '<rect width="30" height="20" fill="#aa151b"/><rect y="5" width="30" height="10" fill="#f1bf00"/>',
+    fi: '<rect width="30" height="20" fill="#fff"/><rect x="8.2" width="5.4" height="20" fill="#002f6c"/><rect y="7.3" width="30" height="5.4" fill="#002f6c"/>',
+    fr: '<rect width="30" height="20" fill="#ef4135"/><rect width="20" height="20" fill="#fff"/><rect width="10" height="20" fill="#0055a4"/>',
+    ru: '<rect width="30" height="20" fill="#d52b1e"/><rect width="30" height="13.34" fill="#0039a6"/><rect width="30" height="6.67" fill="#fff"/>',
+    so: '<rect width="30" height="20" fill="#4189dd"/><polygon points="15.00,4.80 16.29,8.62 20.33,8.67 17.09,11.08 18.29,14.93 15.00,12.60 11.71,14.93 12.91,11.08 9.67,8.67 13.71,8.62" fill="#fff"/>',
+    sv: '<rect width="30" height="20" fill="#006aa7"/><rect x="9.4" width="3.8" height="20" fill="#fecc00"/><rect y="8.1" width="30" height="3.8" fill="#fecc00"/>',
+    uk: '<rect width="30" height="20" fill="#ffd700"/><rect width="30" height="10" fill="#0057b7"/>'
+  };
+
+  // Kieli valitaan: ?lang=xx osoitteessa, sitten aiempi valinta, muuten suomi.
+  function initialLang() {
+    try {
+      const fromUrl = new URLSearchParams(window.location.search).get('lang');
+      if (fromUrl && I18N[fromUrl]) return fromUrl;
+    } catch (e) {
+      // Upotuksessa osoitetta ei välttämättä voi lukea
+    }
+    try {
+      const saved = window.localStorage.getItem(LANG_STORAGE_KEY);
+      if (saved && I18N[saved]) return saved;
+    } catch (e) {
+      // localStorage voi olla estetty upotuksessa
+    }
+    return DEFAULT_LANG;
+  }
+
+  function langInfo(code) {
+    return LANGS.find(l => l.code === code);
+  }
+
+  function langDir() {
+    return langInfo(state.lang).rtl ? 'rtl' : 'ltr';
+  }
+
+  function ui() {
+    return I18N[state.lang].ui;
+  }
+
+  // Korvaa {avain}-paikkamerkit annetuilla arvoilla
+  function fmt(text, vars) {
+    return text.replace(/\{(\w+)\}/g, (m, key) => (key in vars ? vars[key] : m));
+  }
+
+  function applyLang() {
+    document.documentElement.lang = state.lang;
+    document.documentElement.dir = langDir();
+    document.title = ui().docTitle;
+    const desc = document.querySelector('meta[name="description"]');
+    if (desc) desc.setAttribute('content', ui().docDescription);
+  }
+
+  let flagSeq = 0;
+  function flagSvg(code) {
+    const id = 'flag-clip-' + (++flagSeq);
+    return `<span class="lang-flag"><svg viewBox="0 0 30 20" preserveAspectRatio="none" aria-hidden="true" focusable="false">${FLAGS[code].replace(/\{id\}/g, id)}</svg></span>`;
+  }
+
+  function renderLangSelector() {
+    const current = langInfo(state.lang);
+    const options = LANGS.map(l => `
+          <li>
+            <button type="button" class="lang-option" lang="${l.code}"${l.code === state.lang ? ' aria-current="true"' : ''} onclick="setLang('${l.code}')">
+              ${flagSvg(l.code)}<span>${l.name}</span>
+            </button>
+          </li>`).join('');
+    return `
+        <div class="lang" id="lang">
+          <button type="button" class="lang-toggle" id="lang-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="lang-menu" aria-label="${ui().language}: ${current.name}" onclick="toggleLangMenu()">
+            ${flagSvg(current.code)}
+            <span lang="${current.code}">${current.name}</span>
+            <svg class="lang-caret" viewBox="0 0 10 10" aria-hidden="true" focusable="false"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <ul class="lang-menu" id="lang-menu" aria-label="${ui().language}" hidden>${options}
+          </ul>
+        </div>
+    `;
+  }
+
+  function toggleLangMenu() {
+    const menu = $('lang-menu');
+    if (!menu) return;
+    if (menu.hidden) openLangMenu();
+    else closeLangMenu(false);
+  }
+
+  function openLangMenu() {
+    const menu = $('lang-menu');
+    const toggle = $('lang-toggle');
+    menu.hidden = false;
+    menu.style.maxHeight = '';
+    $('lang').classList.add('open');
+    toggle.setAttribute('aria-expanded', 'true');
+
+    // Avaa lista sinne, missä on enemmän tilaa (upotuksen korkeus voi olla rajattu)
+    const rect = toggle.getBoundingClientRect();
+    const spaceAbove = rect.top - 12;
+    const spaceBelow = window.innerHeight - rect.bottom - 12;
+    const openDown = spaceBelow >= menu.scrollHeight || spaceBelow > spaceAbove;
+    menu.classList.toggle('down', openDown);
+    menu.style.maxHeight = Math.max(160, openDown ? spaceBelow : spaceAbove) + 'px';
+
+    const selected = menu.querySelector('[aria-current="true"]') || menu.querySelector('.lang-option');
+    selected.focus({ preventScroll: true });
+  }
+
+  function closeLangMenu(returnFocus) {
+    const menu = $('lang-menu');
+    if (!menu || menu.hidden) return;
+    menu.hidden = true;
+    $('lang').classList.remove('open');
+    const toggle = $('lang-toggle');
+    toggle.setAttribute('aria-expanded', 'false');
+    if (returnFocus) toggle.focus();
+  }
+
+  function setLang(code) {
+    if (!I18N[code]) return;
+    state.lang = code;
+    try {
+      window.localStorage.setItem(LANG_STORAGE_KEY, code);
+    } catch (e) {
+      // Valinta toimii silti tämän sivun ajan
+    }
+    applyLang();
+    render();
+    const toggle = $('lang-toggle');
+    if (toggle) toggle.focus({ preventScroll: true });
+  }
+
+  // Sulje lista, kun klikataan tai siirrytään sen ulkopuolelle
+  document.addEventListener('click', (e) => {
+    const wrap = $('lang');
+    if (wrap && !wrap.contains(e.target)) closeLangMenu(false);
+  });
+  document.addEventListener('focusin', (e) => {
+    const wrap = $('lang');
+    if (wrap && !wrap.contains(e.target)) closeLangMenu(false);
+  });
+
+  // Näppäimistö: Esc sulkee, nuolet liikkuvat listassa
+  document.addEventListener('keydown', (e) => {
+    const menu = $('lang-menu');
+    if (!menu || menu.hidden) return;
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeLangMenu(true);
+      return;
+    }
+    const keys = ['ArrowDown', 'ArrowUp', 'Home', 'End'];
+    if (!keys.includes(e.key)) return;
+    e.preventDefault();
+    const items = Array.from(menu.querySelectorAll('.lang-option'));
+    const i = items.indexOf(document.activeElement);
+    let next = 0;
+    if (e.key === 'End') next = items.length - 1;
+    else if (e.key === 'ArrowDown') next = (i + 1) % items.length;
+    else if (e.key === 'ArrowUp') next = i <= 0 ? items.length - 1 : i - 1;
+    items[next].focus();
+  });
 
   // ============ State ============
   const state = {
     screen: 'welcome',
+    lang: initialLang(),
     currentCategory: 0,
     answers: {},
     chartInstance: null
@@ -517,8 +1543,12 @@
   const $ = (id) => document.getElementById(id);
   const answerKey = (c, q) => `${c}-${q}`;
 
+  function categories() {
+    return I18N[state.lang].categories;
+  }
+
   function isCategoryComplete(catIdx) {
-    const qLen = CATEGORIES[catIdx].questions.length;
+    const qLen = categories()[catIdx].questions.length;
     for (let q = 0; q < qLen; q++) {
       if (state.answers[answerKey(catIdx, q)] === undefined) return false;
     }
@@ -526,7 +1556,7 @@
   }
 
   function categoryAverage(catIdx) {
-    const qLen = CATEGORIES[catIdx].questions.length;
+    const qLen = categories()[catIdx].questions.length;
     let sum = 0;
     for (let q = 0; q < qLen; q++) sum += state.answers[answerKey(catIdx, q)] ?? 0;
     return sum / qLen;
@@ -538,7 +1568,8 @@
 
   // ============ Welcome ============
   function renderWelcome() {
-    const totalQuestions = CATEGORIES.reduce((acc, c) => acc + c.questions.length, 0);
+    const t = ui();
+    const totalQuestions = categories().reduce((acc, c) => acc + c.questions.length, 0);
     $('app').innerHTML = `
       <div class="welcome">
         <svg class="welcome-bg" viewBox="0 0 200 200" aria-hidden="true">
@@ -551,17 +1582,20 @@
             <line x1="31" y1="140" x2="169" y2="60" />
           </g>
         </svg>
-        <div class="welcome-eyebrow">Tavoitteet rantakuntoon</div>
-        <h1>Kartoitus: <em>Tavoitteenasettelu</em></h1>
-        <p>Tässä osiossa kartoitetaan tavoitteenasetteluasi neljän kategorian kautta: sitoutuminen, kyvykkyys, kuormittavuus ja motivaatio. Vastaa rehellisesti, kukaan ei näe yksittäisiä vastauksiasi.</p>
+        <div class="welcome-eyebrow">${t.eyebrow}</div>
+        <h1>${t.title}</h1>
+        <p>${t.intro}</p>
         <div class="welcome-meta">
-          <span><strong>${CATEGORIES.length}</strong> kategoriaa</span>
+          <span>${fmt(t.metaCategories, { n: `<strong>${categories().length}</strong>` })}</span>
           <span class="welcome-meta-sep">·</span>
-          <span><strong>${totalQuestions}</strong> kysymystä</span>
+          <span>${fmt(t.metaQuestions, { n: `<strong>${totalQuestions}</strong>` })}</span>
           <span class="welcome-meta-sep">·</span>
-          <span><strong>6</strong> minuuttia</span>
+          <span>${fmt(t.metaMinutes, { n: '<strong>6</strong>' })}</span>
         </div>
-        <button class="btn-primary" onclick="startQuestionnaire()">Aloita kartoitus →</button>
+        <div class="welcome-actions" dir="ltr">
+          ${renderLangSelector()}
+          <button class="btn-primary" dir="${langDir()}" onclick="startQuestionnaire()">${t.start}</button>
+        </div>
       </div>
     `;
   }
@@ -576,8 +1610,8 @@
 
   // ============ Questionnaire ============
   function renderQuestionnaire() {
-    const cat = CATEGORIES[state.currentCategory];
-    const dots = CATEGORIES.map((_, i) => {
+    const cat = categories()[state.currentCategory];
+    const dots = categories().map((_, i) => {
       let cls = 'q-progress-dot';
       if (i < state.currentCategory) cls += ' done';
       else if (i === state.currentCategory) cls += ' current';
@@ -588,7 +1622,7 @@
       <div class="q-header">
         <div class="q-counter">
           ${String(state.currentCategory + 1).padStart(2, '0')}
-          <span>/ ${String(CATEGORIES.length).padStart(2, '0')}</span>
+          <span>/ ${String(categories().length).padStart(2, '0')}</span>
         </div>
         <div class="q-progress">${dots}</div>
       </div>
@@ -608,15 +1642,15 @@
     let buttons = '';
     for (let v = 1; v <= 7; v++) {
       const sel = v === selected ? 'selected' : '';
-      buttons += `<button class="q-button ${sel}" onclick="setAnswer(${catIdx}, ${qIdx}, ${v})" aria-label="Vastaus ${v}">${v}</button>`;
+      buttons += `<button class="q-button ${sel}" onclick="setAnswer(${catIdx}, ${qIdx}, ${v})" aria-label="${fmt(ui().answerAria, { n: v })}">${v}</button>`;
     }
     return `
       <div class="q-item ${answered ? 'answered' : ''}" id="q-${catIdx}-${qIdx}">
         <div class="q-text">${text}</div>
         <div class="q-scale">${buttons}</div>
         <div class="q-scale-labels">
-          <span>Täysin eri mieltä</span>
-          <span>Täysin samaa mieltä</span>
+          <span>${ui().scaleMin}</span>
+          <span>${ui().scaleMax}</span>
         </div>
       </div>
     `;
@@ -628,7 +1662,7 @@
     const qEl = $(`q-${catIdx}-${qIdx}`);
     if (qEl) {
       const wrapper = document.createElement('div');
-      wrapper.innerHTML = renderQuestion(catIdx, qIdx, CATEGORIES[catIdx].questions[qIdx]);
+      wrapper.innerHTML = renderQuestion(catIdx, qIdx, categories()[catIdx].questions[qIdx]);
       qEl.replaceWith(wrapper.firstElementChild);
     }
 
@@ -636,7 +1670,7 @@
     if (isCategoryComplete(catIdx)) {
       advanceTimeout = setTimeout(() => {
         advanceTimeout = null;
-        if (catIdx + 1 < CATEGORIES.length) {
+        if (catIdx + 1 < categories().length) {
           state.currentCategory = catIdx + 1;
           render();
           scrollToTop();
@@ -651,7 +1685,7 @@
 
   // ============ Results ============
   function renderResults() {
-    const cats = CATEGORIES.map((c, i) => ({
+    const cats = categories().map((c, i) => ({
       title: c.title,
       avg: categoryAverage(i)
     }));
@@ -664,19 +1698,19 @@
 
     $('app').innerHTML = `
       <div class="results">
-        <div class="results-eyebrow">Tuloksesi</div>
-        <h2>Tavoitteenasettelusi <em>profiili</em></h2>
-        <p class="results-sub">Jokainen akseli kuvaa yhden kategorian tilannetta asteikolla 1–7. Korkea arvo tarkoittaa, että koet osa-alueen olevan elämässäsi hyvässä tilassa.</p>
+        <div class="results-eyebrow">${ui().resultsEyebrow}</div>
+        <h2>${ui().resultsTitle}</h2>
+        <p class="results-sub">${ui().resultsSub}</p>
         <div class="chart-container">
           <div class="chart-wrap">
             <canvas id="radarChart"></canvas>
           </div>
         </div>
         <div class="scores">${scoreCards}</div>
-        <p class="save-note">Emme tallenna vastauksiasi, suosittelen että lataat tästä kuvan omalle laitteellesi.</p>
+        <p class="save-note">${ui().saveNote}</p>
         <div class="actions">
-          <button class="btn-primary" onclick="downloadChart()">Tallenna kuva ↓</button>
-          <button class="btn-secondary" onclick="restart()">Aloita alusta</button>
+          <button class="btn-primary" onclick="downloadChart()">${ui().download}</button>
+          <button class="btn-secondary" onclick="restart()">${ui().restart}</button>
         </div>
       </div>
     `;
@@ -688,15 +1722,15 @@
     const canvas = $('radarChart');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    const labels = CATEGORIES.map(c => c.title);
-    const data = CATEGORIES.map((_, i) => categoryAverage(i));
+    const labels = categories().map(c => c.title);
+    const data = categories().map((_, i) => categoryAverage(i));
 
     state.chartInstance = new Chart(ctx, {
       type: 'radar',
       data: {
         labels,
         datasets: [{
-          label: 'Vastauksesi',
+          label: ui().datasetLabel,
           data,
           backgroundColor: 'rgba(163, 217, 197, 0.42)',
           borderColor: '#0c2543',
@@ -791,7 +1825,10 @@
   window.setAnswer = setAnswer;
   window.downloadChart = downloadChart;
   window.restart = restart;
+  window.toggleLangMenu = toggleLangMenu;
+  window.setLang = setLang;
 
+  applyLang();
   render();
 </script>
 </body>

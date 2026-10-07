@@ -377,7 +377,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     padding: 10px 14px;
-    text-align: left;
+    text-align: start;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -418,6 +418,120 @@
     animation: fadeIn 420ms 440ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
+  /* ============ Language selector ============ */
+  .welcome-actions {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+  .lang {
+    position: relative;
+    justify-self: start;
+    text-align: left;
+  }
+  .lang-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: var(--navy);
+    border: 1px solid var(--border);
+    padding: 9px 12px 9px 10px;
+    font-family: 'Geist', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+  .lang-toggle:hover,
+  .lang.open .lang-toggle {
+    border-color: var(--navy);
+    background: var(--card-bg);
+  }
+  .lang-flag {
+    flex: 0 0 auto;
+    display: inline-block;
+    width: 21px;
+    height: 14px;
+    border-radius: 3px;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(12, 37, 67, 0.14);
+  }
+  .lang-flag svg { display: block; width: 100%; height: 100%; }
+  .lang-caret {
+    width: 10px;
+    height: 10px;
+    transition: transform var(--transition);
+  }
+  .lang.open .lang-caret { transform: rotate(180deg); }
+  .lang-menu {
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 8px);
+    z-index: 20;
+    min-width: 190px;
+    overflow-y: auto;
+    list-style: none;
+    background: var(--container-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 12px 32px rgba(12, 37, 67, 0.18);
+    padding: 6px;
+    animation: fadeIn 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .lang-menu.down {
+    top: calc(100% + 8px);
+    bottom: auto;
+  }
+  .lang-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 7px 10px;
+    font-family: 'Geist', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.3;
+    color: var(--navy);
+    text-align: left;
+    cursor: pointer;
+    transition: background 160ms ease;
+  }
+  .lang-option:hover,
+  .lang-option:focus-visible {
+    background: var(--blue-soft);
+    outline: none;
+  }
+  .lang-option[aria-current="true"] {
+    background: #e0eff9;
+    font-weight: 500;
+  }
+  .lang-option[aria-current="true"]::after {
+    content: '';
+    width: 5px;
+    height: 9px;
+    margin: -3px 4px 0 auto;
+    border: solid var(--navy);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  @media (max-width: 540px) {
+    /* Kapealla näytöllä nappi siirtyy tarvittaessa valitsimen yläpuolelle */
+    .welcome-actions {
+      display: flex;
+      flex-wrap: wrap-reverse;
+      gap: 10px;
+    }
+    .welcome-actions .btn-primary { flex: 1 1 auto; }
+  }
+
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
@@ -448,65 +562,977 @@
 <div class="container" id="app"></div>
 
 <script>
-  // ============ Data ============
-  const CATEGORIES = [
-    {
-      title: 'Tahtotila',
-      description: 'Sitoutuminen ja motivaatio tavoitteen taustalla.',
-      questions: [
-        'Olen erittäin sitoutunut edistämään tavoitettani.',
-        'Juuri nyt on oikea hetki tehdä muutoksia elämässäni.',
-        'Olen halukas edistämään tavoitettani juuri nyt, vaikka se kuluttaa voimavarojani.',
-        'Ymmärrän selkeästi, miksi haluan saavuttaa tämän tavoitteen.',
-        'Tavoitteeni on täysin linjassa omien arvojeni kanssa.',
-        'Näen selkeästi ne hyödyt, joita tavoitteen saavuttaminen tuo elämääni.',
-        'Olen päättänyt toteuttaa muutoksen mahdollistavia valintoja arjessani.'
+  // ============ Translations ============
+  // Jokaisella kielellä: ui = käyttöliittymän tekstit, categories = kategoriat ja kysymykset.
+  const I18N = {
+    fi: {
+      ui: {
+        docTitle: 'Muutosvalmiuskartoitus · 3K',
+        docDescription: 'Muutosvalmiuden itsearviointityökalu',
+        eyebrow: 'Johda itsesi tuloksiin',
+        title: 'Kartoitus: <em>Muutosvalmius</em>',
+        intro: 'Tässä osiossa kartoitetaan muutosvalmiuttasi neljän kategorian kautta: tahtotila, kyvykkyys, resurssit ja ympäristön tuki. Vastaa rehellisesti, kukaan ei näe yksittäisiä vastauksiasi.',
+        resultsTitle: 'Muutosvalmiutesi <em>profiili</em>',
+        language: 'Kieli',
+        metaCategories: '{n} kategoriaa',
+        metaQuestions: '{n} kysymystä',
+        metaMinutes: '{n} minuuttia',
+        start: 'Aloita kartoitus →',
+        answerAria: 'Vastaus {n}',
+        scaleMin: 'Täysin eri mieltä',
+        scaleMax: 'Täysin samaa mieltä',
+        resultsEyebrow: 'Tuloksesi',
+        resultsSub: 'Jokainen akseli kuvaa yhden kategorian tilannetta asteikolla 1–7. Korkea arvo tarkoittaa, että koet osa-alueen olevan elämässäsi hyvässä tilassa.',
+        saveNote: 'Emme tallenna vastauksiasi, suosittelen että lataat tästä kuvan omalle laitteellesi.',
+        download: 'Tallenna kuva ↓',
+        restart: 'Aloita alusta',
+        datasetLabel: 'Vastauksesi'
+      },
+      categories: [
+        {
+          title: 'Tahtotila',
+          description: 'Sitoutuminen ja motivaatio tavoitteen taustalla.',
+          questions: [
+            'Olen erittäin sitoutunut edistämään tavoitettani.',
+            'Juuri nyt on oikea hetki tehdä muutoksia elämässäni.',
+            'Olen halukas edistämään tavoitettani juuri nyt, vaikka se kuluttaa voimavarojani.',
+            'Ymmärrän selkeästi, miksi haluan saavuttaa tämän tavoitteen.',
+            'Tavoitteeni on täysin linjassa omien arvojeni kanssa.',
+            'Näen selkeästi ne hyödyt, joita tavoitteen saavuttaminen tuo elämääni.',
+            'Olen päättänyt toteuttaa muutoksen mahdollistavia valintoja arjessani.'
+          ]
+        },
+        {
+          title: 'Kyvykkyys',
+          description: 'Usko omiin taitoihin ja kykyyn viedä asioita loppuun.',
+          questions: [
+            'Uskon, että omat taitoni riittävät tavoitteen saavuttamiseen.',
+            'Minulla on luja usko onnistumiseeni.',
+            'Luotan kykyyni selviytyä mahdollisista takaiskuista.',
+            'Osaan pilkkoa tavoitteeni selkeäksi ja toteutettavaksi suunnitelmaksi.',
+            'Luotan itseeni ja kykyihini viedä asioita loppuun saakka.',
+            'Tiedän, miten minun tulee toimia onnistuakseni.',
+            'Koen, että onnistuminen on ensisijaisesti omissa käsissäni.'
+          ]
+        },
+        {
+          title: 'Resurssit',
+          description: 'Voimavarat ja aika muutoksen toteuttamiseen.',
+          questions: [
+            'Voimavarani ovat riittävät muutoksen aloittamiseen ja ylläpitämiseen.',
+            'Arkeni palautumishetket antavat minulle virtaa muutokseen.',
+            'Kalenterissani on tilaa tavoitteen edistämiselle.',
+            'Nykyinen energiatasoni on riittävä uuden kokeilemiseen.',
+            'Osaan suojella energiaani niin, etten uuvu matkan varrella.',
+            'Elämäntapani tukevat jaksamistani muutoksen aikana.',
+            'Koen, että elämäntilanteeni on sopiva muutoksen toteuttamiseen.'
+          ]
+        },
+        {
+          title: 'Ympäristön tuki',
+          description: 'Lähipiirin ja verkoston antama tuki.',
+          questions: [
+            'Saan tarvittaessa tukea ja kannustusta muilta.',
+            'Läheiseni suhtautuvat tavoitteisiini myönteisesti.',
+            'Minulla on ympärilläni ihmisiä, jotka uskovat minuun.',
+            'Voin jakaa onnistumiseni ja haasteeni muiden kanssa.',
+            'Minun on helppo pyytää apua tai neuvoja, jos kohtaan esteitä.',
+            'Sosiaalinen verkostoni antaa minulle energiaa.',
+            'Minun ei tarvitse pelätä muiden arvostelua tavoittelemani muutoksen vuoksi.'
+          ]
+        }
       ]
     },
-    {
-      title: 'Kyvykkyys',
-      description: 'Usko omiin taitoihin ja kykyyn viedä asioita loppuun.',
-      questions: [
-        'Uskon, että omat taitoni riittävät tavoitteen saavuttamiseen.',
-        'Minulla on luja usko onnistumiseeni.',
-        'Luotan kykyyni selviytyä mahdollisista takaiskuista.',
-        'Osaan pilkkoa tavoitteeni selkeäksi ja toteutettavaksi suunnitelmaksi.',
-        'Luotan itseeni ja kykyihini viedä asioita loppuun saakka.',
-        'Tiedän, miten minun tulee toimia onnistuakseni.',
-        'Koen, että onnistuminen on ensisijaisesti omissa käsissäni.'
+    de: {
+      ui: {
+        docTitle: 'Selbstcheck Veränderungsbereitschaft · 3K',
+        docDescription: 'Tool zur Selbsteinschätzung der Veränderungsbereitschaft',
+        eyebrow: 'Führe dich selbst zum Erfolg',
+        title: 'Selbstcheck: <em>Veränderungsbereitschaft</em>',
+        intro: 'In diesem Teil betrachten wir deine Veränderungsbereitschaft anhand von vier Kategorien: Wille, Fähigkeiten, Ressourcen und Unterstützung durch das Umfeld. Antworte ehrlich – niemand sieht deine einzelnen Antworten.',
+        resultsTitle: 'Deine Veränderungsbereitschaft im <em>Profil</em>',
+        language: 'Sprache',
+        metaCategories: '{n} Kategorien',
+        metaQuestions: '{n} Fragen',
+        metaMinutes: '{n} Minuten',
+        start: 'Selbstcheck starten →',
+        answerAria: 'Antwort {n}',
+        scaleMin: 'Stimme überhaupt nicht zu',
+        scaleMax: 'Stimme voll und ganz zu',
+        resultsEyebrow: 'Deine Ergebnisse',
+        resultsSub: 'Jede Achse zeigt die Situation in einer Kategorie auf einer Skala von 1–7. Ein hoher Wert bedeutet, dass dieser Bereich in deinem Leben aus deiner Sicht gut aufgestellt ist.',
+        saveNote: 'Wir speichern deine Antworten nicht. Ich empfehle dir, dieses Bild auf dein eigenes Gerät herunterzuladen.',
+        download: 'Bild speichern ↓',
+        restart: 'Von vorne beginnen',
+        datasetLabel: 'Deine Antworten'
+      },
+      categories: [
+        {
+          title: 'Wille',
+          description: 'Entschlossenheit und Motivation hinter dem Ziel.',
+          questions: [
+            'Ich bin fest entschlossen, mein Ziel voranzubringen.',
+            'Jetzt ist genau der richtige Moment, etwas in meinem Leben zu verändern.',
+            'Ich bin bereit, gerade jetzt an meinem Ziel zu arbeiten, auch wenn es mich Kraft kostet.',
+            'Ich verstehe genau, warum ich dieses Ziel erreichen will.',
+            'Mein Ziel passt voll und ganz zu meinen eigenen Werten.',
+            'Ich sehe klar, welchen Nutzen das Erreichen des Ziels für mein Leben bringt.',
+            'Ich habe beschlossen, in meinem Alltag Entscheidungen zu treffen, die die Veränderung möglich machen.'
+          ]
+        },
+        {
+          title: 'Fähigkeiten',
+          description: 'Vertrauen in die eigenen Fähigkeiten und darin, Dinge zu Ende zu bringen.',
+          questions: [
+            'Ich glaube, dass meine Fähigkeiten ausreichen, um das Ziel zu erreichen.',
+            'Ich glaube fest daran, dass ich es schaffe.',
+            'Ich vertraue darauf, mit möglichen Rückschlägen umgehen zu können.',
+            'Ich kann mein Ziel in einen klaren und umsetzbaren Plan aufteilen.',
+            'Ich vertraue mir und meinen Fähigkeiten, Dinge bis zum Ende durchzuziehen.',
+            'Ich weiß, wie ich handeln muss, um erfolgreich zu sein.',
+            'Ich habe das Gefühl, dass mein Erfolg vor allem in meinen eigenen Händen liegt.'
+          ]
+        },
+        {
+          title: 'Ressourcen',
+          description: 'Kraft und Zeit, um die Veränderung umzusetzen.',
+          questions: [
+            'Meine Kraftreserven reichen aus, um die Veränderung zu beginnen und dranzubleiben.',
+            'Die Erholungsmomente in meinem Alltag geben mir Energie für die Veränderung.',
+            'In meinem Kalender ist Platz, um an meinem Ziel zu arbeiten.',
+            'Mein aktuelles Energielevel reicht aus, um Neues auszuprobieren.',
+            'Ich kann meine Energie so schützen, dass mir unterwegs nicht die Kraft ausgeht.',
+            'Meine Lebensweise hilft mir, während der Veränderung durchzuhalten.',
+            'Ich habe das Gefühl, dass meine Lebenssituation gut passt, um die Veränderung umzusetzen.'
+          ]
+        },
+        {
+          title: 'Unterstützung durch das Umfeld',
+          description: 'Unterstützung durch nahestehende Menschen und das eigene Netzwerk.',
+          questions: [
+            'Ich bekomme bei Bedarf Unterstützung und Ermutigung von anderen.',
+            'Die Menschen, die mir nahestehen, sehen meine Ziele positiv.',
+            'Ich habe Menschen um mich, die an mich glauben.',
+            'Ich kann meine Erfolge und Herausforderungen mit anderen teilen.',
+            'Es fällt mir leicht, um Hilfe oder Rat zu bitten, wenn ich auf Hindernisse stoße.',
+            'Mein soziales Netzwerk gibt mir Energie.',
+            'Ich muss keine Angst haben, wegen der angestrebten Veränderung von anderen verurteilt zu werden.'
+          ]
+        }
       ]
     },
-    {
-      title: 'Resurssit',
-      description: 'Voimavarat ja aika muutoksen toteuttamiseen.',
-      questions: [
-        'Voimavarani ovat riittävät muutoksen aloittamiseen ja ylläpitämiseen.',
-        'Arkeni palautumishetket antavat minulle virtaa muutokseen.',
-        'Kalenterissani on tilaa tavoitteen edistämiselle.',
-        'Nykyinen energiatasoni on riittävä uuden kokeilemiseen.',
-        'Osaan suojella energiaani niin, etten uuvu matkan varrella.',
-        'Elämäntapani tukevat jaksamistani muutoksen aikana.',
-        'Koen, että elämäntilanteeni on sopiva muutoksen toteuttamiseen.'
+    en: {
+      ui: {
+        docTitle: 'Readiness for Change Assessment · 3K',
+        docDescription: 'A self-assessment tool for readiness for change',
+        eyebrow: 'Lead yourself to results',
+        title: 'Assessment: <em>Readiness for change</em>',
+        intro: 'This section looks at your readiness for change through four categories: willingness, capability, resources and support from others. Answer honestly – no one will see your individual answers.',
+        resultsTitle: 'Your readiness for change <em>profile</em>',
+        language: 'Language',
+        metaCategories: '{n} categories',
+        metaQuestions: '{n} questions',
+        metaMinutes: '{n} minutes',
+        start: 'Start the assessment →',
+        answerAria: 'Answer {n}',
+        scaleMin: 'Strongly disagree',
+        scaleMax: 'Strongly agree',
+        resultsEyebrow: 'Your results',
+        resultsSub: 'Each axis shows the situation in one category on a scale of 1–7. A high score means you feel this area of your life is in good shape.',
+        saveNote: 'We don\'t store your answers; I recommend downloading this image to your own device.',
+        download: 'Save image ↓',
+        restart: 'Start over',
+        datasetLabel: 'Your answers'
+      },
+      categories: [
+        {
+          title: 'Willingness',
+          description: 'The commitment and motivation behind your goal.',
+          questions: [
+            'I am highly committed to working towards my goal.',
+            'Right now is the right time to make changes in my life.',
+            'I am willing to work towards my goal right now, even though it takes up my energy.',
+            'I clearly understand why I want to reach this goal.',
+            'My goal is fully in line with my own values.',
+            'I can clearly see the benefits that reaching my goal will bring to my life.',
+            'I have decided to make everyday choices that make the change possible.'
+          ]
+        },
+        {
+          title: 'Capability',
+          description: 'Belief in your own skills and your ability to see things through.',
+          questions: [
+            'I believe my skills are enough to reach my goal.',
+            'I firmly believe that I will succeed.',
+            'I trust my ability to cope with any setbacks.',
+            'I can break my goal down into a clear plan that I can carry out.',
+            'I trust myself and my ability to see things through to the end.',
+            'I know what I need to do to succeed.',
+            'I feel that success is mainly in my own hands.'
+          ]
+        },
+        {
+          title: 'Resources',
+          description: 'The energy and time you have for making the change.',
+          questions: [
+            'I have enough energy and resources to start the change and keep it going.',
+            'The moments of rest in my everyday life give me energy for the change.',
+            'There is room in my calendar to work on my goal.',
+            'My current energy level is enough for trying something new.',
+            'I know how to protect my energy so that I don\'t burn out along the way.',
+            'My lifestyle helps me keep going during the change.',
+            'I feel my life situation is right for making a change.'
+          ]
+        },
+        {
+          title: 'Support from others',
+          description: 'Support from the people close to you and your wider network.',
+          questions: [
+            'I get support and encouragement from others when I need it.',
+            'The people close to me have a positive attitude towards my goals.',
+            'I have people around me who believe in me.',
+            'I can share my successes and challenges with others.',
+            'I find it easy to ask for help or advice if I run into obstacles.',
+            'My social network gives me energy.',
+            'I don\'t need to fear other people\'s judgement because of the change I am aiming for.'
+          ]
+        }
       ]
     },
-    {
-      title: 'Ympäristön tuki',
-      description: 'Lähipiirin ja verkoston antama tuki.',
-      questions: [
-        'Saan tarvittaessa tukea ja kannustusta muilta.',
-        'Läheiseni suhtautuvat tavoitteisiini myönteisesti.',
-        'Minulla on ympärilläni ihmisiä, jotka uskovat minuun.',
-        'Voin jakaa onnistumiseni ja haasteeni muiden kanssa.',
-        'Minun on helppo pyytää apua tai neuvoja, jos kohtaan esteitä.',
-        'Sosiaalinen verkostoni antaa minulle energiaa.',
-        'Minun ei tarvitse pelätä muiden arvostelua tavoittelemani muutoksen vuoksi.'
+    es: {
+      ui: {
+        docTitle: 'Evaluación de la disposición al cambio · 3K',
+        docDescription: 'Herramienta de autoevaluación de la disposición al cambio',
+        eyebrow: 'Lidera tu propio camino hacia los resultados',
+        title: 'Evaluación: <em>Disposición al cambio</em>',
+        intro: 'En esta sección se evalúa tu disposición al cambio a través de cuatro categorías: voluntad, capacidad, recursos y apoyo del entorno. Responde con sinceridad: nadie verá tus respuestas individuales.',
+        resultsTitle: 'Tu <em>perfil</em> de disposición al cambio',
+        language: 'Idioma',
+        metaCategories: '{n} categorías',
+        metaQuestions: '{n} preguntas',
+        metaMinutes: '{n} minutos',
+        start: 'Comenzar la evaluación →',
+        answerAria: 'Respuesta {n}',
+        scaleMin: 'Totalmente en desacuerdo',
+        scaleMax: 'Totalmente de acuerdo',
+        resultsEyebrow: 'Tus resultados',
+        resultsSub: 'Cada eje muestra la situación de una categoría en una escala de 1–7. Un valor alto significa que sientes que esa área de tu vida está en buen estado.',
+        saveNote: 'No guardamos tus respuestas; te recomiendo que descargues esta imagen en tu propio dispositivo.',
+        download: 'Guardar imagen ↓',
+        restart: 'Empezar de nuevo',
+        datasetLabel: 'Tus respuestas'
+      },
+      categories: [
+        {
+          title: 'Voluntad',
+          description: 'Compromiso y motivación detrás del objetivo.',
+          questions: [
+            'Tengo un fuerte compromiso con avanzar hacia mi objetivo.',
+            'Ahora es el momento adecuado para hacer cambios en mi vida.',
+            'Quiero avanzar hacia mi objetivo ahora mismo, aunque me exija energía y esfuerzo.',
+            'Entiendo claramente por qué quiero alcanzar este objetivo.',
+            'Mi objetivo está totalmente en línea con mis propios valores.',
+            'Veo claramente los beneficios que alcanzar el objetivo traerá a mi vida.',
+            'He decidido tomar en mi día a día decisiones que hagan posible el cambio.'
+          ]
+        },
+        {
+          title: 'Capacidad',
+          description: 'Confianza en las propias habilidades y en la capacidad de llevar las cosas hasta el final.',
+          questions: [
+            'Creo que mis habilidades son suficientes para alcanzar el objetivo.',
+            'Creo firmemente en que lo voy a lograr.',
+            'Confío en mi capacidad para superar posibles contratiempos.',
+            'Sé dividir mi objetivo en un plan claro y realizable.',
+            'Confío en mí y en mis capacidades para llevar las cosas hasta el final.',
+            'Sé cómo tengo que actuar para tener éxito.',
+            'Siento que el éxito está, sobre todo, en mis manos.'
+          ]
+        },
+        {
+          title: 'Recursos',
+          description: 'Energía, fuerzas y tiempo para llevar a cabo el cambio.',
+          questions: [
+            'Tengo fuerzas y recursos suficientes para empezar el cambio y mantenerlo.',
+            'Los momentos de descanso de mi día a día me dan energía para el cambio.',
+            'En mi agenda hay espacio para avanzar hacia mi objetivo.',
+            'Mi nivel de energía actual es suficiente para probar cosas nuevas.',
+            'Sé proteger mi energía para no agotarme por el camino.',
+            'Mis hábitos de vida me ayudan a mantener las fuerzas durante el cambio.',
+            'Siento que mi situación vital es adecuada para llevar a cabo el cambio.'
+          ]
+        },
+        {
+          title: 'Apoyo del entorno',
+          description: 'Apoyo de las personas cercanas y de la red de contactos.',
+          questions: [
+            'Cuando lo necesito, recibo apoyo y ánimo de otras personas.',
+            'Mis seres queridos ven mis objetivos de forma positiva.',
+            'Tengo a mi alrededor personas que creen en mí.',
+            'Puedo compartir mis éxitos y mis dificultades con otras personas.',
+            'Me resulta fácil pedir ayuda o consejo si me encuentro con obstáculos.',
+            'Mi red social me da energía.',
+            'No tengo que temer las críticas de los demás por el cambio que busco.'
+          ]
+        }
+      ]
+    },
+    fr: {
+      ui: {
+        docTitle: 'Bilan de disposition au changement · 3K',
+        docDescription: 'Outil d’auto-évaluation de la disposition au changement',
+        eyebrow: 'Pilotez votre propre réussite',
+        title: 'Bilan : <em>Disposition au changement</em>',
+        intro: 'Cette section fait le point sur votre disposition au changement à travers quatre catégories : volonté, capacités, ressources et soutien de l’entourage. Répondez honnêtement : personne ne verra vos réponses individuelles.',
+        resultsTitle: 'Votre <em>profil</em> de disposition au changement',
+        language: 'Langue',
+        metaCategories: '{n} catégories',
+        metaQuestions: '{n} questions',
+        metaMinutes: '{n} minutes',
+        start: 'Commencer le bilan →',
+        answerAria: 'Réponse {n}',
+        scaleMin: 'Pas du tout d’accord',
+        scaleMax: 'Tout à fait d’accord',
+        resultsEyebrow: 'Vos résultats',
+        resultsSub: 'Chaque axe représente la situation d’une catégorie sur une échelle de 1 à 7. Une valeur élevée signifie que vous estimez que ce domaine se porte bien dans votre vie.',
+        saveNote: 'Nous n’enregistrons pas vos réponses : je vous recommande de télécharger cette image sur votre propre appareil.',
+        download: 'Enregistrer l’image ↓',
+        restart: 'Recommencer',
+        datasetLabel: 'Vos réponses'
+      },
+      categories: [
+        {
+          title: 'Volonté',
+          description: 'Engagement et motivation derrière l’objectif.',
+          questions: [
+            'Je m’engage pleinement à faire avancer mon objectif.',
+            'C’est maintenant le bon moment pour faire des changements dans ma vie.',
+            'J’ai envie de faire avancer mon objectif dès maintenant, même si cela puise dans mes ressources.',
+            'Je comprends clairement pourquoi je veux atteindre cet objectif.',
+            'Mon objectif est parfaitement en accord avec mes propres valeurs.',
+            'Je vois clairement les bénéfices que l’atteinte de cet objectif apportera à ma vie.',
+            'J’ai décidé de faire au quotidien des choix qui rendent le changement possible.'
+          ]
+        },
+        {
+          title: 'Capacités',
+          description: 'Confiance en ses compétences et en sa capacité à mener les choses à terme.',
+          questions: [
+            'Je crois que mes compétences suffisent pour atteindre l’objectif.',
+            'Je crois fermement en ma réussite.',
+            'J’ai confiance en ma capacité à surmonter d’éventuels revers.',
+            'Je sais découper mon objectif en un plan clair et réalisable.',
+            'J’ai confiance en moi et en ma capacité à mener les choses jusqu’au bout.',
+            'Je sais comment agir pour réussir.',
+            'J’ai le sentiment que la réussite dépend avant tout de moi.'
+          ]
+        },
+        {
+          title: 'Ressources',
+          description: 'Énergie et temps disponibles pour réaliser le changement.',
+          questions: [
+            'J’ai assez de ressources pour engager le changement et le maintenir.',
+            'Les moments de récupération de mon quotidien me donnent de l’énergie pour changer.',
+            'J’ai de la place dans mon agenda pour faire avancer mon objectif.',
+            'Mon niveau d’énergie actuel me permet d’essayer de nouvelles choses.',
+            'Je sais préserver mon énergie pour ne pas m’épuiser en cours de route.',
+            'Mon mode de vie m’aide à tenir le coup pendant le changement.',
+            'J’ai le sentiment que ma situation de vie se prête à ce changement.'
+          ]
+        },
+        {
+          title: 'Soutien de l’entourage',
+          description: 'Soutien apporté par les proches et le réseau.',
+          questions: [
+            'Je reçois du soutien et des encouragements des autres quand j’en ai besoin.',
+            'Mes proches voient mes objectifs d’un œil favorable.',
+            'J’ai autour de moi des personnes qui croient en moi.',
+            'Je peux partager mes réussites et mes difficultés avec les autres.',
+            'Il m’est facile de demander de l’aide ou des conseils si je rencontre des obstacles.',
+            'Mon réseau social me donne de l’énergie.',
+            'Je n’ai pas à craindre le jugement des autres à cause du changement que je vise.'
+          ]
+        }
+      ]
+    },
+    so: {
+      ui: {
+        docTitle: 'Qiimaynta diyaarsanaanta isbeddelka · 3K',
+        docDescription: 'Qalabka is-qiimaynta diyaarsanaanta isbeddelka',
+        eyebrow: 'Naftaada u hoggaami natiijooyin',
+        title: 'Qiimayn: <em>Diyaarsanaanta isbeddelka</em>',
+        intro: 'Halkan waxaa lagu qiimaynayaa diyaarsanaantaada isbeddelka iyadoo loo marayo afar qaybood: rabitaanka, awoodda, khayraadka iyo taageerada dadka kugu xeeran. Su\'aalaha si daacad ah uga jawaab, qofna ma arki doono jawaabahaaga gaarka ah.',
+        resultsTitle: '<em>Sawirka guud</em> ee diyaarsanaantaada isbeddelka',
+        language: 'Luqadda',
+        metaCategories: '{n} qaybood',
+        metaQuestions: '{n} su\'aalood',
+        metaMinutes: '{n} daqiiqo',
+        start: 'Bilow qiimaynta →',
+        answerAria: 'Jawaab {n}',
+        scaleMin: 'Gabi ahaanba kuma raacsani',
+        scaleMax: 'Gabi ahaanba waan ku raacsanahay',
+        resultsEyebrow: 'Natiijadaada',
+        resultsSub: 'Dhidib kastaa wuxuu muujinayaa xaaladda hal qayb, iyadoo la adeegsanayo cabbir 1–7 ah. Qiime sare wuxuu ka dhigan yahay inaad dareemayso in qaybtani ay noloshaada ku jirto xaalad wanaagsan.',
+        saveNote: 'Jawaabahaaga ma kaydinno; waxaan kugula talinayaa inaad sawirkan ku soo dejiso qalabkaaga.',
+        download: 'Kaydi sawirka ↓',
+        restart: 'Dib u bilow',
+        datasetLabel: 'Jawaabahaaga'
+      },
+      categories: [
+        {
+          title: 'Rabitaanka',
+          description: 'Ka go\'naanshaha iyo dhiirrigelinta ka dambeysa yoolka.',
+          questions: [
+            'Aad ayaan uga go\'anahay inaan horumariyo yoolkayga.',
+            'Hadda waa waqtiga saxda ah ee aan isbeddello ku sameeyo noloshayda.',
+            'Diyaar ayaan u ahay inaan hadda horumariyo yoolkayga, xitaa haddii ay tamartayda wax ka qaadanayso.',
+            'Si cad ayaan u fahamsanahay sababta aan u doonayo inaan gaaro yoolkan.',
+            'Yoolkaygu si buuxda ayuu ula jaanqaadayaa qiyamkayga.',
+            'Si cad ayaan u arkaa faa\'iidooyinka ay gaaridda yoolku u keenayso noloshayda.',
+            'Waxaan go\'aansaday inaan nolol maalmeedkayga ku sameeyo doorashooyin suurtageliya isbeddelka.'
+          ]
+        },
+        {
+          title: 'Awoodda',
+          description: 'Rumaysashada xirfadahaaga iyo awooddaada aad wax ugu dhammaystirto ilaa dhammaadka.',
+          questions: [
+            'Waxaan rumaysanahay in xirfadahaygu ku filan yihiin gaaridda yoolka.',
+            'Si adag ayaan u rumaysanahay inaan guuleysan doono.',
+            'Waan ku kalsoonahay awooddayda aan kaga gudbi karo dib-u-dhacyada ka iman kara.',
+            'Waan awoodaa inaan yoolkayga u kala qaybiyo tallaabooyin, kana dhigo qorshe cad oo la fulin karo.',
+            'Waan ku kalsoonahay naftayda iyo awooddayda aan arrimaha ku dhammaystiro ilaa dhammaadka.',
+            'Waan ogahay sida ay tahay inaan u dhaqmo si aan u guuleysto.',
+            'Waxaan dareemaa in guushu ugu horrayn gacantayda ku jirto.'
+          ]
+        },
+        {
+          title: 'Khayraadka',
+          description: 'Tamarta iyo waqtiga loo baahan yahay fulinta isbeddelka.',
+          questions: [
+            'Tamartayda iyo awooddaydu way ku filan yihiin bilaabidda iyo sii wadidda isbeddelka.',
+            'Waqtiyada aan ku nasto nolol maalmeedkayga waxay i siiyaan tamar aan isbeddelka ku sameeyo.',
+            'Jadwalkaygu wuxuu leeyahay meel bannaan oo aan ku horumariyo yoolka.',
+            'Heerka tamartayda ee hadda wuu ku filan yahay inaan isku dayo wax cusub.',
+            'Waan awoodaa inaan ilaaliyo tamartayda si aanan gabi ahaanba u daalin inta aan socdo.',
+            'Hab-nololeedkaygu wuxuu taageeraa adkaysigayga inta isbeddelku socdo.',
+            'Waxaan dareemaa in xaaladdayda nolosha ay ku habboon tahay fulinta isbeddelka.'
+          ]
+        },
+        {
+          title: 'Taageerada dadka kugu xeeran',
+          description: 'Taageerada ay bixiyaan dadka kuu dhow iyo shabakaddaada.',
+          questions: [
+            'Marka aan u baahdo, waxaan taageero iyo dhiirrigelin ka helaa dadka kale.',
+            'Dadka ii dhow si togan ayay u eegaan yoolalkayga.',
+            'Waxaa igu xeeran dad i rumaysan.',
+            'Waan la wadaagi karaa guulahayga iyo caqabadahayga dadka kale.',
+            'Way igu fudud tahay inaan caawimaad ama talo weydiisto haddii aan la kulmo caqabado.',
+            'Shabakaddayda bulsheed waxay i siisaa tamar.',
+            'Uma baahni inaan ka cabsado dhaleeceynta dadka kale ee ku saabsan isbeddelka aan doonayo.'
+          ]
+        }
+      ]
+    },
+    sv: {
+      ui: {
+        docTitle: 'Kartläggning av förändringsberedskap · 3K',
+        docDescription: 'Verktyg för självskattning av förändringsberedskap',
+        eyebrow: 'Led dig själv till resultat',
+        title: 'Kartläggning: <em>Förändringsberedskap</em>',
+        intro: 'I den här delen kartläggs din förändringsberedskap utifrån fyra kategorier: vilja, förmåga, resurser och stöd från omgivningen. Svara ärligt – ingen ser dina enskilda svar.',
+        resultsTitle: 'Din <em>profil</em> för förändringsberedskap',
+        language: 'Språk',
+        metaCategories: '{n} kategorier',
+        metaQuestions: '{n} frågor',
+        metaMinutes: '{n} minuter',
+        start: 'Starta kartläggningen →',
+        answerAria: 'Svar {n}',
+        scaleMin: 'Instämmer inte alls',
+        scaleMax: 'Instämmer helt',
+        resultsEyebrow: 'Ditt resultat',
+        resultsSub: 'Varje axel visar läget inom en kategori på en skala 1–7. Ett högt värde betyder att du upplever att det här området fungerar bra i ditt liv.',
+        saveNote: 'Vi sparar inte dina svar, så jag rekommenderar att du laddar ner bilden till din egen enhet.',
+        download: 'Spara bild ↓',
+        restart: 'Börja om',
+        datasetLabel: 'Dina svar'
+      },
+      categories: [
+        {
+          title: 'Vilja',
+          description: 'Engagemang och motivation bakom målet.',
+          questions: [
+            'Jag är starkt engagerad i att arbeta mot mitt mål.',
+            'Just nu är rätt tillfälle att göra förändringar i mitt liv.',
+            'Jag är villig att arbeta mot mitt mål just nu, även om det tar av mina krafter.',
+            'Jag förstår tydligt varför jag vill nå det här målet.',
+            'Mitt mål stämmer helt överens med mina egna värderingar.',
+            'Jag ser tydligt vilka fördelar det ger mitt liv att nå målet.',
+            'Jag har bestämt mig för att göra val i vardagen som gör förändringen möjlig.'
+          ]
+        },
+        {
+          title: 'Förmåga',
+          description: 'Tro på dina egna färdigheter och din förmåga att slutföra saker.',
+          questions: [
+            'Jag tror att mina färdigheter räcker för att nå målet.',
+            'Jag har en stark tro på att jag kommer att lyckas.',
+            'Jag litar på min förmåga att klara eventuella bakslag.',
+            'Jag kan dela upp mitt mål i en tydlig och genomförbar plan.',
+            'Jag litar på mig själv och min förmåga att genomföra saker ända till slutet.',
+            'Jag vet hur jag ska göra för att lyckas.',
+            'Jag upplever att det i första hand är upp till mig själv om jag lyckas.'
+          ]
+        },
+        {
+          title: 'Resurser',
+          description: 'Krafter och tid för att genomföra förändringen.',
+          questions: [
+            'Mina krafter räcker för att börja med förändringen och hålla fast vid den.',
+            'Stunderna av återhämtning i min vardag ger mig energi till förändringen.',
+            'Det finns utrymme i min kalender för att arbeta mot målet.',
+            'Min nuvarande energinivå räcker för att pröva något nytt.',
+            'Jag kan skydda min energi så att jag inte blir utmattad längs vägen.',
+            'Mina levnadsvanor hjälper mig att orka under förändringen.',
+            'Jag upplever att min livssituation passar för att genomföra förändringen.'
+          ]
+        },
+        {
+          title: 'Stöd från omgivningen',
+          description: 'Stöd från närstående och ditt nätverk.',
+          questions: [
+            'Jag får stöd och uppmuntran från andra när jag behöver det.',
+            'Mina närstående har en positiv inställning till mina mål.',
+            'Jag har människor omkring mig som tror på mig.',
+            'Jag kan dela mina framgångar och utmaningar med andra.',
+            'Det är lätt för mig att be om hjälp eller råd om jag stöter på hinder.',
+            'Mitt sociala nätverk ger mig energi.',
+            'Jag behöver inte vara rädd för att andra ska döma mig för den förändring som jag strävar efter.'
+          ]
+        }
+      ]
+    },
+    ru: {
+      ui: {
+        docTitle: 'Оценка готовности к переменам · 3K',
+        docDescription: 'Инструмент самооценки готовности к переменам',
+        eyebrow: 'Управление собой на пути к результатам',
+        title: 'Оценка: <em>Готовность к переменам</em>',
+        intro: 'В этом разделе оценивается ваша готовность к переменам по четырём категориям: намерение, способности, ресурсы и поддержка окружения. Отвечайте честно: никто не увидит ваших отдельных ответов.',
+        resultsTitle: 'Ваш <em>профиль</em> готовности к переменам',
+        language: 'Язык',
+        metaCategories: '{n} категории',
+        metaQuestions: '{n} вопросов',
+        metaMinutes: '{n} минут',
+        start: 'Начать оценку →',
+        answerAria: 'Ответ {n}',
+        scaleMin: 'Полностью не согласен(-на)',
+        scaleMax: 'Полностью согласен(-на)',
+        resultsEyebrow: 'Ваши результаты',
+        resultsSub: 'Каждая ось показывает ситуацию в одной из категорий по шкале 1–7. Высокое значение означает, что, по вашим ощущениям, в этой сфере жизни у вас всё хорошо.',
+        saveNote: 'Мы не сохраняем ваши ответы, поэтому рекомендую скачать это изображение на своё устройство.',
+        download: 'Сохранить изображение ↓',
+        restart: 'Начать заново',
+        datasetLabel: 'Ваши ответы'
+      },
+      categories: [
+        {
+          title: 'Намерение',
+          description: 'Приверженность цели и мотивация, которая за ней стоит.',
+          questions: [
+            'Я всерьёз стремлюсь продвигаться к своей цели.',
+            'Сейчас самое подходящее время для перемен в моей жизни.',
+            'Я хочу двигаться к цели прямо сейчас, даже если это требует сил.',
+            'Я ясно понимаю, зачем хочу достичь этой цели.',
+            'Моя цель полностью соответствует моим ценностям.',
+            'Я ясно вижу, что достижение цели даст моей жизни.',
+            'Решение принято: в повседневной жизни я делаю выбор, который помогает переменам.'
+          ]
+        },
+        {
+          title: 'Способности',
+          description: 'Вера в свои навыки и в способность доводить дела до конца.',
+          questions: [
+            'Я верю, что моих навыков достаточно для достижения цели.',
+            'Я твёрдо верю в свой успех.',
+            'Я верю, что справлюсь с возможными неудачами.',
+            'Я умею разбить свою цель на понятный и выполнимый план.',
+            'Я доверяю себе и своей способности доводить дела до конца.',
+            'Я знаю, как мне нужно действовать, чтобы добиться успеха.',
+            'Я чувствую, что успех прежде всего в моих руках.'
+          ]
+        },
+        {
+          title: 'Ресурсы',
+          description: 'Силы и время для осуществления перемен.',
+          questions: [
+            'У меня достаточно сил, чтобы начать перемены и поддерживать их.',
+            'Моменты отдыха в течение дня дают мне энергию для перемен.',
+            'В моём расписании есть время для движения к цели.',
+            'Моего нынешнего уровня энергии хватает, чтобы пробовать новое.',
+            'Я умею беречь свою энергию, чтобы не выдохнуться по пути.',
+            'Мой образ жизни помогает мне сохранять силы в период перемен.',
+            'Я чувствую, что моя жизненная ситуация подходит для перемен.'
+          ]
+        },
+        {
+          title: 'Поддержка окружения',
+          description: 'Поддержка близких и круга общения.',
+          questions: [
+            'Когда нужно, я получаю поддержку и ободрение от других.',
+            'Мои близкие положительно относятся к моим целям.',
+            'Рядом со мной есть люди, которые в меня верят.',
+            'Я могу делиться с другими своими успехами и трудностями.',
+            'Мне легко попросить помощи или совета, если я сталкиваюсь с препятствиями.',
+            'Мой круг общения даёт мне энергию.',
+            'Мне не нужно бояться осуждения со стороны других из-за перемен, к которым я стремлюсь.'
+          ]
+        }
+      ]
+    },
+    uk: {
+      ui: {
+        docTitle: 'Оцінювання готовності до змін · 3K',
+        docDescription: 'Інструмент самооцінювання готовності до змін',
+        eyebrow: 'Керуйте собою — і досягайте результатів',
+        title: 'Оцінювання: <em>Готовність до змін</em>',
+        intro: 'У цьому розділі ви оціните свою готовність до змін за чотирма категоріями: налаштованість, спроможність, ресурси та підтримка оточення. Відповідайте чесно: ніхто не бачить ваших окремих відповідей.',
+        resultsTitle: '<em>Профіль</em> вашої готовності до змін',
+        language: 'Мова',
+        metaCategories: '{n} категорії',
+        metaQuestions: '{n} запитань',
+        metaMinutes: '{n} хвилин',
+        start: 'Почати оцінювання →',
+        answerAria: 'Відповідь {n}',
+        scaleMin: 'Зовсім не погоджуюся',
+        scaleMax: 'Повністю погоджуюся',
+        resultsEyebrow: 'Ваші результати',
+        resultsSub: 'Кожна вісь показує стан однієї категорії за шкалою 1–7. Високе значення означає, що, на вашу думку, ця сфера вашого життя в доброму стані.',
+        saveNote: 'Ми не зберігаємо ваших відповідей, тому радимо завантажити це зображення на свій пристрій.',
+        download: 'Зберегти зображення ↓',
+        restart: 'Почати спочатку',
+        datasetLabel: 'Ваші відповіді'
+      },
+      categories: [
+        {
+          title: 'Налаштованість',
+          description: 'Відданість справі та мотивація, що стоять за метою.',
+          questions: [
+            'Я з повною віддачею працюю над тим, щоб наблизитися до своєї мети.',
+            'Саме зараз — слушний момент для змін у моєму житті.',
+            'Я хочу рухатися до мети саме зараз, навіть якщо це забирає мої сили.',
+            'Я чітко розумію, чому хочу досягти цієї мети.',
+            'Моя мета повністю узгоджується з моїми цінностями.',
+            'Я чітко бачу, яку користь принесе в моє життя досягнення мети.',
+            'Моє рішення тверде: у повсякденні я робитиму вибір, який уможливлює зміни.'
+          ]
+        },
+        {
+          title: 'Спроможність',
+          description: 'Віра у власні вміння та здатність доводити справи до кінця.',
+          questions: [
+            'Я вірю, що моїх умінь достатньо для досягнення мети.',
+            'Я твердо вірю у свій успіх.',
+            'Я вірю, що впораюся з можливими невдачами.',
+            'Я вмію розбити свою мету на чіткий і здійсненний план.',
+            'Я довіряю собі та своїй здатності доводити справи до кінця.',
+            'Я знаю, що мені потрібно робити, щоб досягти успіху.',
+            'Я відчуваю, що успіх насамперед у моїх руках.'
+          ]
+        },
+        {
+          title: 'Ресурси',
+          description: 'Сили та час для втілення змін.',
+          questions: [
+            'Моїх сил достатньо, щоб розпочати зміни й підтримувати їх.',
+            'Моменти відпочинку в повсякденні заряджають мене енергією для змін.',
+            'У моєму календарі є місце для роботи над метою.',
+            'Мого нинішнього рівня енергії достатньо, щоб пробувати нове.',
+            'Я вмію берегти свою енергію, щоб не виснажитися в процесі.',
+            'Мій спосіб життя допомагає мені зберігати сили під час змін.',
+            'Я відчуваю, що моя життєва ситуація підходить для змін.'
+          ]
+        },
+        {
+          title: 'Підтримка оточення',
+          description: 'Підтримка від близьких і соціальних зв’язків.',
+          questions: [
+            'За потреби я отримую підтримку й підбадьорення від інших.',
+            'Мої близькі ставляться до моїх цілей позитивно.',
+            'Поруч зі мною є люди, які вірять у мене.',
+            'Я можу ділитися з іншими своїми успіхами й труднощами.',
+            'Мені легко попросити допомоги чи поради, якщо я стикаюся з перешкодами.',
+            'Моє соціальне коло додає мені енергії.',
+            'Мені не потрібно боятися осуду інших через зміни, яких я прагну.'
+          ]
+        }
+      ]
+    },
+    ar: {
+      ui: {
+        docTitle: 'تقييم الاستعداد للتغيير · 3K',
+        docDescription: 'أداة التقييم الذاتي للاستعداد للتغيير',
+        eyebrow: 'قُد نفسك نحو النتائج',
+        title: 'تقييم: <em>الاستعداد للتغيير</em>',
+        intro: 'يقيّم هذا القسم استعدادك للتغيير من خلال أربع فئات: الإرادة، والقدرة، والموارد، ودعم المحيطين. أجب بصدق، فلن يرى أحد إجاباتك الفردية.',
+        resultsTitle: '<em>ملف</em> استعدادك للتغيير',
+        language: 'اللغة',
+        metaCategories: '{n} فئات',
+        metaQuestions: '{n} سؤالًا',
+        metaMinutes: '{n} دقائق',
+        start: 'ابدأ التقييم ←',
+        answerAria: 'الإجابة {n}',
+        scaleMin: 'لا أوافق إطلاقًا',
+        scaleMax: 'أوافق تمامًا',
+        resultsEyebrow: 'نتائجك',
+        resultsSub: 'يمثّل كل محور وضع فئة واحدة على مقياس 1–7. وتعني القيمة المرتفعة أنك ترى أن هذا الجانب من حياتك في حالة جيدة.',
+        saveNote: 'لا نحفظ إجاباتك، لذا أنصحك بتنزيل هذه الصورة على جهازك الخاص.',
+        download: 'احفظ الصورة ↓',
+        restart: 'ابدأ من جديد',
+        datasetLabel: 'إجاباتك'
+      },
+      categories: [
+        {
+          title: 'الإرادة',
+          description: 'الالتزام والدافع وراء الهدف.',
+          questions: [
+            'أنا ملتزم جدًا بالتقدّم نحو هدفي.',
+            'الآن هو الوقت المناسب لإجراء تغييرات في حياتي.',
+            'أنا مستعد للعمل على هدفي الآن، حتى لو استهلك ذلك من طاقتي.',
+            'أفهم بوضوح لماذا أريد تحقيق هذا الهدف.',
+            'هدفي منسجم تمامًا مع قيمي.',
+            'أرى بوضوح الفوائد التي سيجلبها تحقيق الهدف إلى حياتي.',
+            'قرّرت أن أتّخذ في حياتي اليومية خيارات تجعل التغيير ممكنًا.'
+          ]
+        },
+        {
+          title: 'القدرة',
+          description: 'الإيمان بمهاراتك وبقدرتك على إتمام الأمور حتى النهاية.',
+          questions: [
+            'أؤمن بأن مهاراتي كافية لتحقيق الهدف.',
+            'لديّ إيمان راسخ بنجاحي.',
+            'أثق بقدرتي على تجاوز الانتكاسات المحتملة.',
+            'أستطيع تقسيم هدفي إلى خطة واضحة وقابلة للتنفيذ.',
+            'أثق بنفسي وبقدرتي على إتمام الأمور حتى النهاية.',
+            'أعرف كيف يجب أن أتصرّف لكي أنجح.',
+            'أشعر أن النجاح بين يديّ في المقام الأول.'
+          ]
+        },
+        {
+          title: 'الموارد',
+          description: 'الطاقة والوقت المتاحان لتنفيذ التغيير.',
+          questions: [
+            'طاقتي ومواردي كافية لبدء التغيير والاستمرار فيه.',
+            'لحظات الراحة في يومي تمنحني الطاقة للتغيير.',
+            'يوجد في جدولي متّسع للعمل على هدفي.',
+            'مستوى طاقتي الحالي كافٍ لتجربة أشياء جديدة.',
+            'أستطيع حماية طاقتي حتى لا أُنهَك على طول الطريق.',
+            'أسلوب حياتي يدعم قدرتي على الصمود أثناء التغيير.',
+            'أشعر أن وضعي الحياتي مناسب لإحداث التغيير.'
+          ]
+        },
+        {
+          title: 'دعم المحيطين',
+          description: 'الدعم الذي يقدّمه المقرّبون والشبكة الاجتماعية.',
+          questions: [
+            'أحصل على الدعم والتشجيع من الآخرين عند الحاجة.',
+            'ينظر المقرّبون مني إلى أهدافي بإيجابية.',
+            'يحيط بي أشخاص يؤمنون بي.',
+            'أستطيع مشاركة نجاحاتي وتحدياتي مع الآخرين.',
+            'من السهل عليّ طلب المساعدة أو النصيحة إذا واجهت عقبات.',
+            'شبكتي الاجتماعية تمنحني الطاقة.',
+            'لا داعي لأن أخاف من انتقاد الآخرين بسبب التغيير الذي أسعى إليه.'
+          ]
+        }
       ]
     }
+  };
+
+  // ============ Language ============
+  // Kielet aakkosjärjestyksessä omalla nimellään (latinalaiset, kyrilliset, arabia).
+  const LANGS = [
+    { code: 'de', name: 'Deutsch' },
+    { code: 'en', name: 'English' },
+    { code: 'es', name: 'Español' },
+    { code: 'fr', name: 'Français' },
+    { code: 'so', name: 'Soomaali' },
+    { code: 'fi', name: 'Suomi' },
+    { code: 'sv', name: 'Svenska' },
+    { code: 'ru', name: 'Русский' },
+    { code: 'uk', name: 'Українська' },
+    { code: 'ar', name: 'العربية', rtl: true }
   ];
+  const DEFAULT_LANG = 'fi';
+  const LANG_STORAGE_KEY = '3k-kieli';
+
+  // Liput SVG-muodossa, koska emoji-liput eivät näy Windowsissa. {id} korvataan uniikilla tunnisteella.
+  const FLAGS = {
+    ar: '<rect width="30" height="20" fill="#006c35"/><path d="M7.5 9.4c.8-1.7 1.6.9 2.4-.5.6-1.1 1.2.2 1.8-.6M12.7 7.3v2.3M14.1 8.8c.7-1.3 1.5.9 2.3-.3.7-1 1.4.6 2.1-.4M19.7 7.1v2.5M21.1 9.2c.6-1.3 1.2.4 1.7-.6" fill="none" stroke="#fff" stroke-width=".8" stroke-linecap="round"/><path d="M8 13.6h12.4M20.4 12.5v2.2M20.4 13.6h1.8" fill="none" stroke="#fff" stroke-width=".9" stroke-linecap="round"/>',
+    de: '<rect width="30" height="20" fill="#ffce00"/><rect width="30" height="13.34" fill="#dd0000"/><rect width="30" height="6.67" fill="#000"/>',
+    en: '<clipPath id="{id}"><path d="M15,10h15v10zv10h-15zh-15v-10zv-10h15z"/></clipPath><rect width="30" height="20" fill="#012169"/><path d="M0,0L30,20M30,0L0,20" stroke="#fff" stroke-width="4"/><path d="M0,0L30,20M30,0L0,20" stroke="#c8102e" stroke-width="2.6" clip-path="url(#{id})"/><path d="M15,0v20M0,10h30" stroke="#fff" stroke-width="6.6"/><path d="M15,0v20M0,10h30" stroke="#c8102e" stroke-width="4"/>',
+    es: '<rect width="30" height="20" fill="#aa151b"/><rect y="5" width="30" height="10" fill="#f1bf00"/>',
+    fi: '<rect width="30" height="20" fill="#fff"/><rect x="8.2" width="5.4" height="20" fill="#002f6c"/><rect y="7.3" width="30" height="5.4" fill="#002f6c"/>',
+    fr: '<rect width="30" height="20" fill="#ef4135"/><rect width="20" height="20" fill="#fff"/><rect width="10" height="20" fill="#0055a4"/>',
+    ru: '<rect width="30" height="20" fill="#d52b1e"/><rect width="30" height="13.34" fill="#0039a6"/><rect width="30" height="6.67" fill="#fff"/>',
+    so: '<rect width="30" height="20" fill="#4189dd"/><polygon points="15.00,4.80 16.29,8.62 20.33,8.67 17.09,11.08 18.29,14.93 15.00,12.60 11.71,14.93 12.91,11.08 9.67,8.67 13.71,8.62" fill="#fff"/>',
+    sv: '<rect width="30" height="20" fill="#006aa7"/><rect x="9.4" width="3.8" height="20" fill="#fecc00"/><rect y="8.1" width="30" height="3.8" fill="#fecc00"/>',
+    uk: '<rect width="30" height="20" fill="#ffd700"/><rect width="30" height="10" fill="#0057b7"/>'
+  };
+
+  // Kieli valitaan: ?lang=xx osoitteessa, sitten aiempi valinta, muuten suomi.
+  function initialLang() {
+    try {
+      const fromUrl = new URLSearchParams(window.location.search).get('lang');
+      if (fromUrl && I18N[fromUrl]) return fromUrl;
+    } catch (e) {
+      // Upotuksessa osoitetta ei välttämättä voi lukea
+    }
+    try {
+      const saved = window.localStorage.getItem(LANG_STORAGE_KEY);
+      if (saved && I18N[saved]) return saved;
+    } catch (e) {
+      // localStorage voi olla estetty upotuksessa
+    }
+    return DEFAULT_LANG;
+  }
+
+  function langInfo(code) {
+    return LANGS.find(l => l.code === code);
+  }
+
+  function langDir() {
+    return langInfo(state.lang).rtl ? 'rtl' : 'ltr';
+  }
+
+  function ui() {
+    return I18N[state.lang].ui;
+  }
+
+  // Korvaa {avain}-paikkamerkit annetuilla arvoilla
+  function fmt(text, vars) {
+    return text.replace(/\{(\w+)\}/g, (m, key) => (key in vars ? vars[key] : m));
+  }
+
+  function applyLang() {
+    document.documentElement.lang = state.lang;
+    document.documentElement.dir = langDir();
+    document.title = ui().docTitle;
+    const desc = document.querySelector('meta[name="description"]');
+    if (desc) desc.setAttribute('content', ui().docDescription);
+  }
+
+  let flagSeq = 0;
+  function flagSvg(code) {
+    const id = 'flag-clip-' + (++flagSeq);
+    return `<span class="lang-flag"><svg viewBox="0 0 30 20" preserveAspectRatio="none" aria-hidden="true" focusable="false">${FLAGS[code].replace(/\{id\}/g, id)}</svg></span>`;
+  }
+
+  function renderLangSelector() {
+    const current = langInfo(state.lang);
+    const options = LANGS.map(l => `
+          <li>
+            <button type="button" class="lang-option" lang="${l.code}"${l.code === state.lang ? ' aria-current="true"' : ''} onclick="setLang('${l.code}')">
+              ${flagSvg(l.code)}<span>${l.name}</span>
+            </button>
+          </li>`).join('');
+    return `
+        <div class="lang" id="lang">
+          <button type="button" class="lang-toggle" id="lang-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="lang-menu" aria-label="${ui().language}: ${current.name}" onclick="toggleLangMenu()">
+            ${flagSvg(current.code)}
+            <span lang="${current.code}">${current.name}</span>
+            <svg class="lang-caret" viewBox="0 0 10 10" aria-hidden="true" focusable="false"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <ul class="lang-menu" id="lang-menu" aria-label="${ui().language}" hidden>${options}
+          </ul>
+        </div>
+    `;
+  }
+
+  function toggleLangMenu() {
+    const menu = $('lang-menu');
+    if (!menu) return;
+    if (menu.hidden) openLangMenu();
+    else closeLangMenu(false);
+  }
+
+  function openLangMenu() {
+    const menu = $('lang-menu');
+    const toggle = $('lang-toggle');
+    menu.hidden = false;
+    menu.style.maxHeight = '';
+    $('lang').classList.add('open');
+    toggle.setAttribute('aria-expanded', 'true');
+
+    // Avaa lista sinne, missä on enemmän tilaa (upotuksen korkeus voi olla rajattu)
+    const rect = toggle.getBoundingClientRect();
+    const spaceAbove = rect.top - 12;
+    const spaceBelow = window.innerHeight - rect.bottom - 12;
+    const openDown = spaceBelow >= menu.scrollHeight || spaceBelow > spaceAbove;
+    menu.classList.toggle('down', openDown);
+    menu.style.maxHeight = Math.max(160, openDown ? spaceBelow : spaceAbove) + 'px';
+
+    const selected = menu.querySelector('[aria-current="true"]') || menu.querySelector('.lang-option');
+    selected.focus({ preventScroll: true });
+  }
+
+  function closeLangMenu(returnFocus) {
+    const menu = $('lang-menu');
+    if (!menu || menu.hidden) return;
+    menu.hidden = true;
+    $('lang').classList.remove('open');
+    const toggle = $('lang-toggle');
+    toggle.setAttribute('aria-expanded', 'false');
+    if (returnFocus) toggle.focus();
+  }
+
+  function setLang(code) {
+    if (!I18N[code]) return;
+    state.lang = code;
+    try {
+      window.localStorage.setItem(LANG_STORAGE_KEY, code);
+    } catch (e) {
+      // Valinta toimii silti tämän sivun ajan
+    }
+    applyLang();
+    render();
+    const toggle = $('lang-toggle');
+    if (toggle) toggle.focus({ preventScroll: true });
+  }
+
+  // Sulje lista, kun klikataan tai siirrytään sen ulkopuolelle
+  document.addEventListener('click', (e) => {
+    const wrap = $('lang');
+    if (wrap && !wrap.contains(e.target)) closeLangMenu(false);
+  });
+  document.addEventListener('focusin', (e) => {
+    const wrap = $('lang');
+    if (wrap && !wrap.contains(e.target)) closeLangMenu(false);
+  });
+
+  // Näppäimistö: Esc sulkee, nuolet liikkuvat listassa
+  document.addEventListener('keydown', (e) => {
+    const menu = $('lang-menu');
+    if (!menu || menu.hidden) return;
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeLangMenu(true);
+      return;
+    }
+    const keys = ['ArrowDown', 'ArrowUp', 'Home', 'End'];
+    if (!keys.includes(e.key)) return;
+    e.preventDefault();
+    const items = Array.from(menu.querySelectorAll('.lang-option'));
+    const i = items.indexOf(document.activeElement);
+    let next = 0;
+    if (e.key === 'End') next = items.length - 1;
+    else if (e.key === 'ArrowDown') next = (i + 1) % items.length;
+    else if (e.key === 'ArrowUp') next = i <= 0 ? items.length - 1 : i - 1;
+    items[next].focus();
+  });
 
   // ============ State ============
   const state = {
     screen: 'welcome',
+    lang: initialLang(),
     currentCategory: 0,
     answers: {},
     chartInstance: null
@@ -517,8 +1543,12 @@
   const $ = (id) => document.getElementById(id);
   const answerKey = (c, q) => `${c}-${q}`;
 
+  function categories() {
+    return I18N[state.lang].categories;
+  }
+
   function isCategoryComplete(catIdx) {
-    const qLen = CATEGORIES[catIdx].questions.length;
+    const qLen = categories()[catIdx].questions.length;
     for (let q = 0; q < qLen; q++) {
       if (state.answers[answerKey(catIdx, q)] === undefined) return false;
     }
@@ -526,7 +1556,7 @@
   }
 
   function categoryAverage(catIdx) {
-    const qLen = CATEGORIES[catIdx].questions.length;
+    const qLen = categories()[catIdx].questions.length;
     let sum = 0;
     for (let q = 0; q < qLen; q++) sum += state.answers[answerKey(catIdx, q)] ?? 0;
     return sum / qLen;
@@ -538,7 +1568,8 @@
 
   // ============ Welcome ============
   function renderWelcome() {
-    const totalQuestions = CATEGORIES.reduce((acc, c) => acc + c.questions.length, 0);
+    const t = ui();
+    const totalQuestions = categories().reduce((acc, c) => acc + c.questions.length, 0);
     $('app').innerHTML = `
       <div class="welcome">
         <svg class="welcome-bg" viewBox="0 0 200 200" aria-hidden="true">
@@ -551,17 +1582,20 @@
             <line x1="31" y1="140" x2="169" y2="60" />
           </g>
         </svg>
-        <div class="welcome-eyebrow">Johda itsesi tuloksiin</div>
-        <h1>Kartoitus: <em>Muutosvalmius</em></h1>
-        <p>Tässä osiossa kartoitetaan muutosvalmiuttasi neljän kategorian kautta: tahtotila, kyvykkyys, resurssit ja ympäristön tuki. Vastaa rehellisesti, kukaan ei näe yksittäisiä vastauksiasi.</p>
+        <div class="welcome-eyebrow">${t.eyebrow}</div>
+        <h1>${t.title}</h1>
+        <p>${t.intro}</p>
         <div class="welcome-meta">
-          <span><strong>${CATEGORIES.length}</strong> kategoriaa</span>
+          <span>${fmt(t.metaCategories, { n: `<strong>${categories().length}</strong>` })}</span>
           <span class="welcome-meta-sep">·</span>
-          <span><strong>${totalQuestions}</strong> kysymystä</span>
+          <span>${fmt(t.metaQuestions, { n: `<strong>${totalQuestions}</strong>` })}</span>
           <span class="welcome-meta-sep">·</span>
-          <span><strong>6</strong> minuuttia</span>
+          <span>${fmt(t.metaMinutes, { n: '<strong>6</strong>' })}</span>
         </div>
-        <button class="btn-primary" onclick="startQuestionnaire()">Aloita kartoitus →</button>
+        <div class="welcome-actions" dir="ltr">
+          ${renderLangSelector()}
+          <button class="btn-primary" dir="${langDir()}" onclick="startQuestionnaire()">${t.start}</button>
+        </div>
       </div>
     `;
   }
@@ -576,8 +1610,8 @@
 
   // ============ Questionnaire ============
   function renderQuestionnaire() {
-    const cat = CATEGORIES[state.currentCategory];
-    const dots = CATEGORIES.map((_, i) => {
+    const cat = categories()[state.currentCategory];
+    const dots = categories().map((_, i) => {
       let cls = 'q-progress-dot';
       if (i < state.currentCategory) cls += ' done';
       else if (i === state.currentCategory) cls += ' current';
@@ -588,7 +1622,7 @@
       <div class="q-header">
         <div class="q-counter">
           ${String(state.currentCategory + 1).padStart(2, '0')}
-          <span>/ ${String(CATEGORIES.length).padStart(2, '0')}</span>
+          <span>/ ${String(categories().length).padStart(2, '0')}</span>
         </div>
         <div class="q-progress">${dots}</div>
       </div>
@@ -608,15 +1642,15 @@
     let buttons = '';
     for (let v = 1; v <= 7; v++) {
       const sel = v === selected ? 'selected' : '';
-      buttons += `<button class="q-button ${sel}" onclick="setAnswer(${catIdx}, ${qIdx}, ${v})" aria-label="Vastaus ${v}">${v}</button>`;
+      buttons += `<button class="q-button ${sel}" onclick="setAnswer(${catIdx}, ${qIdx}, ${v})" aria-label="${fmt(ui().answerAria, { n: v })}">${v}</button>`;
     }
     return `
       <div class="q-item ${answered ? 'answered' : ''}" id="q-${catIdx}-${qIdx}">
         <div class="q-text">${text}</div>
         <div class="q-scale">${buttons}</div>
         <div class="q-scale-labels">
-          <span>Täysin eri mieltä</span>
-          <span>Täysin samaa mieltä</span>
+          <span>${ui().scaleMin}</span>
+          <span>${ui().scaleMax}</span>
         </div>
       </div>
     `;
@@ -628,7 +1662,7 @@
     const qEl = $(`q-${catIdx}-${qIdx}`);
     if (qEl) {
       const wrapper = document.createElement('div');
-      wrapper.innerHTML = renderQuestion(catIdx, qIdx, CATEGORIES[catIdx].questions[qIdx]);
+      wrapper.innerHTML = renderQuestion(catIdx, qIdx, categories()[catIdx].questions[qIdx]);
       qEl.replaceWith(wrapper.firstElementChild);
     }
 
@@ -636,7 +1670,7 @@
     if (isCategoryComplete(catIdx)) {
       advanceTimeout = setTimeout(() => {
         advanceTimeout = null;
-        if (catIdx + 1 < CATEGORIES.length) {
+        if (catIdx + 1 < categories().length) {
           state.currentCategory = catIdx + 1;
           render();
           scrollToTop();
@@ -651,7 +1685,7 @@
 
   // ============ Results ============
   function renderResults() {
-    const cats = CATEGORIES.map((c, i) => ({
+    const cats = categories().map((c, i) => ({
       title: c.title,
       avg: categoryAverage(i)
     }));
@@ -664,19 +1698,19 @@
 
     $('app').innerHTML = `
       <div class="results">
-        <div class="results-eyebrow">Tuloksesi</div>
-        <h2>Muutosvalmiutesi <em>profiili</em></h2>
-        <p class="results-sub">Jokainen akseli kuvaa yhden kategorian tilannetta asteikolla 1–7. Korkea arvo tarkoittaa, että koet osa-alueen olevan elämässäsi hyvässä tilassa.</p>
+        <div class="results-eyebrow">${ui().resultsEyebrow}</div>
+        <h2>${ui().resultsTitle}</h2>
+        <p class="results-sub">${ui().resultsSub}</p>
         <div class="chart-container">
           <div class="chart-wrap">
             <canvas id="radarChart"></canvas>
           </div>
         </div>
         <div class="scores">${scoreCards}</div>
-        <p class="save-note">Emme tallenna vastauksiasi, suosittelen että lataat tästä kuvan omalle laitteellesi.</p>
+        <p class="save-note">${ui().saveNote}</p>
         <div class="actions">
-          <button class="btn-primary" onclick="downloadChart()">Tallenna kuva ↓</button>
-          <button class="btn-secondary" onclick="restart()">Aloita alusta</button>
+          <button class="btn-primary" onclick="downloadChart()">${ui().download}</button>
+          <button class="btn-secondary" onclick="restart()">${ui().restart}</button>
         </div>
       </div>
     `;
@@ -688,15 +1722,15 @@
     const canvas = $('radarChart');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    const labels = CATEGORIES.map(c => c.title);
-    const data = CATEGORIES.map((_, i) => categoryAverage(i));
+    const labels = categories().map(c => c.title);
+    const data = categories().map((_, i) => categoryAverage(i));
 
     state.chartInstance = new Chart(ctx, {
       type: 'radar',
       data: {
         labels,
         datasets: [{
-          label: 'Vastauksesi',
+          label: ui().datasetLabel,
           data,
           backgroundColor: 'rgba(163, 217, 197, 0.42)',
           borderColor: '#0c2543',
@@ -791,7 +1825,10 @@
   window.setAnswer = setAnswer;
   window.downloadChart = downloadChart;
   window.restart = restart;
+  window.toggleLangMenu = toggleLangMenu;
+  window.setLang = setLang;
 
+  applyLang();
   render();
 </script>
 </body>

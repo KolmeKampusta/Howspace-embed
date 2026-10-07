@@ -377,7 +377,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     padding: 10px 14px;
-    text-align: left;
+    text-align: start;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -418,6 +418,120 @@
     animation: fadeIn 420ms 440ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
+  /* ============ Language selector ============ */
+  .welcome-actions {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+  .lang {
+    position: relative;
+    justify-self: start;
+    text-align: left;
+  }
+  .lang-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: var(--navy);
+    border: 1px solid var(--border);
+    padding: 9px 12px 9px 10px;
+    font-family: 'Geist', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+  .lang-toggle:hover,
+  .lang.open .lang-toggle {
+    border-color: var(--navy);
+    background: var(--card-bg);
+  }
+  .lang-flag {
+    flex: 0 0 auto;
+    display: inline-block;
+    width: 21px;
+    height: 14px;
+    border-radius: 3px;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(12, 37, 67, 0.14);
+  }
+  .lang-flag svg { display: block; width: 100%; height: 100%; }
+  .lang-caret {
+    width: 10px;
+    height: 10px;
+    transition: transform var(--transition);
+  }
+  .lang.open .lang-caret { transform: rotate(180deg); }
+  .lang-menu {
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 8px);
+    z-index: 20;
+    min-width: 190px;
+    overflow-y: auto;
+    list-style: none;
+    background: var(--container-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 12px 32px rgba(12, 37, 67, 0.18);
+    padding: 6px;
+    animation: fadeIn 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .lang-menu.down {
+    top: calc(100% + 8px);
+    bottom: auto;
+  }
+  .lang-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 7px 10px;
+    font-family: 'Geist', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.3;
+    color: var(--navy);
+    text-align: left;
+    cursor: pointer;
+    transition: background 160ms ease;
+  }
+  .lang-option:hover,
+  .lang-option:focus-visible {
+    background: var(--blue-soft);
+    outline: none;
+  }
+  .lang-option[aria-current="true"] {
+    background: #e0eff9;
+    font-weight: 500;
+  }
+  .lang-option[aria-current="true"]::after {
+    content: '';
+    width: 5px;
+    height: 9px;
+    margin: -3px 4px 0 auto;
+    border: solid var(--navy);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  @media (max-width: 540px) {
+    /* Kapealla näytöllä nappi siirtyy tarvittaessa valitsimen yläpuolelle */
+    .welcome-actions {
+      display: flex;
+      flex-wrap: wrap-reverse;
+      gap: 10px;
+    }
+    .welcome-actions .btn-primary { flex: 1 1 auto; }
+  }
+
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
@@ -448,65 +562,977 @@
 <div class="container" id="app"></div>
 
 <script>
-  // ============ Data ============
-  const CATEGORIES = [
-    {
-      title: 'Keskittyminen / tarkkaavaisuus',
-      description: 'Kyky suunnata ja ylläpitää huomiota olennaisessa.',
-      questions: [
-        'Pystyn suuntaamaan huomioni siihen, mitä olen juuri nyt tekemässä.',
-        'Huomioni ei karkaile jatkuvasti epäolennaisiin asioihin.',
-        'Huomatessani ajatusteni harhailevan, osaan palauttaa ne nykyhetkeen.',
-        'Pystyn syventymään yhteen tehtävään kerrallaan.',
-        'Työympäristöni tukee kykyäni keskittyä olennaiseen.',
-        'Olen tietoinen siitä, mihin käytän aikani ja energiani.',
-        'Osaan rajata ärsykkeitä (kuten viestejä ja ilmoituksia) niin, etteivät ne häiritse keskittymistäni.'
+  // ============ Translations ============
+  // Jokaisella kielellä: ui = käyttöliittymän tekstit, categories = kategoriat ja kysymykset.
+  const I18N = {
+    fi: {
+      ui: {
+        docTitle: 'Psykologisen joustavuuden kartoitus · 3K',
+        docDescription: 'Psykologisen joustavuuden itsearviointityökalu',
+        eyebrow: 'Mielen taidot',
+        title: 'Kartoitus: <em>Psykologinen joustavuus</em>',
+        intro: 'Tässä osiossa kartoitetaan psykologista joustavuuttasi neljän kategorian kautta: keskittyminen ja tarkkaavaisuus, omistautuminen, tunnesäätely ja hyväksyntä. Vastaa rehellisesti, kukaan ei näe yksittäisiä vastauksiasi.',
+        resultsTitle: 'Psykologisen joustavuutesi <em>profiili</em>',
+        language: 'Kieli',
+        metaCategories: '{n} kategoriaa',
+        metaQuestions: '{n} kysymystä',
+        metaMinutes: '{n} minuuttia',
+        start: 'Aloita kartoitus →',
+        answerAria: 'Vastaus {n}',
+        scaleMin: 'Täysin eri mieltä',
+        scaleMax: 'Täysin samaa mieltä',
+        resultsEyebrow: 'Tuloksesi',
+        resultsSub: 'Jokainen akseli kuvaa yhden kategorian tilannetta asteikolla 1–7. Korkea arvo tarkoittaa, että koet osa-alueen olevan elämässäsi hyvässä tilassa.',
+        saveNote: 'Emme tallenna vastauksiasi, suosittelen että lataat tästä kuvan omalle laitteellesi.',
+        download: 'Tallenna kuva ↓',
+        restart: 'Aloita alusta',
+        datasetLabel: 'Vastauksesi'
+      },
+      categories: [
+        {
+          title: 'Keskittyminen / tarkkaavaisuus',
+          description: 'Kyky suunnata ja ylläpitää huomiota olennaisessa.',
+          questions: [
+            'Pystyn suuntaamaan huomioni siihen, mitä olen juuri nyt tekemässä.',
+            'Huomioni ei karkaile jatkuvasti epäolennaisiin asioihin.',
+            'Huomatessani ajatusteni harhailevan, osaan palauttaa ne nykyhetkeen.',
+            'Pystyn syventymään yhteen tehtävään kerrallaan.',
+            'Työympäristöni tukee kykyäni keskittyä olennaiseen.',
+            'Olen tietoinen siitä, mihin käytän aikani ja energiani.',
+            'Osaan rajata ärsykkeitä (kuten viestejä ja ilmoituksia) niin, etteivät ne häiritse keskittymistäni.'
+          ]
+        },
+        {
+          title: 'Omistautuminen',
+          description: 'Sitoutuminen omien arvojen mukaiseen toimintaan.',
+          questions: [
+            'Pystyn sitoutumaan asioihin, jotka ovat minulle merkityksellisiä.',
+            'Käytän aikaani asioihin, jotka rakentavat haluamaani tulevaisuutta.',
+            'Teen päivittäin pieniä tekoja tavoitteeni edistämiseksi.',
+            'Toimintani vastaa niitä periaatteita, joita pidän tärkeinä.',
+            'Pysyn suunnitelmassani, vaikka se vaatii ajoittaista epämukavuusalueella vierailua.',
+            'Tunnistan selkeästi arvoni mukaiset teot arjessani.',
+            'Osaan korjata kurssiani, jos huomaan etääntyväni tavoitteistani.'
+          ]
+        },
+        {
+          title: 'Tunnesäätely',
+          description: 'Kyky käsitellä ja säädellä omia tunteita.',
+          questions: [
+            'Pystyn käsittelemään stressiä ilman, että se lamauttaa minua.',
+            'Pystyn pysymään rauhallisena myös paineen alla.',
+            'Havainnoin tunteitani, mutta en anna niiden määrätä toimintaani.',
+            'Toimin arvojeni mukaisesti, vaikka minua jännittäisi tai pelottaisi.',
+            'Minulla on rakentavia keinoja kohdata vaikeita tunteita.',
+            'Epämiellyttävät ajatukset eivät jää hallitsemaan mieltäni pitkäksi aikaa.',
+            'Osaan suhtautua omiin ajatuksiini siten, että ne eivät ole ehdottomina totuuksia.'
+          ]
+        },
+        {
+          title: 'Hyväksyntä',
+          description: 'Vaikeiden kokemusten ja epävarmuuden hyväksyminen.',
+          questions: [
+            'Hyväksyn sen, että elämään kuuluu myös haastavia vaiheita.',
+            'En käytä liikaa energiaa vaikeiden tunteiden pois työntämiseen.',
+            'Pystyn toimimaan, vaikka kokisin epävarmuutta.',
+            'Suhtaudun itseen ja tunteisiini sallivasti ja armollisesti.',
+            'Otan vastaan vaikeatkin kokemukset osana kasvua.',
+            'En yritä kontrolloida asioita, joihin en voi vaikuttaa.',
+            'Uskaltaudun kokeilemaan uutta, vaikka tiedostan epäonnistumisen mahdollisuuden.'
+          ]
+        }
       ]
     },
-    {
-      title: 'Omistautuminen',
-      description: 'Sitoutuminen omien arvojen mukaiseen toimintaan.',
-      questions: [
-        'Pystyn sitoutumaan asioihin, jotka ovat minulle merkityksellisiä.',
-        'Käytän aikaani asioihin, jotka rakentavat haluamaani tulevaisuutta.',
-        'Teen päivittäin pieniä tekoja tavoitteeni edistämiseksi.',
-        'Toimintani vastaa niitä periaatteita, joita pidän tärkeinä.',
-        'Pysyn suunnitelmassani, vaikka se vaatii ajoittaista epämukavuusalueella vierailua.',
-        'Tunnistan selkeästi arvoni mukaiset teot arjessani.',
-        'Osaan korjata kurssiani, jos huomaan etääntyväni tavoitteistani.'
+    de: {
+      ui: {
+        docTitle: 'Selbstcheck Psychologische Flexibilität · 3K',
+        docDescription: 'Tool zur Selbsteinschätzung der psychologischen Flexibilität',
+        eyebrow: 'Mentale Fähigkeiten',
+        title: 'Selbstcheck: <em>Psychologische Flexibilität</em>',
+        intro: 'In diesem Teil betrachten wir deine psychologische Flexibilität anhand von vier Kategorien: Konzentration und Aufmerksamkeit, engagiertes Handeln, Umgang mit Gefühlen und Akzeptanz. Antworte ehrlich – niemand sieht deine einzelnen Antworten.',
+        resultsTitle: 'Deine psychologische Flexibilität im <em>Profil</em>',
+        language: 'Sprache',
+        metaCategories: '{n} Kategorien',
+        metaQuestions: '{n} Fragen',
+        metaMinutes: '{n} Minuten',
+        start: 'Selbstcheck starten →',
+        answerAria: 'Antwort {n}',
+        scaleMin: 'Stimme überhaupt nicht zu',
+        scaleMax: 'Stimme voll und ganz zu',
+        resultsEyebrow: 'Deine Ergebnisse',
+        resultsSub: 'Jede Achse zeigt die Situation in einer Kategorie auf einer Skala von 1–7. Ein hoher Wert bedeutet, dass dieser Bereich in deinem Leben aus deiner Sicht gut aufgestellt ist.',
+        saveNote: 'Wir speichern deine Antworten nicht. Ich empfehle dir, dieses Bild auf dein eigenes Gerät herunterzuladen.',
+        download: 'Bild speichern ↓',
+        restart: 'Von vorne beginnen',
+        datasetLabel: 'Deine Antworten'
+      },
+      categories: [
+        {
+          title: 'Konzentration / Aufmerksamkeit',
+          description: 'Die Fähigkeit, die Aufmerksamkeit auf das Wesentliche zu richten und dort zu halten.',
+          questions: [
+            'Ich kann meine Aufmerksamkeit auf das richten, was ich gerade tue.',
+            'Meine Aufmerksamkeit schweift nicht ständig zu unwichtigen Dingen ab.',
+            'Wenn ich merke, dass meine Gedanken abschweifen, kann ich sie in den gegenwärtigen Moment zurückholen.',
+            'Ich kann mich ganz auf eine Aufgabe nach der anderen einlassen.',
+            'Mein Arbeitsumfeld unterstützt mich dabei, mich auf das Wesentliche zu konzentrieren.',
+            'Ich bin mir bewusst, wofür ich meine Zeit und Energie einsetze.',
+            'Ich kann Ablenkungen (wie Nachrichten und Benachrichtigungen) so begrenzen, dass sie meine Konzentration nicht stören.'
+          ]
+        },
+        {
+          title: 'Engagiertes Handeln',
+          description: 'Verbindlich nach den eigenen Werten handeln.',
+          questions: [
+            'Ich kann mich verbindlich für Dinge einsetzen, die mir wirklich etwas bedeuten.',
+            'Ich nutze meine Zeit für Dinge, die die Zukunft aufbauen, die ich mir wünsche.',
+            'Ich tue jeden Tag kleine Dinge, um meinem Ziel näherzukommen.',
+            'Mein Handeln entspricht den Grundsätzen, die mir wichtig sind.',
+            'Ich halte an meinem Plan fest, auch wenn ich dafür ab und zu meine Komfortzone verlassen muss.',
+            'Ich erkenne in meinem Alltag klar, welche Handlungen zu meinen Werten passen.',
+            'Ich kann meinen Kurs korrigieren, wenn ich merke, dass ich mich von meinen Zielen entferne.'
+          ]
+        },
+        {
+          title: 'Umgang mit Gefühlen',
+          description: 'Die Fähigkeit, eigene Gefühle zu verarbeiten und zu regulieren.',
+          questions: [
+            'Ich kann mit Stress umgehen, ohne dass er mich lähmt.',
+            'Ich kann auch unter Druck ruhig bleiben.',
+            'Ich nehme meine Gefühle wahr, lasse aber nicht zu, dass sie mein Handeln bestimmen.',
+            'Ich handle nach meinen Werten, auch wenn ich nervös bin oder Angst habe.',
+            'Ich habe konstruktive Wege, mit schwierigen Gefühlen umzugehen.',
+            'Unangenehme Gedanken beherrschen mich nicht lange.',
+            'Ich kann meine Gedanken so betrachten, dass ich sie nicht für absolute Wahrheiten halte.'
+          ]
+        },
+        {
+          title: 'Akzeptanz',
+          description: 'Schwierige Erfahrungen und Unsicherheit annehmen.',
+          questions: [
+            'Ich akzeptiere, dass zum Leben auch schwierige Phasen gehören.',
+            'Ich verwende nicht zu viel Energie darauf, schwierige Gefühle wegzuschieben.',
+            'Ich kann handeln, auch wenn ich mich unsicher fühle.',
+            'Ich gehe mit mir selbst und meinen Gefühlen offen und nachsichtig um.',
+            'Ich nehme auch schwierige Erfahrungen als Teil meiner Entwicklung an.',
+            'Ich versuche nicht, Dinge zu kontrollieren, die ich nicht beeinflussen kann.',
+            'Ich traue mich, Neues auszuprobieren, auch wenn ich weiß, dass ich scheitern könnte.'
+          ]
+        }
       ]
     },
-    {
-      title: 'Tunnesäätely',
-      description: 'Kyky käsitellä ja säädellä omia tunteita.',
-      questions: [
-        'Pystyn käsittelemään stressiä ilman, että se lamauttaa minua.',
-        'Pystyn pysymään rauhallisena myös paineen alla.',
-        'Havainnoin tunteitani, mutta en anna niiden määrätä toimintaani.',
-        'Toimin arvojeni mukaisesti, vaikka minua jännittäisi tai pelottaisi.',
-        'Minulla on rakentavia keinoja kohdata vaikeita tunteita.',
-        'Epämiellyttävät ajatukset eivät jää hallitsemaan mieltäni pitkäksi aikaa.',
-        'Osaan suhtautua omiin ajatuksiini siten, että ne eivät ole ehdottomina totuuksia.'
+    en: {
+      ui: {
+        docTitle: 'Psychological Flexibility Assessment · 3K',
+        docDescription: 'A self-assessment tool for psychological flexibility',
+        eyebrow: 'Skills for the mind',
+        title: 'Assessment: <em>Psychological flexibility</em>',
+        intro: 'This section looks at your psychological flexibility through four categories: focus and attention, dedication, emotional regulation and acceptance. Answer honestly – no one will see your individual answers.',
+        resultsTitle: 'Your psychological flexibility <em>profile</em>',
+        language: 'Language',
+        metaCategories: '{n} categories',
+        metaQuestions: '{n} questions',
+        metaMinutes: '{n} minutes',
+        start: 'Start the assessment →',
+        answerAria: 'Answer {n}',
+        scaleMin: 'Strongly disagree',
+        scaleMax: 'Strongly agree',
+        resultsEyebrow: 'Your results',
+        resultsSub: 'Each axis shows the situation in one category on a scale of 1–7. A high score means you feel this area of your life is in good shape.',
+        saveNote: 'We don\'t store your answers; I recommend downloading this image to your own device.',
+        download: 'Save image ↓',
+        restart: 'Start over',
+        datasetLabel: 'Your answers'
+      },
+      categories: [
+        {
+          title: 'Focus / attention',
+          description: 'The ability to direct your attention to what matters and keep it there.',
+          questions: [
+            'I can direct my attention to what I am doing right now.',
+            'My attention doesn\'t keep wandering off to irrelevant things.',
+            'When I notice my thoughts wandering, I can bring them back to the present moment.',
+            'I can concentrate fully on one task at a time.',
+            'My work environment supports my ability to focus on what matters.',
+            'I am aware of what I spend my time and energy on.',
+            'I can limit distractions (such as messages and notifications) so that they don\'t disturb my focus.'
+          ]
+        },
+        {
+          title: 'Dedication',
+          description: 'Commitment to acting in line with your own values.',
+          questions: [
+            'I am able to commit to things that are meaningful to me.',
+            'I spend my time on things that build the future I want.',
+            'Every day, I take small actions to move my goal forward.',
+            'The way I act matches the principles I consider important.',
+            'I stick to my plan, even when it means stepping outside my comfort zone from time to time.',
+            'I can clearly recognise the actions in my everyday life that are in line with my values.',
+            'I can change course if I notice that I am drifting away from my goals.'
+          ]
+        },
+        {
+          title: 'Emotional regulation',
+          description: 'The ability to process and regulate your own emotions.',
+          questions: [
+            'I can deal with stress without it paralysing me.',
+            'I can stay calm, even under pressure.',
+            'I notice my emotions, but I don\'t let them dictate what I do.',
+            'I act in line with my values, even when I feel nervous or afraid.',
+            'I have constructive ways of facing difficult emotions.',
+            'Unpleasant thoughts don\'t take over my mind for long.',
+            'I can see my own thoughts as thoughts, not as absolute truths.'
+          ]
+        },
+        {
+          title: 'Acceptance',
+          description: 'Accepting difficult experiences and uncertainty.',
+          questions: [
+            'I accept that life also includes difficult phases.',
+            'I don\'t spend too much energy pushing difficult emotions away.',
+            'I can take action, even when I feel uncertain.',
+            'I treat myself and my feelings with acceptance and kindness.',
+            'I welcome even difficult experiences as part of growing.',
+            'I don\'t try to control things I can\'t influence.',
+            'I dare to try new things, even though I know I might fail.'
+          ]
+        }
       ]
     },
-    {
-      title: 'Hyväksyntä',
-      description: 'Vaikeiden kokemusten ja epävarmuuden hyväksyminen.',
-      questions: [
-        'Hyväksyn sen, että elämään kuuluu myös haastavia vaiheita.',
-        'En käytä liikaa energiaa vaikeiden tunteiden pois työntämiseen.',
-        'Pystyn toimimaan, vaikka kokisin epävarmuutta.',
-        'Suhtaudun itseen ja tunteisiini sallivasti ja armollisesti.',
-        'Otan vastaan vaikeatkin kokemukset osana kasvua.',
-        'En yritä kontrolloida asioita, joihin en voi vaikuttaa.',
-        'Uskaltaudun kokeilemaan uutta, vaikka tiedostan epäonnistumisen mahdollisuuden.'
+    es: {
+      ui: {
+        docTitle: 'Evaluación de la flexibilidad psicológica · 3K',
+        docDescription: 'Herramienta de autoevaluación de la flexibilidad psicológica',
+        eyebrow: 'Habilidades mentales',
+        title: 'Evaluación: <em>Flexibilidad psicológica</em>',
+        intro: 'En esta sección se evalúa tu flexibilidad psicológica a través de cuatro categorías: concentración y atención, dedicación, regulación emocional y aceptación. Responde con sinceridad: nadie verá tus respuestas individuales.',
+        resultsTitle: 'Tu <em>perfil</em> de flexibilidad psicológica',
+        language: 'Idioma',
+        metaCategories: '{n} categorías',
+        metaQuestions: '{n} preguntas',
+        metaMinutes: '{n} minutos',
+        start: 'Comenzar la evaluación →',
+        answerAria: 'Respuesta {n}',
+        scaleMin: 'Totalmente en desacuerdo',
+        scaleMax: 'Totalmente de acuerdo',
+        resultsEyebrow: 'Tus resultados',
+        resultsSub: 'Cada eje muestra la situación de una categoría en una escala de 1–7. Un valor alto significa que sientes que esa área de tu vida está en buen estado.',
+        saveNote: 'No guardamos tus respuestas; te recomiendo que descargues esta imagen en tu propio dispositivo.',
+        download: 'Guardar imagen ↓',
+        restart: 'Empezar de nuevo',
+        datasetLabel: 'Tus respuestas'
+      },
+      categories: [
+        {
+          title: 'Concentración / atención',
+          description: 'Capacidad de dirigir y mantener la atención en lo esencial.',
+          questions: [
+            'Puedo centrar mi atención en lo que estoy haciendo en este momento.',
+            'Mi atención no se desvía constantemente hacia cosas irrelevantes.',
+            'Cuando noto que mis pensamientos se dispersan, sé traerlos de vuelta al momento presente.',
+            'Puedo centrarme a fondo en una sola tarea a la vez.',
+            'Mi entorno de trabajo favorece mi capacidad de concentrarme en lo esencial.',
+            'Soy consciente de en qué empleo mi tiempo y mi energía.',
+            'Sé limitar los estímulos (como mensajes y notificaciones) para que no interrumpan mi concentración.'
+          ]
+        },
+        {
+          title: 'Dedicación',
+          description: 'Compromiso con actuar según los propios valores.',
+          questions: [
+            'Puedo comprometerme con las cosas que tienen sentido para mí.',
+            'Dedico mi tiempo a cosas que construyen el futuro que quiero.',
+            'Cada día hago pequeñas acciones para avanzar hacia mi objetivo.',
+            'Mi forma de actuar está de acuerdo con los principios que considero importantes.',
+            'Me mantengo fiel a mi plan, aunque a veces me exija salir de mi zona de confort.',
+            'Reconozco claramente en mi día a día las acciones que van de acuerdo con mis valores.',
+            'Sé corregir el rumbo si noto que me alejo de mis objetivos.'
+          ]
+        },
+        {
+          title: 'Regulación emocional',
+          description: 'Capacidad de gestionar y regular las propias emociones.',
+          questions: [
+            'Puedo gestionar el estrés sin que me paralice.',
+            'Puedo mantener la calma incluso bajo presión.',
+            'Observo mis emociones, pero no dejo que decidan lo que hago.',
+            'Actúo de acuerdo con mis valores, aunque sienta nervios o miedo.',
+            'Tengo formas constructivas de afrontar las emociones difíciles.',
+            'Los pensamientos desagradables no se quedan dominando mi mente durante mucho tiempo.',
+            'Sé tomar distancia de mis propios pensamientos y no verlos como verdades absolutas.'
+          ]
+        },
+        {
+          title: 'Aceptación',
+          description: 'Aceptar las experiencias difíciles y la incertidumbre.',
+          questions: [
+            'Acepto que la vida también incluye etapas difíciles.',
+            'No gasto demasiada energía en intentar apartar las emociones difíciles.',
+            'Puedo actuar aunque sienta incertidumbre.',
+            'Tengo una actitud comprensiva y compasiva hacia mí y hacia mis emociones.',
+            'Acepto incluso las experiencias difíciles como parte de mi crecimiento.',
+            'No intento controlar las cosas en las que no puedo influir.',
+            'Me atrevo a probar cosas nuevas, aunque soy consciente de que podría fallar.'
+          ]
+        }
+      ]
+    },
+    fr: {
+      ui: {
+        docTitle: 'Bilan de flexibilité psychologique · 3K',
+        docDescription: 'Outil d’auto-évaluation de la flexibilité psychologique',
+        eyebrow: 'Compétences mentales',
+        title: 'Bilan : <em>Flexibilité psychologique</em>',
+        intro: 'Cette section fait le point sur votre flexibilité psychologique à travers quatre catégories : concentration et attention, engagement, régulation émotionnelle et acceptation. Répondez honnêtement : personne ne verra vos réponses individuelles.',
+        resultsTitle: 'Votre <em>profil</em> de flexibilité psychologique',
+        language: 'Langue',
+        metaCategories: '{n} catégories',
+        metaQuestions: '{n} questions',
+        metaMinutes: '{n} minutes',
+        start: 'Commencer le bilan →',
+        answerAria: 'Réponse {n}',
+        scaleMin: 'Pas du tout d’accord',
+        scaleMax: 'Tout à fait d’accord',
+        resultsEyebrow: 'Vos résultats',
+        resultsSub: 'Chaque axe représente la situation d’une catégorie sur une échelle de 1 à 7. Une valeur élevée signifie que vous estimez que ce domaine se porte bien dans votre vie.',
+        saveNote: 'Nous n’enregistrons pas vos réponses : je vous recommande de télécharger cette image sur votre propre appareil.',
+        download: 'Enregistrer l’image ↓',
+        restart: 'Recommencer',
+        datasetLabel: 'Vos réponses'
+      },
+      categories: [
+        {
+          title: 'Concentration / attention',
+          description: 'Capacité à diriger son attention sur l’essentiel et à l’y maintenir.',
+          questions: [
+            'Je suis capable de diriger mon attention sur ce que je suis en train de faire.',
+            'Mon attention ne s’égare pas sans cesse vers des choses sans importance.',
+            'Quand je remarque que mes pensées vagabondent, je sais les ramener au moment présent.',
+            'Je suis capable de me plonger dans une seule tâche à la fois.',
+            'Mon environnement de travail m’aide à me concentrer sur l’essentiel.',
+            'J’ai conscience de la façon dont j’utilise mon temps et mon énergie.',
+            'Je sais limiter les sollicitations (comme les messages et les notifications) pour qu’elles ne perturbent pas ma concentration.'
+          ]
+        },
+        {
+          title: 'Engagement',
+          description: 'S’engager dans des actions en accord avec ses propres valeurs.',
+          questions: [
+            'Je suis capable de m’engager dans ce qui a du sens pour moi.',
+            'Je consacre mon temps à ce qui construit l’avenir que je souhaite.',
+            'Chaque jour, je fais de petites actions pour faire avancer mon objectif.',
+            'Mes actes correspondent aux principes que je juge importants.',
+            'Je m’en tiens à mon plan, même s’il m’oblige parfois à sortir de ma zone de confort.',
+            'Je reconnais clairement, dans mon quotidien, les actions qui correspondent à mes valeurs.',
+            'Je sais rectifier le cap si je remarque que je m’éloigne de mes objectifs.'
+          ]
+        },
+        {
+          title: 'Régulation émotionnelle',
+          description: 'Capacité à accueillir et à réguler ses propres émotions.',
+          questions: [
+            'Je suis capable de gérer le stress sans qu’il me paralyse.',
+            'Je suis capable de rester calme même sous pression.',
+            'J’observe mes émotions, mais je ne les laisse pas dicter mes actes.',
+            'J’agis selon mes valeurs, même quand je ressens de l’appréhension ou de la peur.',
+            'J’ai des moyens constructifs de faire face aux émotions difficiles.',
+            'Les pensées désagréables n’occupent pas mon esprit très longtemps.',
+            'Je sais prendre du recul par rapport à mes pensées, sans les considérer comme des vérités absolues.'
+          ]
+        },
+        {
+          title: 'Acceptation',
+          description: 'Accepter les expériences difficiles et l’incertitude.',
+          questions: [
+            'J’accepte que la vie comporte aussi des périodes difficiles.',
+            'Je ne dépense pas trop d’énergie à repousser les émotions difficiles.',
+            'Je suis capable d’agir, même quand je ressens de l’incertitude.',
+            'Je fais preuve de bienveillance et d’indulgence envers moi-même et mes émotions.',
+            'J’accueille même les expériences difficiles comme une part de ma croissance.',
+            'Je n’essaie pas de contrôler ce sur quoi je n’ai aucune prise.',
+            'J’ose essayer de nouvelles choses, même en sachant que je peux échouer.'
+          ]
+        }
+      ]
+    },
+    so: {
+      ui: {
+        docTitle: 'Qiimaynta dabacsanaanta nafsiga ah · 3K',
+        docDescription: 'Qalabka is-qiimaynta dabacsanaanta nafsiga ah',
+        eyebrow: 'Xirfadaha maskaxda',
+        title: 'Qiimayn: <em>Dabacsanaanta nafsiga ah</em>',
+        intro: 'Halkan waxaa lagu qiimaynayaa dabacsanaantaada nafsiga ah iyadoo loo marayo afar qaybood: diiradda iyo feejignaanta, u heellanaanta, maaraynta dareenka iyo aqbalaadda. Su\'aalaha si daacad ah uga jawaab, qofna ma arki doono jawaabahaaga gaarka ah.',
+        resultsTitle: '<em>Sawirka guud</em> ee dabacsanaantaada nafsiga ah',
+        language: 'Luqadda',
+        metaCategories: '{n} qaybood',
+        metaQuestions: '{n} su\'aalood',
+        metaMinutes: '{n} daqiiqo',
+        start: 'Bilow qiimaynta →',
+        answerAria: 'Jawaab {n}',
+        scaleMin: 'Gabi ahaanba kuma raacsani',
+        scaleMax: 'Gabi ahaanba waan ku raacsanahay',
+        resultsEyebrow: 'Natiijadaada',
+        resultsSub: 'Dhidib kastaa wuxuu muujinayaa xaaladda hal qayb, iyadoo la adeegsanayo cabbir 1–7 ah. Qiime sare wuxuu ka dhigan yahay inaad dareemayso in qaybtani ay noloshaada ku jirto xaalad wanaagsan.',
+        saveNote: 'Jawaabahaaga ma kaydinno; waxaan kugula talinayaa inaad sawirkan ku soo dejiso qalabkaaga.',
+        download: 'Kaydi sawirka ↓',
+        restart: 'Dib u bilow',
+        datasetLabel: 'Jawaabahaaga'
+      },
+      categories: [
+        {
+          title: 'Diiradda / feejignaanta',
+          description: 'Awoodda aad ku jihayso oo aad ku haysato dareenkaaga waxa muhiimka ah.',
+          questions: [
+            'Waan awoodaa inaan dareenkayga saaro waxa aan hadda samaynayo.',
+            'Dareenkaygu si joogto ah ugama leexdo waxyaabo aan muhiim ahayn.',
+            'Marka aan ogaado in fikradahaygu meel kale u wareegayaan, waan awoodaa inaan dib ugu soo celiyo xilligan.',
+            'Waan awoodaa inaan si buuxda diiradda u saaro hal hawl markiiba.',
+            'Deegaanka shaqadaydu wuxuu taageeraa awooddayda aan diiradda ku saaro waxa muhiimka ah.',
+            'Waan ogahay waxa aan ku isticmaalo waqtigayga iyo tamartayda.',
+            'Waan awoodaa inaan xaddido waxyaabaha i mashquuliya (sida fariimaha iyo ogeysiisyada) si aysan u carqaladayn diiradayda.'
+          ]
+        },
+        {
+          title: 'U heellanaanta',
+          description: 'U heellanaanta inaad u dhaqanto si waafaqsan qiyamkaaga.',
+          questions: [
+            'Waan awoodaa inaan u heellanaado waxyaabaha macnaha weyn ii leh.',
+            'Waqtigayga waxaan ku isticmaalaa waxyaabaha dhisaya mustaqbalka aan doonayo.',
+            'Maalin kasta waxaan sameeyaa ficillo yaryar oo horumariya yoolkayga.',
+            'Ficilladaydu waxay waafaqsan yihiin mabaadi\'da aan muhiimka u arko.',
+            'Waxaan ku sii socdaa qorshahayga, xitaa haddii ay mararka qaarkood iga dalbanayso inaan ka baxo xaaladda aan ku raaxaysto.',
+            'Si cad ayaan u garanayaa ficillada nolol maalmeedkayga ee waafaqsan qiyamkayga.',
+            'Waan awoodaa inaan jihadayda saxo haddii aan ogaado inaan ka fogaanayo yoolalkayga.'
+          ]
+        },
+        {
+          title: 'Maaraynta dareenka',
+          description: 'Awoodda aad ula tacaasho oo aad u maamusho dareenkaaga.',
+          questions: [
+            'Waan awoodaa inaan maareeyo walbahaarka iyadoo aanu i curyaamin.',
+            'Waan awoodaa inaan dego xitaa marka aan cadaadis ku jiro.',
+            'Waan fiiriyaa dareenkayga, laakiin uma oggolaado inay xukumaan waxa aan sameeyo.',
+            'Waxaan u dhaqmaa si waafaqsan qiyamkayga, xitaa haddii aan dareemo walaac ama cabsi.',
+            'Waxaan haystaa habab wanaagsan oo aan ku wajaho dareenka adag.',
+            'Fikradaha aan wanaagsanayn muddo dheer ma xukumaan maskaxdayda.',
+            'Waan awoodaa inaan fikradahayga u arko fikrado keliya, oo aanan u qaadan run aan laga doodi karin.'
+          ]
+        },
+        {
+          title: 'Aqbalaadda',
+          description: 'Aqbalidda khibradaha adag iyo hubanti la\'aanta.',
+          questions: [
+            'Waan aqbalaa in noloshu ay leedahay marxalado adag.',
+            'Tamar badan kuma bixiyo isku dayga aan iskaga riixo dareenka adag.',
+            'Waan wax qaban karaa xitaa haddii aan dareemo hubanti la\'aan.',
+            'Naftayda iyo dareenkayga waxaan ula dhaqmaa si dabacsan oo naxariis leh.',
+            'Waan aqbalaa xitaa khibradaha adag, anigoo u arka qayb ka mid ah koritaanka.',
+            'Ma isku dayo inaan xakameeyo waxyaabaha aanan saameyn ku yeelan karin.',
+            'Waan ku dhiirradaa inaan tijaabiyo wax cusub, xitaa anigoo og in laga yaabo inaan guuldarraysto.'
+          ]
+        }
+      ]
+    },
+    sv: {
+      ui: {
+        docTitle: 'Kartläggning av psykologisk flexibilitet · 3K',
+        docDescription: 'Verktyg för självskattning av psykologisk flexibilitet',
+        eyebrow: 'Mentala färdigheter',
+        title: 'Kartläggning: <em>Psykologisk flexibilitet</em>',
+        intro: 'I den här delen kartläggs din psykologiska flexibilitet utifrån fyra kategorier: koncentration och uppmärksamhet, hängivenhet, känsloreglering och acceptans. Svara ärligt – ingen ser dina enskilda svar.',
+        resultsTitle: 'Din <em>profil</em> för psykologisk flexibilitet',
+        language: 'Språk',
+        metaCategories: '{n} kategorier',
+        metaQuestions: '{n} frågor',
+        metaMinutes: '{n} minuter',
+        start: 'Starta kartläggningen →',
+        answerAria: 'Svar {n}',
+        scaleMin: 'Instämmer inte alls',
+        scaleMax: 'Instämmer helt',
+        resultsEyebrow: 'Ditt resultat',
+        resultsSub: 'Varje axel visar läget inom en kategori på en skala 1–7. Ett högt värde betyder att du upplever att det här området fungerar bra i ditt liv.',
+        saveNote: 'Vi sparar inte dina svar, så jag rekommenderar att du laddar ner bilden till din egen enhet.',
+        download: 'Spara bild ↓',
+        restart: 'Börja om',
+        datasetLabel: 'Dina svar'
+      },
+      categories: [
+        {
+          title: 'Koncentration / uppmärksamhet',
+          description: 'Förmåga att rikta och behålla uppmärksamheten på det som är viktigt.',
+          questions: [
+            'Jag kan rikta min uppmärksamhet mot det som jag håller på med just nu.',
+            'Min uppmärksamhet drar inte hela tiden iväg till oviktiga saker.',
+            'När jag märker att mina tankar vandrar iväg kan jag föra tillbaka dem till nuet.',
+            'Jag kan fördjupa mig i en uppgift i taget.',
+            'Min arbetsmiljö hjälper mig att koncentrera mig på det som är viktigt.',
+            'Jag är medveten om vad jag använder min tid och energi till.',
+            'Jag kan begränsa störningar (som meddelanden och notiser) så att de inte stör min koncentration.'
+          ]
+        },
+        {
+          title: 'Hängivenhet',
+          description: 'Att engagera dig i handlingar som stämmer med dina egna värderingar.',
+          questions: [
+            'Jag kan engagera mig i saker som är meningsfulla för mig.',
+            'Jag använder min tid till saker som bygger den framtid som jag vill ha.',
+            'Varje dag gör jag små saker för att komma närmare mitt mål.',
+            'Det jag gör stämmer överens med de principer som jag tycker är viktiga.',
+            'Jag håller fast vid min plan, även om det ibland kräver att jag går utanför min komfortzon.',
+            'Jag känner tydligt igen de handlingar i min vardag som stämmer med mina värderingar.',
+            'Jag kan ändra kurs om jag märker att jag glider bort från mina mål.'
+          ]
+        },
+        {
+          title: 'Känsloreglering',
+          description: 'Förmåga att hantera och reglera dina egna känslor.',
+          questions: [
+            'Jag kan hantera stress utan att den förlamar mig.',
+            'Jag kan hålla mig lugn även under press.',
+            'Jag lägger märke till mina känslor, men jag låter dem inte styra vad jag gör.',
+            'Jag handlar enligt mina värderingar även när jag är nervös eller rädd.',
+            'Jag har konstruktiva sätt att möta svåra känslor.',
+            'Obehagliga tankar tar inte över mitt sinne under lång tid.',
+            'Jag kan förhålla mig till mina tankar så att jag inte ser dem som absoluta sanningar.'
+          ]
+        },
+        {
+          title: 'Acceptans',
+          description: 'Att acceptera svåra upplevelser och osäkerhet.',
+          questions: [
+            'Jag accepterar att livet också har svåra perioder.',
+            'Jag lägger inte för mycket energi på att trycka bort svåra känslor.',
+            'Jag kan agera även när jag känner mig osäker.',
+            'Jag är tillåtande och vänlig mot mig själv och mina känslor.',
+            'Jag tar emot även svåra upplevelser som en del av min utveckling.',
+            'Jag försöker inte kontrollera saker som jag inte kan påverka.',
+            'Jag vågar pröva nya saker, även om jag vet att jag kan misslyckas.'
+          ]
+        }
+      ]
+    },
+    ru: {
+      ui: {
+        docTitle: 'Оценка психологической гибкости · 3K',
+        docDescription: 'Инструмент самооценки психологической гибкости',
+        eyebrow: 'Психологические навыки',
+        title: 'Оценка: <em>Психологическая гибкость</em>',
+        intro: 'В этом разделе оценивается ваша психологическая гибкость по четырём категориям: концентрация и внимание, приверженность ценностям, регуляция эмоций и принятие. Отвечайте честно: никто не увидит ваших отдельных ответов.',
+        resultsTitle: 'Ваш <em>профиль</em> психологической гибкости',
+        language: 'Язык',
+        metaCategories: '{n} категории',
+        metaQuestions: '{n} вопросов',
+        metaMinutes: '{n} минут',
+        start: 'Начать оценку →',
+        answerAria: 'Ответ {n}',
+        scaleMin: 'Полностью не согласен(-на)',
+        scaleMax: 'Полностью согласен(-на)',
+        resultsEyebrow: 'Ваши результаты',
+        resultsSub: 'Каждая ось показывает ситуацию в одной из категорий по шкале 1–7. Высокое значение означает, что, по вашим ощущениям, в этой сфере жизни у вас всё хорошо.',
+        saveNote: 'Мы не сохраняем ваши ответы, поэтому рекомендую скачать это изображение на своё устройство.',
+        download: 'Сохранить изображение ↓',
+        restart: 'Начать заново',
+        datasetLabel: 'Ваши ответы'
+      },
+      categories: [
+        {
+          title: 'Концентрация / внимание',
+          description: 'Умение направлять и удерживать внимание на главном.',
+          questions: [
+            'Я могу сосредоточить внимание на том, что делаю прямо сейчас.',
+            'Моё внимание не убегает постоянно на второстепенные вещи.',
+            'Заметив, что мысли блуждают, я умею возвращать их в настоящий момент.',
+            'Я могу полностью погрузиться в одну задачу за раз.',
+            'Моя рабочая обстановка помогает мне сосредоточиться на главном.',
+            'Я осознаю, на что трачу своё время и энергию.',
+            'Я умею ограничивать отвлекающие факторы (например, сообщения и уведомления), чтобы они не мешали мне сосредоточиться.'
+          ]
+        },
+        {
+          title: 'Приверженность ценностям',
+          description: 'Готовность действовать в соответствии со своими ценностями.',
+          questions: [
+            'Я могу посвятить себя тому, что для меня важно.',
+            'Я трачу время на то, что помогает строить желаемое для меня будущее.',
+            'Каждый день я делаю небольшие шаги к своей цели.',
+            'Мои поступки соответствуют принципам, которые я считаю важными.',
+            'Я придерживаюсь своего плана, даже если иногда приходится выходить из зоны комфорта.',
+            'В повседневной жизни я ясно вижу, какие поступки соответствуют моим ценностям.',
+            'Я умею скорректировать курс, если замечаю, что отдаляюсь от своих целей.'
+          ]
+        },
+        {
+          title: 'Регуляция эмоций',
+          description: 'Умение справляться со своими эмоциями и регулировать их.',
+          questions: [
+            'Я могу справляться со стрессом, не позволяя ему парализовать меня.',
+            'Я могу сохранять спокойствие даже под давлением.',
+            'Я замечаю свои эмоции, но не позволяю им управлять моими действиями.',
+            'Я действую в соответствии со своими ценностями, даже когда волнуюсь или боюсь.',
+            'У меня есть конструктивные способы справляться с трудными эмоциями.',
+            'Неприятные мысли не захватывают меня надолго.',
+            'Я умею относиться к своим мыслям не как к абсолютной истине.'
+          ]
+        },
+        {
+          title: 'Принятие',
+          description: 'Принятие трудного опыта и неопределённости.',
+          questions: [
+            'Я принимаю то, что в жизни бывают и трудные периоды.',
+            'Я не трачу слишком много сил на то, чтобы отгонять трудные эмоции.',
+            'Я могу действовать, даже когда испытываю неуверенность.',
+            'Я отношусь к себе и своим чувствам с принятием и добротой.',
+            'Я принимаю даже трудный опыт как часть своего роста.',
+            'Я не пытаюсь контролировать то, на что не могу повлиять.',
+            'Я решаюсь пробовать новое, даже понимая, что может не получиться.'
+          ]
+        }
+      ]
+    },
+    uk: {
+      ui: {
+        docTitle: 'Оцінювання психологічної гнучкості · 3K',
+        docDescription: 'Інструмент самооцінювання психологічної гнучкості',
+        eyebrow: 'Ментальні навички',
+        title: 'Оцінювання: <em>Психологічна гнучкість</em>',
+        intro: 'У цьому розділі ви оціните свою психологічну гнучкість за чотирма категоріями: зосередженість і уважність, відданість, регуляція емоцій та прийняття. Відповідайте чесно: ніхто не бачить ваших окремих відповідей.',
+        resultsTitle: '<em>Профіль</em> вашої психологічної гнучкості',
+        language: 'Мова',
+        metaCategories: '{n} категорії',
+        metaQuestions: '{n} запитань',
+        metaMinutes: '{n} хвилин',
+        start: 'Почати оцінювання →',
+        answerAria: 'Відповідь {n}',
+        scaleMin: 'Зовсім не погоджуюся',
+        scaleMax: 'Повністю погоджуюся',
+        resultsEyebrow: 'Ваші результати',
+        resultsSub: 'Кожна вісь показує стан однієї категорії за шкалою 1–7. Високе значення означає, що, на вашу думку, ця сфера вашого життя в доброму стані.',
+        saveNote: 'Ми не зберігаємо ваших відповідей, тому радимо завантажити це зображення на свій пристрій.',
+        download: 'Зберегти зображення ↓',
+        restart: 'Почати спочатку',
+        datasetLabel: 'Ваші відповіді'
+      },
+      categories: [
+        {
+          title: 'Зосередженість / уважність',
+          description: 'Здатність спрямовувати й утримувати увагу на головному.',
+          questions: [
+            'Я можу спрямувати увагу на те, що роблю саме зараз.',
+            'Моя увага не відволікається постійно на несуттєве.',
+            'Помітивши, що думки блукають, я вмію повернути їх у теперішній момент.',
+            'Я можу заглибитися в одне завдання за раз.',
+            'Моє робоче середовище допомагає мені зосереджуватися на головному.',
+            'Я усвідомлюю, на що витрачаю свій час і енергію.',
+            'Я вмію обмежувати подразники (наприклад, повідомлення та сповіщення), щоб вони не заважали мені зосередитися.'
+          ]
+        },
+        {
+          title: 'Відданість',
+          description: 'Прихильність до дій, що відповідають власним цінностям.',
+          questions: [
+            'Я можу присвятити себе справам, які мають для мене значення.',
+            'Я витрачаю час на те, що будує бажане для мене майбутнє.',
+            'Щодня я роблю невеликі кроки, щоб наблизитися до своєї мети.',
+            'Мої дії відповідають принципам, які я вважаю важливими.',
+            'Я дотримуюся свого плану, навіть якщо для цього іноді доводиться виходити із зони комфорту.',
+            'Я чітко розпізнаю у своєму повсякденні дії, що відповідають моїм цінностям.',
+            'Я вмію скоригувати курс, якщо помічаю, що віддаляюся від своїх цілей.'
+          ]
+        },
+        {
+          title: 'Регуляція емоцій',
+          description: 'Здатність справлятися з власними емоціями та регулювати їх.',
+          questions: [
+            'Я можу справлятися зі стресом так, щоб він мене не паралізував.',
+            'Я можу зберігати спокій навіть під тиском.',
+            'Я спостерігаю за своїми емоціями, але не дозволяю їм керувати моїми діями.',
+            'Я дію відповідно до своїх цінностей, навіть коли хвилююся або боюся.',
+            'У мене є конструктивні способи давати раду важким емоціям.',
+            'Неприємні думки не заполонюють мій розум надовго.',
+            'Я вмію ставитися до своїх думок так, щоб не сприймати їх як беззаперечну істину.'
+          ]
+        },
+        {
+          title: 'Прийняття',
+          description: 'Прийняття складного досвіду та невизначеності.',
+          questions: [
+            'Я приймаю те, що в житті бувають і складні періоди.',
+            'Я не витрачаю забагато енергії на те, щоб відштовхувати важкі емоції.',
+            'Я можу діяти, навіть коли відчуваю невпевненість.',
+            'Я ставлюся до себе та своїх емоцій поблажливо й з добротою.',
+            'Я сприймаю навіть складний досвід як частину зростання.',
+            'Я не намагаюся контролювати те, на що не можу вплинути.',
+            'Я наважуюся пробувати нове, навіть усвідомлюючи, що можу зазнати невдачі.'
+          ]
+        }
+      ]
+    },
+    ar: {
+      ui: {
+        docTitle: 'تقييم المرونة النفسية · 3K',
+        docDescription: 'أداة التقييم الذاتي للمرونة النفسية',
+        eyebrow: 'مهارات ذهنية',
+        title: 'تقييم: <em>المرونة النفسية</em>',
+        intro: 'يقيّم هذا القسم مرونتك النفسية من خلال أربع فئات: التركيز والانتباه، والتفاني، وتنظيم المشاعر، والتقبّل. أجب بصدق، فلن يرى أحد إجاباتك الفردية.',
+        resultsTitle: '<em>ملف</em> مرونتك النفسية',
+        language: 'اللغة',
+        metaCategories: '{n} فئات',
+        metaQuestions: '{n} سؤالًا',
+        metaMinutes: '{n} دقائق',
+        start: 'ابدأ التقييم ←',
+        answerAria: 'الإجابة {n}',
+        scaleMin: 'لا أوافق إطلاقًا',
+        scaleMax: 'أوافق تمامًا',
+        resultsEyebrow: 'نتائجك',
+        resultsSub: 'يمثّل كل محور وضع فئة واحدة على مقياس 1–7. وتعني القيمة المرتفعة أنك ترى أن هذا الجانب من حياتك في حالة جيدة.',
+        saveNote: 'لا نحفظ إجاباتك، لذا أنصحك بتنزيل هذه الصورة على جهازك الخاص.',
+        download: 'احفظ الصورة ↓',
+        restart: 'ابدأ من جديد',
+        datasetLabel: 'إجاباتك'
+      },
+      categories: [
+        {
+          title: 'التركيز / الانتباه',
+          description: 'القدرة على توجيه الانتباه إلى ما هو مهم والحفاظ عليه.',
+          questions: [
+            'أستطيع توجيه انتباهي إلى ما أفعله في هذه اللحظة.',
+            'لا يتشتّت انتباهي باستمرار نحو أمور غير مهمة.',
+            'عندما ألاحظ أن أفكاري تشرد، أستطيع إعادتها إلى اللحظة الحاضرة.',
+            'أستطيع الانغماس في مهمة واحدة في كل مرة.',
+            'بيئة عملي تدعم قدرتي على التركيز على ما هو مهم.',
+            'أنا واعٍ بالأمور التي أنفق فيها وقتي وطاقتي.',
+            'أستطيع الحدّ من المشتّتات (مثل الرسائل والإشعارات) بحيث لا تُفسد تركيزي.'
+          ]
+        },
+        {
+          title: 'التفاني',
+          description: 'الالتزام بالتصرّف وفق قيمك.',
+          questions: [
+            'أستطيع الالتزام بالأمور التي تحمل معنى بالنسبة لي.',
+            'أقضي وقتي في أمور تبني المستقبل الذي أريده.',
+            'أقوم كل يوم بخطوات صغيرة نحو تحقيق هدفي.',
+            'تصرّفاتي تتوافق مع المبادئ التي أعتبرها مهمة.',
+            'ألتزم بخطتي حتى لو تطلّب ذلك الخروج أحيانًا من منطقة الراحة.',
+            'أتعرّف بوضوح في حياتي اليومية على الأفعال التي تتوافق مع قيمي.',
+            'أستطيع تصحيح مساري إذا لاحظت أنني أبتعد عن أهدافي.'
+          ]
+        },
+        {
+          title: 'تنظيم المشاعر',
+          description: 'القدرة على التعامل مع مشاعرك وتنظيمها.',
+          questions: [
+            'أستطيع التعامل مع الضغط دون أن يشلّني.',
+            'أستطيع البقاء هادئًا حتى تحت الضغط.',
+            'ألاحظ مشاعري، لكنني لا أدعها تتحكّم في تصرّفاتي.',
+            'أتصرّف وفقًا لقيمي، حتى لو شعرت بالتوتر أو الخوف.',
+            'لديّ طرق بنّاءة لمواجهة المشاعر الصعبة.',
+            'لا تبقى الأفكار المزعجة مسيطرة على ذهني لفترة طويلة.',
+            'أستطيع التعامل مع أفكاري على أنها ليست حقائق مطلقة.'
+          ]
+        },
+        {
+          title: 'التقبّل',
+          description: 'تقبّل التجارب الصعبة وعدم اليقين.',
+          questions: [
+            'أتقبّل أن الحياة تتضمّن أيضًا مراحل صعبة.',
+            'لا أستنزف طاقة كبيرة في محاولة دفع المشاعر الصعبة بعيدًا.',
+            'أستطيع التصرّف حتى عندما أشعر بعدم اليقين.',
+            'أتعامل مع نفسي ومشاعري بتقبّل ورحمة.',
+            'أتقبّل حتى التجارب الصعبة كجزء من النمو.',
+            'لا أحاول التحكّم في الأمور التي لا أستطيع التأثير فيها.',
+            'أجرؤ على تجربة أشياء جديدة، رغم إدراكي لاحتمال الفشل.'
+          ]
+        }
       ]
     }
+  };
+
+  // ============ Language ============
+  // Kielet aakkosjärjestyksessä omalla nimellään (latinalaiset, kyrilliset, arabia).
+  const LANGS = [
+    { code: 'de', name: 'Deutsch' },
+    { code: 'en', name: 'English' },
+    { code: 'es', name: 'Español' },
+    { code: 'fr', name: 'Français' },
+    { code: 'so', name: 'Soomaali' },
+    { code: 'fi', name: 'Suomi' },
+    { code: 'sv', name: 'Svenska' },
+    { code: 'ru', name: 'Русский' },
+    { code: 'uk', name: 'Українська' },
+    { code: 'ar', name: 'العربية', rtl: true }
   ];
+  const DEFAULT_LANG = 'fi';
+  const LANG_STORAGE_KEY = '3k-kieli';
+
+  // Liput SVG-muodossa, koska emoji-liput eivät näy Windowsissa. {id} korvataan uniikilla tunnisteella.
+  const FLAGS = {
+    ar: '<rect width="30" height="20" fill="#006c35"/><path d="M7.5 9.4c.8-1.7 1.6.9 2.4-.5.6-1.1 1.2.2 1.8-.6M12.7 7.3v2.3M14.1 8.8c.7-1.3 1.5.9 2.3-.3.7-1 1.4.6 2.1-.4M19.7 7.1v2.5M21.1 9.2c.6-1.3 1.2.4 1.7-.6" fill="none" stroke="#fff" stroke-width=".8" stroke-linecap="round"/><path d="M8 13.6h12.4M20.4 12.5v2.2M20.4 13.6h1.8" fill="none" stroke="#fff" stroke-width=".9" stroke-linecap="round"/>',
+    de: '<rect width="30" height="20" fill="#ffce00"/><rect width="30" height="13.34" fill="#dd0000"/><rect width="30" height="6.67" fill="#000"/>',
+    en: '<clipPath id="{id}"><path d="M15,10h15v10zv10h-15zh-15v-10zv-10h15z"/></clipPath><rect width="30" height="20" fill="#012169"/><path d="M0,0L30,20M30,0L0,20" stroke="#fff" stroke-width="4"/><path d="M0,0L30,20M30,0L0,20" stroke="#c8102e" stroke-width="2.6" clip-path="url(#{id})"/><path d="M15,0v20M0,10h30" stroke="#fff" stroke-width="6.6"/><path d="M15,0v20M0,10h30" stroke="#c8102e" stroke-width="4"/>',
+    es: '<rect width="30" height="20" fill="#aa151b"/><rect y="5" width="30" height="10" fill="#f1bf00"/>',
+    fi: '<rect width="30" height="20" fill="#fff"/><rect x="8.2" width="5.4" height="20" fill="#002f6c"/><rect y="7.3" width="30" height="5.4" fill="#002f6c"/>',
+    fr: '<rect width="30" height="20" fill="#ef4135"/><rect width="20" height="20" fill="#fff"/><rect width="10" height="20" fill="#0055a4"/>',
+    ru: '<rect width="30" height="20" fill="#d52b1e"/><rect width="30" height="13.34" fill="#0039a6"/><rect width="30" height="6.67" fill="#fff"/>',
+    so: '<rect width="30" height="20" fill="#4189dd"/><polygon points="15.00,4.80 16.29,8.62 20.33,8.67 17.09,11.08 18.29,14.93 15.00,12.60 11.71,14.93 12.91,11.08 9.67,8.67 13.71,8.62" fill="#fff"/>',
+    sv: '<rect width="30" height="20" fill="#006aa7"/><rect x="9.4" width="3.8" height="20" fill="#fecc00"/><rect y="8.1" width="30" height="3.8" fill="#fecc00"/>',
+    uk: '<rect width="30" height="20" fill="#ffd700"/><rect width="30" height="10" fill="#0057b7"/>'
+  };
+
+  // Kieli valitaan: ?lang=xx osoitteessa, sitten aiempi valinta, muuten suomi.
+  function initialLang() {
+    try {
+      const fromUrl = new URLSearchParams(window.location.search).get('lang');
+      if (fromUrl && I18N[fromUrl]) return fromUrl;
+    } catch (e) {
+      // Upotuksessa osoitetta ei välttämättä voi lukea
+    }
+    try {
+      const saved = window.localStorage.getItem(LANG_STORAGE_KEY);
+      if (saved && I18N[saved]) return saved;
+    } catch (e) {
+      // localStorage voi olla estetty upotuksessa
+    }
+    return DEFAULT_LANG;
+  }
+
+  function langInfo(code) {
+    return LANGS.find(l => l.code === code);
+  }
+
+  function langDir() {
+    return langInfo(state.lang).rtl ? 'rtl' : 'ltr';
+  }
+
+  function ui() {
+    return I18N[state.lang].ui;
+  }
+
+  // Korvaa {avain}-paikkamerkit annetuilla arvoilla
+  function fmt(text, vars) {
+    return text.replace(/\{(\w+)\}/g, (m, key) => (key in vars ? vars[key] : m));
+  }
+
+  function applyLang() {
+    document.documentElement.lang = state.lang;
+    document.documentElement.dir = langDir();
+    document.title = ui().docTitle;
+    const desc = document.querySelector('meta[name="description"]');
+    if (desc) desc.setAttribute('content', ui().docDescription);
+  }
+
+  let flagSeq = 0;
+  function flagSvg(code) {
+    const id = 'flag-clip-' + (++flagSeq);
+    return `<span class="lang-flag"><svg viewBox="0 0 30 20" preserveAspectRatio="none" aria-hidden="true" focusable="false">${FLAGS[code].replace(/\{id\}/g, id)}</svg></span>`;
+  }
+
+  function renderLangSelector() {
+    const current = langInfo(state.lang);
+    const options = LANGS.map(l => `
+          <li>
+            <button type="button" class="lang-option" lang="${l.code}"${l.code === state.lang ? ' aria-current="true"' : ''} onclick="setLang('${l.code}')">
+              ${flagSvg(l.code)}<span>${l.name}</span>
+            </button>
+          </li>`).join('');
+    return `
+        <div class="lang" id="lang">
+          <button type="button" class="lang-toggle" id="lang-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="lang-menu" aria-label="${ui().language}: ${current.name}" onclick="toggleLangMenu()">
+            ${flagSvg(current.code)}
+            <span lang="${current.code}">${current.name}</span>
+            <svg class="lang-caret" viewBox="0 0 10 10" aria-hidden="true" focusable="false"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <ul class="lang-menu" id="lang-menu" aria-label="${ui().language}" hidden>${options}
+          </ul>
+        </div>
+    `;
+  }
+
+  function toggleLangMenu() {
+    const menu = $('lang-menu');
+    if (!menu) return;
+    if (menu.hidden) openLangMenu();
+    else closeLangMenu(false);
+  }
+
+  function openLangMenu() {
+    const menu = $('lang-menu');
+    const toggle = $('lang-toggle');
+    menu.hidden = false;
+    menu.style.maxHeight = '';
+    $('lang').classList.add('open');
+    toggle.setAttribute('aria-expanded', 'true');
+
+    // Avaa lista sinne, missä on enemmän tilaa (upotuksen korkeus voi olla rajattu)
+    const rect = toggle.getBoundingClientRect();
+    const spaceAbove = rect.top - 12;
+    const spaceBelow = window.innerHeight - rect.bottom - 12;
+    const openDown = spaceBelow >= menu.scrollHeight || spaceBelow > spaceAbove;
+    menu.classList.toggle('down', openDown);
+    menu.style.maxHeight = Math.max(160, openDown ? spaceBelow : spaceAbove) + 'px';
+
+    const selected = menu.querySelector('[aria-current="true"]') || menu.querySelector('.lang-option');
+    selected.focus({ preventScroll: true });
+  }
+
+  function closeLangMenu(returnFocus) {
+    const menu = $('lang-menu');
+    if (!menu || menu.hidden) return;
+    menu.hidden = true;
+    $('lang').classList.remove('open');
+    const toggle = $('lang-toggle');
+    toggle.setAttribute('aria-expanded', 'false');
+    if (returnFocus) toggle.focus();
+  }
+
+  function setLang(code) {
+    if (!I18N[code]) return;
+    state.lang = code;
+    try {
+      window.localStorage.setItem(LANG_STORAGE_KEY, code);
+    } catch (e) {
+      // Valinta toimii silti tämän sivun ajan
+    }
+    applyLang();
+    render();
+    const toggle = $('lang-toggle');
+    if (toggle) toggle.focus({ preventScroll: true });
+  }
+
+  // Sulje lista, kun klikataan tai siirrytään sen ulkopuolelle
+  document.addEventListener('click', (e) => {
+    const wrap = $('lang');
+    if (wrap && !wrap.contains(e.target)) closeLangMenu(false);
+  });
+  document.addEventListener('focusin', (e) => {
+    const wrap = $('lang');
+    if (wrap && !wrap.contains(e.target)) closeLangMenu(false);
+  });
+
+  // Näppäimistö: Esc sulkee, nuolet liikkuvat listassa
+  document.addEventListener('keydown', (e) => {
+    const menu = $('lang-menu');
+    if (!menu || menu.hidden) return;
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeLangMenu(true);
+      return;
+    }
+    const keys = ['ArrowDown', 'ArrowUp', 'Home', 'End'];
+    if (!keys.includes(e.key)) return;
+    e.preventDefault();
+    const items = Array.from(menu.querySelectorAll('.lang-option'));
+    const i = items.indexOf(document.activeElement);
+    let next = 0;
+    if (e.key === 'End') next = items.length - 1;
+    else if (e.key === 'ArrowDown') next = (i + 1) % items.length;
+    else if (e.key === 'ArrowUp') next = i <= 0 ? items.length - 1 : i - 1;
+    items[next].focus();
+  });
 
   // ============ State ============
   const state = {
     screen: 'welcome',
+    lang: initialLang(),
     currentCategory: 0,
     answers: {},
     chartInstance: null
@@ -517,8 +1543,12 @@
   const $ = (id) => document.getElementById(id);
   const answerKey = (c, q) => `${c}-${q}`;
 
+  function categories() {
+    return I18N[state.lang].categories;
+  }
+
   function isCategoryComplete(catIdx) {
-    const qLen = CATEGORIES[catIdx].questions.length;
+    const qLen = categories()[catIdx].questions.length;
     for (let q = 0; q < qLen; q++) {
       if (state.answers[answerKey(catIdx, q)] === undefined) return false;
     }
@@ -526,7 +1556,7 @@
   }
 
   function categoryAverage(catIdx) {
-    const qLen = CATEGORIES[catIdx].questions.length;
+    const qLen = categories()[catIdx].questions.length;
     let sum = 0;
     for (let q = 0; q < qLen; q++) sum += state.answers[answerKey(catIdx, q)] ?? 0;
     return sum / qLen;
@@ -538,7 +1568,8 @@
 
   // ============ Welcome ============
   function renderWelcome() {
-    const totalQuestions = CATEGORIES.reduce((acc, c) => acc + c.questions.length, 0);
+    const t = ui();
+    const totalQuestions = categories().reduce((acc, c) => acc + c.questions.length, 0);
     $('app').innerHTML = `
       <div class="welcome">
         <svg class="welcome-bg" viewBox="0 0 200 200" aria-hidden="true">
@@ -551,17 +1582,20 @@
             <line x1="31" y1="140" x2="169" y2="60" />
           </g>
         </svg>
-        <div class="welcome-eyebrow">Mielen taidot</div>
-        <h1>Kartoitus: <em>Psykologinen joustavuus</em></h1>
-        <p>Tässä osiossa kartoitetaan psykologista joustavuuttasi neljän kategorian kautta: keskittyminen ja tarkkaavaisuus, omistautuminen, tunnesäätely ja hyväksyntä. Vastaa rehellisesti, kukaan ei näe yksittäisiä vastauksiasi.</p>
+        <div class="welcome-eyebrow">${t.eyebrow}</div>
+        <h1>${t.title}</h1>
+        <p>${t.intro}</p>
         <div class="welcome-meta">
-          <span><strong>${CATEGORIES.length}</strong> kategoriaa</span>
+          <span>${fmt(t.metaCategories, { n: `<strong>${categories().length}</strong>` })}</span>
           <span class="welcome-meta-sep">·</span>
-          <span><strong>${totalQuestions}</strong> kysymystä</span>
+          <span>${fmt(t.metaQuestions, { n: `<strong>${totalQuestions}</strong>` })}</span>
           <span class="welcome-meta-sep">·</span>
-          <span><strong>6</strong> minuuttia</span>
+          <span>${fmt(t.metaMinutes, { n: '<strong>6</strong>' })}</span>
         </div>
-        <button class="btn-primary" onclick="startQuestionnaire()">Aloita kartoitus →</button>
+        <div class="welcome-actions" dir="ltr">
+          ${renderLangSelector()}
+          <button class="btn-primary" dir="${langDir()}" onclick="startQuestionnaire()">${t.start}</button>
+        </div>
       </div>
     `;
   }
@@ -576,8 +1610,8 @@
 
   // ============ Questionnaire ============
   function renderQuestionnaire() {
-    const cat = CATEGORIES[state.currentCategory];
-    const dots = CATEGORIES.map((_, i) => {
+    const cat = categories()[state.currentCategory];
+    const dots = categories().map((_, i) => {
       let cls = 'q-progress-dot';
       if (i < state.currentCategory) cls += ' done';
       else if (i === state.currentCategory) cls += ' current';
@@ -588,7 +1622,7 @@
       <div class="q-header">
         <div class="q-counter">
           ${String(state.currentCategory + 1).padStart(2, '0')}
-          <span>/ ${String(CATEGORIES.length).padStart(2, '0')}</span>
+          <span>/ ${String(categories().length).padStart(2, '0')}</span>
         </div>
         <div class="q-progress">${dots}</div>
       </div>
@@ -608,15 +1642,15 @@
     let buttons = '';
     for (let v = 1; v <= 7; v++) {
       const sel = v === selected ? 'selected' : '';
-      buttons += `<button class="q-button ${sel}" onclick="setAnswer(${catIdx}, ${qIdx}, ${v})" aria-label="Vastaus ${v}">${v}</button>`;
+      buttons += `<button class="q-button ${sel}" onclick="setAnswer(${catIdx}, ${qIdx}, ${v})" aria-label="${fmt(ui().answerAria, { n: v })}">${v}</button>`;
     }
     return `
       <div class="q-item ${answered ? 'answered' : ''}" id="q-${catIdx}-${qIdx}">
         <div class="q-text">${text}</div>
         <div class="q-scale">${buttons}</div>
         <div class="q-scale-labels">
-          <span>Täysin eri mieltä</span>
-          <span>Täysin samaa mieltä</span>
+          <span>${ui().scaleMin}</span>
+          <span>${ui().scaleMax}</span>
         </div>
       </div>
     `;
@@ -628,7 +1662,7 @@
     const qEl = $(`q-${catIdx}-${qIdx}`);
     if (qEl) {
       const wrapper = document.createElement('div');
-      wrapper.innerHTML = renderQuestion(catIdx, qIdx, CATEGORIES[catIdx].questions[qIdx]);
+      wrapper.innerHTML = renderQuestion(catIdx, qIdx, categories()[catIdx].questions[qIdx]);
       qEl.replaceWith(wrapper.firstElementChild);
     }
 
@@ -636,7 +1670,7 @@
     if (isCategoryComplete(catIdx)) {
       advanceTimeout = setTimeout(() => {
         advanceTimeout = null;
-        if (catIdx + 1 < CATEGORIES.length) {
+        if (catIdx + 1 < categories().length) {
           state.currentCategory = catIdx + 1;
           render();
           scrollToTop();
@@ -651,7 +1685,7 @@
 
   // ============ Results ============
   function renderResults() {
-    const cats = CATEGORIES.map((c, i) => ({
+    const cats = categories().map((c, i) => ({
       title: c.title,
       avg: categoryAverage(i)
     }));
@@ -664,19 +1698,19 @@
 
     $('app').innerHTML = `
       <div class="results">
-        <div class="results-eyebrow">Tuloksesi</div>
-        <h2>Psykologisen joustavuutesi <em>profiili</em></h2>
-        <p class="results-sub">Jokainen akseli kuvaa yhden kategorian tilannetta asteikolla 1–7. Korkea arvo tarkoittaa, että koet osa-alueen olevan elämässäsi hyvässä tilassa.</p>
+        <div class="results-eyebrow">${ui().resultsEyebrow}</div>
+        <h2>${ui().resultsTitle}</h2>
+        <p class="results-sub">${ui().resultsSub}</p>
         <div class="chart-container">
           <div class="chart-wrap">
             <canvas id="radarChart"></canvas>
           </div>
         </div>
         <div class="scores">${scoreCards}</div>
-        <p class="save-note">Emme tallenna vastauksiasi, suosittelen että lataat tästä kuvan omalle laitteellesi.</p>
+        <p class="save-note">${ui().saveNote}</p>
         <div class="actions">
-          <button class="btn-primary" onclick="downloadChart()">Tallenna kuva ↓</button>
-          <button class="btn-secondary" onclick="restart()">Aloita alusta</button>
+          <button class="btn-primary" onclick="downloadChart()">${ui().download}</button>
+          <button class="btn-secondary" onclick="restart()">${ui().restart}</button>
         </div>
       </div>
     `;
@@ -688,15 +1722,15 @@
     const canvas = $('radarChart');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    const labels = CATEGORIES.map(c => c.title);
-    const data = CATEGORIES.map((_, i) => categoryAverage(i));
+    const labels = categories().map(c => c.title);
+    const data = categories().map((_, i) => categoryAverage(i));
 
     state.chartInstance = new Chart(ctx, {
       type: 'radar',
       data: {
         labels,
         datasets: [{
-          label: 'Vastauksesi',
+          label: ui().datasetLabel,
           data,
           backgroundColor: 'rgba(163, 217, 197, 0.42)',
           borderColor: '#0c2543',
@@ -791,7 +1825,10 @@
   window.setAnswer = setAnswer;
   window.downloadChart = downloadChart;
   window.restart = restart;
+  window.toggleLangMenu = toggleLangMenu;
+  window.setLang = setLang;
 
+  applyLang();
   render();
 </script>
 </body>
